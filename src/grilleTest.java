@@ -11,7 +11,7 @@ public class grilleTest {
     static ICalculateService calculateServer = new ICalculateServiceImpl();
     static ImgProcessingController imgCtrl = new ImgProcessingController();
     public static void main(String[] args) throws IOException {
-        String fileName = "index_2";
+        String fileName = "rx78";
         IMAGE px = new IMAGE(fileName + ".jpg");
         imgCtrl.openGasBlur();
         imgCtrl.openMultiThreads();

@@ -95,7 +95,7 @@ public class IPictureServiceImpl implements IPictureService {
 //            }
 //        }
         int minStep = Math.min(maxFill.length, maxFill[0].length) / Math.max(maxKernel.length, maxKernel[0].length) + 1;
-        int threadCount = (int) Math.sqrt(Math.max(maxKernel.length, maxKernel[0].length)) + 3;
+        int threadCount = (int) Math.sqrt(Math.max(maxKernel.length, maxKernel[0].length)) * 2;
         threadCount = Math.min(threadCount, 32);
         threadCount = Math.min(threadCount, Math.min(maxFill.length, maxFill[0].length) / minStep);
         // int threadCount = Math.max(kernel.length, kernel[0].length);

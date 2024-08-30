@@ -185,7 +185,7 @@ public class ImgProcessingController {
         if(gaussianBlur){
             // 利用缩放降低计算量
             IMAGE min = resizeImage(px, 0.5, RESIZE_ENTIRETY);
-            IMAGE gas = getGasImage(min, 36);
+            IMAGE gas = getUltraGas(min, 36, 54);
             IMAGE normal = resizeImage(gas, 2.0, RESIZE_ENTIRETY);
             enhance = picServer.getEnhanceImage2(normal);
         }else{
