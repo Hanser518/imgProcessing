@@ -1,0 +1,208 @@
+package Service.Impl;
+
+import Entity.IMAGE;
+import Entity.PIXEL;
+import Service.ICalculateService;
+import Service.IPictureService;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
+public class IPictureServiceImpl implements IPictureService {
+    static ICalculateService calculateServer = new ICalculateServiceImpl();
+    @Override
+    public IMAGE getSubImage(IMAGE img, int width, int height, int startX, int startY) {
+        int W = width + startX > img.getWidth() ? img.getWidth() - startX : width;
+        int H = height + startY > img.getHeight() ? img.getHeight() - startY : height;
+        int[][] px = new int[W][H];
+        int[][] raw = img.getPixelMatrix();
+        for(int i = 0;i < W;i ++){
+            for(int j = 0;j < H;j ++){
+                px[i][j] = raw[i + startX][j + startY];
+            }
+        }
+        return new IMAGE(px);
+    }
+
+    @Override
+    public IMAGE getCombineImage(List<IMAGE> images, boolean horizontal) {
+        int width = 0;
+        int height = 0;
+        for(IMAGE img: images){
+            if(horizontal){
+                width += img.getWidth();
+                height = img.getHeight();
+            }else{
+                width = img.getWidth();
+                height += img.getHeight();
+            }
+        }
+        int[][] px = new int[width][height];
+        if(horizontal){
+            int x = 0;
+            for(int count = 0;count < images.size();count ++){
+                int[][] raw = images.get(count).getPixelMatrix();
+                for(int i = 0;i < raw.length;i ++){
+                    for(int j = 0;j < height;j ++){
+                        px[x][j] = raw[i][j];
+                    }
+                    x ++;
+                }
+            }
+        }else{
+            int y = 0;
+            for(int count = 0;count < images.size();count ++){
+                int[][] raw = images.get(count).getPixelMatrix();
+                for(int j = 0;j < raw[0].length;j ++){
+                    for(int i = 0;i < width;i ++){
+                        px[i][y] = raw[i][j];
+                    }
+                }
+                y ++;
+            }
+        }
+        return new IMAGE(px);
+    }
+
+    @Override
+    public IMAGE getReizedImage(IMAGE img, int w, int h) {
+        BufferedImage raw = img.getImg();
+        Image scaledImage = raw.getScaledInstance(w, h, Image.SCALE_SMOOTH);
+        // 将调整尺寸后的图像转换为BufferedImage
+        BufferedImage result = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        result.getGraphics().drawImage(scaledImage, 0, 0, null);
+        return new IMAGE(result);
+    }
+
+    @Override
+    public IMAGE getGrayImage(IMAGE img) {
+        BufferedImage raw = img.getImg();
+        BufferedImage result = new BufferedImage(raw.getWidth(), raw.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        result.getGraphics().drawImage(raw, 0, 0, null);
+        return new IMAGE(result);
+    }
+
+    @Override
+    public IMAGE getEdge(IMAGE img, boolean multiThreads, boolean accurateCalculate, boolean erosion, boolean pureEdge) {
+        double[][] kernel_x = {
+                {1, 0, -1},
+                {2, 0, -2},
+                {1, 0, -1}
+        };
+        double[][] kernel_y = {
+                {1, 2, 1},
+                {0, 0, 0},
+                {-1,-2,-1}
+        };
+        IMAGE gray = getGrayImage(img);
+        // Sobel计算边缘
+        int[][] sobelX = calculateServer.convolution(gray, kernel_x, multiThreads, accurateCalculate).getPixelMatrix();
+        int[][] sobelY = calculateServer.convolution(gray, kernel_y, multiThreads, accurateCalculate).getPixelMatrix();
+        int[][] matrix = new int[img.getWidth()][img.getHeight()];
+        int[][] edge = new int[img.getWidth()][img.getHeight()];
+        List<PIXEL> pointList = new ArrayList<>();
+        PIXEL p = new PIXEL();
+        for(int i = 0;i < img.getWidth();i ++) {
+            for (int j = 0; j < img.getHeight(); j++) {
+                int[] pm = {255, 0, 0, 0};
+                int[] psx = img.getArgbParams(sobelX[i][j]);
+                int[] psy = img.getArgbParams(sobelY[i][j]);
+                pm[1] = (int) Math.sqrt(psx[1] * psx[1] + psy[1] * psy[1]);
+                pm[2] = (int) Math.sqrt(psx[2] * psx[2] + psy[2] * psy[2]);
+                pm[3] = (int) Math.sqrt(psx[3] * psx[3] + psy[3] * psy[3]);
+                matrix[i][j] = img.getPixParams(pm);
+                if(img.getGrayPixel(pm) > 160){
+                    p = new PIXEL(pm, i, j);
+                    pointList.add(p);
+                    // edge[i][j] = img.getGrayPixel(pm);
+                }else{
+                    edge[i][j] = 0;
+                }
+            }
+        }
+        if(!pureEdge){
+            if(erosion){
+                return calculateServer.erosion(new IMAGE(matrix));
+            }
+            return new IMAGE(matrix);
+        }
+        // 尝试在matrix中获取一个阈值点
+        int[][] map = img.getGrayMatrix(matrix);
+        if(erosion){
+            IMAGE eros = calculateServer.erosion(new IMAGE(matrix));
+            map = img.getGrayMatrix(eros.getPixelMatrix());
+        }
+        while(!pointList.isEmpty()){
+            PIXEL stackTop = pointList.get(pointList.size() - 1);
+            PIXEL result = broadcastSearch(map, stackTop);
+            if(result == null){
+                pointList.remove(pointList.size() - 1);
+            }else{
+                pointList.add(result);
+                edge[result.x][result.y] = img.getGrayPixel(result.argb);
+            }
+            // System.out.print("\r" + pointList.size());
+        }
+        System.out.println();
+        for(int i = 0;i < img.getWidth();i ++) {
+            for (int j = 0; j < img.getHeight(); j++) {
+                matrix[i][j] = img.getPixParams(new int[]{255, edge[i][j], edge[i][j], edge[i][j]});
+            }
+        }
+        return new IMAGE(matrix);
+    }
+
+    private PIXEL broadcastSearch(int[][] map, PIXEL loc){
+        PIXEL result = null;
+        // 以自身为中心，搜索周围2圈
+        for(int count = 1; count <= 2 && result == null; count++){
+            for(int i = loc.x - count;i < loc.x + count && result == null;i ++){
+                for(int j = loc.y - count;j < loc.y + count && result == null;j ++){
+                    try{
+                        if(map[i][j] > 16 && i != loc.x && j != loc.y){
+                            result = new PIXEL(new int[]{255, 255, 255, 255}, i, j);
+                            map[i][j] = 0;
+                            return result;
+                        }
+                    }catch (Exception e){
+
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public IMAGE getEnhanceImage(IMAGE img, double theta) {
+        int[][] enhanceMatrix = calculateServer.getEnhanceMatrix(img, theta);
+        int[][] rawMatrix = img.getPixelMatrix();
+        for(int i = 0;i < img.getWidth();i ++){
+            for(int j = 0;j < img.getHeight();j ++){
+                rawMatrix[i][j] = enhanceMatrix[i][j];
+            }
+        }
+        return new IMAGE(rawMatrix);
+    }
+
+    @Override
+    public IMAGE getEnhanceImage2(IMAGE img) {
+        int[][] rawMatrix = img.getPixelMatrix();
+        // int lumen = img.getPixParams(new int[]{255, 10, 10, 10});
+        for(int i = 0;i < img.getWidth();i ++){
+            for(int j = 0;j < img.getHeight();j ++){
+                int[] lumen = img.getArgbParams(rawMatrix[i][j]);
+                lumen[1] = lumen[1] * 1.05 > 255 ? 255 : (int) (lumen[1] * 1.05);
+                lumen[2] = lumen[2] * 1.05 > 255 ? 255 : (int) (lumen[2] * 1.05);
+                lumen[3] = lumen[3] * 1.05 > 255 ? 255 : (int) (lumen[3] * 1.05);
+                rawMatrix[i][j] = img.getPixParams(lumen);
+            }
+        }
+        return new IMAGE(rawMatrix);
+    }
+}
