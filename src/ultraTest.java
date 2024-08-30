@@ -9,7 +9,7 @@ public class ultraTest {
     public static void main(String[] args) throws IOException {
         IMAGE px = new IMAGE("rx78.jpg");
         imgCtrl.openMultiThreads();
-        IMAGE gas = imgCtrl.getUltraGas(px, 10, 50);
+        IMAGE gas = imgCtrl.getUltraGas(px, 40, 50);
         imgCtrl.saveByName(gas, "gas");
     }
 }

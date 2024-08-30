@@ -84,13 +84,55 @@ public class IPictureServiceImpl implements IPictureService {
         int[][] map = img.getPixelMatrix();
         int[][] result = new int[img.getWidth()][img.getHeight()];
         int[][] maxFill = calculateServer.pixFill(map, calculateServer.getGasKernel(maxSize));
-        int sum = img.getHeight() * img.getHeight();
-        for(int w = 0;w < img.getWidth();w ++){
-            for(int h = 0;h < img.getHeight();h ++){
-                int rand = (int) (Math.random() * (maxSize - baseSize) + baseSize);
-                double[][] kernel = calculateServer.getGasKernel(rand);
-                result[w][h] = calculateServer.picMarCalc(maxFill, kernel, w + (maxSize - rand) / 2, h + (maxSize - rand) / 2);
-                System.out.print("\r" + (w * img.getHeight() + h) + "|" + sum);
+        double[][] maxKernel = calculateServer.getGasKernel(maxSize);
+//        int sum = img.getHeight() * img.getHeight();
+//        for(int w = 0;w < img.getWidth();w ++){
+//            for(int h = 0;h < img.getHeight();h ++){
+//                int rand = (int) (Math.random() * (maxSize - baseSize) + baseSize);
+//                double[][] kernel = calculateServer.getGasKernel(rand);
+//                result[w][h] = calculateServer.picMarCalc(maxFill, kernel, w + (maxSize - rand) / 2, h + (maxSize - rand) / 2);
+//                System.out.print("\r" + (w * img.getHeight() + h) + "|" + sum);
+//            }
+//        }
+        int minStep = Math.min(maxFill.length, maxFill[0].length) / Math.max(maxKernel.length, maxKernel[0].length) + 1;
+        int threadCount = (int) Math.sqrt(Math.max(maxKernel.length, maxKernel[0].length)) + 3;
+        threadCount = Math.min(threadCount, 32);
+        threadCount = Math.min(threadCount, Math.min(maxFill.length, maxFill[0].length) / minStep);
+        // int threadCount = Math.max(kernel.length, kernel[0].length);
+        int step = maxFill.length / threadCount + 1;
+        Thread[] threads = new Thread[threadCount];
+        IUGTServiceImpl[] conVs = new IUGTServiceImpl[threadCount];
+        for (int i = 0; i < threadCount; i++) {
+            conVs[i] = new IUGTServiceImpl(maxFill, baseSize, maxSize, step * i, step, img.getWidth(), img.getHeight());
+            threads[i] = new Thread(conVs[i]);
+            threads[i].start();
+            System.out.print("\rthread " + (i + 1) + " is start");
+        }
+        System.out.println();
+        int countBefore = -1;
+        while (true) {
+            int count = 0;
+            for (Thread thread : threads) {
+                if (!thread.isAlive()) {
+                    count++;
+                }
+            }
+            if (count != countBefore) {
+                countBefore = count;
+                System.out.print("\r");
+                for (int i = 0; i < threadCount; i++) {
+                    if (i < count) System.out.print("O  ");
+                    else System.out.print("A  ");
+                }
+            }
+            if (count == threads.length) break;
+        }
+        System.out.print("\n");
+        for (int c = 0; c < threadCount; c++) {
+            for (int i = step * c; i < step * (c + 1) && i < result.length; i++) {
+                for (int j = 0; j < result[0].length; j++) {
+                    result[i][j] = conVs[c].result[i - step * c][j];
+                }
             }
         }
         return new IMAGE(result);
