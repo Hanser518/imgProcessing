@@ -15,6 +15,10 @@ public interface ICalculateService {
                                    double theta);
     public double[][] getGasKernel(int size);
 
+    public int[][] pixFill(int[][] img, double[][] kernel);
+
+    public int picMarCalc(int[][] matrix, double[][] kernel, int x, int y);
+
     /**
      * 卷积计算
      * @param img

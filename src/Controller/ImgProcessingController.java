@@ -95,6 +95,13 @@ public class ImgProcessingController {
     }
 
     /**
+     * Ultra高斯
+     */
+    public IMAGE getUltraGas(IMAGE px, int baseSize, int maxSize){
+        return picServer.getUltraGas(px, baseSize, maxSize);
+    }
+
+    /**
      * 边缘提取
      */
     public IMAGE getEdgeImage(IMAGE px, boolean erosion) {

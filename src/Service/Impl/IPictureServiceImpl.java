@@ -80,6 +80,23 @@ public class IPictureServiceImpl implements IPictureService {
     }
 
     @Override
+    public IMAGE getUltraGas(IMAGE img, int baseSize, int maxSize) {
+        int[][] map = img.getPixelMatrix();
+        int[][] result = new int[img.getWidth()][img.getHeight()];
+        int[][] maxFill = calculateServer.pixFill(map, calculateServer.getGasKernel(maxSize));
+        int sum = img.getHeight() * img.getHeight();
+        for(int w = 0;w < img.getWidth();w ++){
+            for(int h = 0;h < img.getHeight();h ++){
+                int rand = (int) (Math.random() * (maxSize - baseSize) + baseSize);
+                double[][] kernel = calculateServer.getGasKernel(rand);
+                result[w][h] = calculateServer.picMarCalc(maxFill, kernel, w + (maxSize - rand) / 2, h + (maxSize - rand) / 2);
+                System.out.print("\r" + (w * img.getHeight() + h) + "|" + sum);
+            }
+        }
+        return new IMAGE(result);
+    }
+
+    @Override
     public IMAGE getGrayImage(IMAGE img) {
         BufferedImage raw = img.getImg();
         BufferedImage result = new BufferedImage(raw.getWidth(), raw.getHeight(), BufferedImage.TYPE_BYTE_GRAY);

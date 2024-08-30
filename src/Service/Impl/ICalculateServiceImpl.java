@@ -286,6 +286,7 @@ public class ICalculateServiceImpl implements ICalculateService {
     }
 
     // 图片矩阵计算
+    @Override
     public int picMarCalc(int[][] matrix, double[][] kernel, int x, int y) {
         double r = 0, g = 0, b = 0;
         double rate = 0;
@@ -306,8 +307,9 @@ public class ICalculateServiceImpl implements ICalculateService {
         return px;
     }
 
+    @Override
     // 图像填充
-    private int[][] pixFill(int[][] img, double[][] kernel) {
+    public int[][] pixFill(int[][] img, double[][] kernel) {
         int width = img.length;
         int height = img[0].length;
         int xSide = kernel.length / 2;

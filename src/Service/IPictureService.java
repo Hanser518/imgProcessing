@@ -35,6 +35,8 @@ public interface IPictureService {
      */
     public IMAGE getReizedImage(IMAGE img, int w, int h);
 
+    public IMAGE getUltraGas(IMAGE img, int baseSize, int maxSize);
+
     /**
      * 获取灰图
      * @param img
