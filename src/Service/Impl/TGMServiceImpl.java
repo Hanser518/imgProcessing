@@ -49,7 +49,7 @@ public class TGMServiceImpl implements Runnable {
             }
             if (dir == -1) {
                 stack.remove(stack.get(stack.size() - 1));// 移除栈顶
-                if (stack.size() != 0) {
+                if (!stack.isEmpty()) {
                     PIXEL tp = stack.get(stack.size() - 1);
                     x = tp.x;
                     y = tp.y;
@@ -58,9 +58,9 @@ public class TGMServiceImpl implements Runnable {
                 PIXEL tp = stack.get(stack.size() - 1);
                 int bX = tp.x;
                 int bY = tp.y;
-                map[x][y] = (int) (map[bX][bY] + (Math.random() - 0.4) * 8);
-                map[x][y] = map[x][y] > top ? top : map[x][y];
-                map[x][y] = map[x][y] < base ? base : map[x][y];
+                map[x][y] = (int)(Math.random() * base) + (top - base);
+                map[x][y] = Math.min(map[x][y], top);
+                map[x][y] = Math.max(map[x][y], base);
                 stack.add(new PIXEL(x, y));
             }
 //            System.out.println("#" + x + " " + y);

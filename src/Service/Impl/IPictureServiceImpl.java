@@ -81,8 +81,8 @@ public class IPictureServiceImpl implements IPictureService {
         int[][] map = img.getPixelMatrix();
         int[][] result = new int[img.getWidth()][img.getHeight()];
         int[][] maxFill = calculateServer.pixFill(map, calculateServer.getGasKernel(maxSize));
-        System.out.printf("Building Map...\n");
-        int[][] gasMap = calculateServer.getGasMap(img, baseSize, maxSize);
+        // System.out.printf("Building Map...\n");
+        // int[][] gasMap = calculateServer.getGasMap(img, baseSize, maxSize);
         double[][] maxKernel = calculateServer.getGasKernel(maxSize);
         int minStep = Math.min(maxFill.length, maxFill[0].length) / Math.max(maxKernel.length, maxKernel[0].length) + 1;
         int threadCount = (int) Math.sqrt(Math.max(maxKernel.length, maxKernel[0].length)) * 2;
@@ -93,7 +93,7 @@ public class IPictureServiceImpl implements IPictureService {
         Thread[] threads = new Thread[threadCount];
         TUGServiceImpl[] conVs = new TUGServiceImpl[threadCount];
         for (int i = 0; i < threadCount; i++) {
-            conVs[i] = new TUGServiceImpl(maxFill, gasMap, maxSize, step * i, step, img.getWidth(), img.getHeight());
+            conVs[i] = new TUGServiceImpl(maxFill, baseSize, maxSize, step * i, step, img.getWidth(), img.getHeight());
             threads[i] = new Thread(conVs[i]);
             threads[i].start();
         }
@@ -110,8 +110,8 @@ public class IPictureServiceImpl implements IPictureService {
                 countBefore = count;
                 System.out.print("\rThread: ");
                 for (int i = 0; i < threadCount; i++) {
-                    if (i < count) System.out.print("O  ");
-                    else System.out.print("A  ");
+                    if (i < count) System.out.print("O ");
+                    else System.out.print("A ");
                 }
             }
             if (count == threads.length) break;

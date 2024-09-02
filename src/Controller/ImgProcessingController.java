@@ -98,7 +98,9 @@ public class ImgProcessingController {
      * Ultra高斯
      */
     public IMAGE getUltraGas(IMAGE px, int baseSize, int maxSize){
-        return picServer.getUltraGas(px, baseSize, maxSize);
+        IMAGE raw = picServer.getUltraGas(px, baseSize, maxSize);
+        // return getGasImage(raw, 9);
+        return raw;
     }
 
     /**
