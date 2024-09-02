@@ -7,11 +7,8 @@ import Service.IPictureService;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class IPictureServiceImpl implements IPictureService {
     static ICalculateService calculateServer = new ICalculateServiceImpl();
@@ -94,9 +91,9 @@ public class IPictureServiceImpl implements IPictureService {
         // int threadCount = Math.max(kernel.length, kernel[0].length);
         int step = maxFill.length / threadCount + 1;
         Thread[] threads = new Thread[threadCount];
-        IUGTServiceImpl[] conVs = new IUGTServiceImpl[threadCount];
+        TUGServiceImpl[] conVs = new TUGServiceImpl[threadCount];
         for (int i = 0; i < threadCount; i++) {
-            conVs[i] = new IUGTServiceImpl(maxFill, gasMap, maxSize, step * i, step, img.getWidth(), img.getHeight());
+            conVs[i] = new TUGServiceImpl(maxFill, gasMap, maxSize, step * i, step, img.getWidth(), img.getHeight());
             threads[i] = new Thread(conVs[i]);
             threads[i].start();
         }

@@ -97,9 +97,9 @@ public class ICalculateServiceImpl implements ICalculateService {
             // int threadCount = Math.max(kernel.length, kernel[0].length);
             int step = picFill.length / threadCount + 1;
             Thread[] threads = new Thread[threadCount];
-            IPMCTServerImpl[] conVs = new IPMCTServerImpl[threadCount];
+            TPMCServerImpl[] conVs = new TPMCServerImpl[threadCount];
             for (int i = 0; i < threadCount; i++) {
-                conVs[i] = new IPMCTServerImpl(picFill, kernel, step * i, step, img.getWidth(), img.getHeight());
+                conVs[i] = new TPMCServerImpl(picFill, kernel, step * i, step, img.getWidth(), img.getHeight());
                 threads[i] = new Thread(conVs[i]);
                 threads[i].start();
             }
@@ -342,73 +342,69 @@ public class ICalculateServiceImpl implements ICalculateService {
         int width = img.getWidth();     // 宽
         int height = img.getHeight();   // 高
         int[][] gasMap = new int[width][height];// 高斯图，用于记录对应点位高斯核半径
-        int x = (int) (Math.random() * width);  // 对应点位坐标
-        int y = (int) (Math.random() * height);
-        gasMap[x][y] = base;    // 初始化
-        List<PIXEL> stack = new ArrayList<>();// 存量栈
-        stack.add(new PIXEL(x, y));    // 初始化
-        while (!stack.isEmpty()) {
-            int dir = getDirection(gasMap, x, y);
-            switch (dir) {
-                case 0:
-                    y -= 1;
-                    break;
-                case 1:
-                    x += 1;
-                    break;
-                case 2:
-                    y += 1;
-                    break;
-                case 3:
-                    x -= 1;
-                    break;
+        // 多线程切分，每200*200为一个单位
+        int baseSize = 600;
+        int threadCount = (width / baseSize + 1) * (height / baseSize + 1);
+        System.out.println(threadCount);
+        TGMServiceImpl[] tgm = new TGMServiceImpl[threadCount];
+        Thread[] threads = new Thread[threadCount];
+        for(int i = 0;i < (width / baseSize + 1);i ++){
+            for(int j = 0;j < (height / baseSize + 1);j ++){
+                int w = (i + 1) * baseSize < width ? baseSize : width - i * baseSize;
+                int h = (j + 1) * baseSize < height ? baseSize : height - j * baseSize;
+                // System.out.println(i + " " + j + " " + w + " " + h);
+                tgm[i * (height / baseSize + 1) + j] = new TGMServiceImpl(w, h, base, top);
+                threads[i * (height / baseSize + 1) + j] = new Thread(tgm[i * (height / baseSize + 1) + j]);
+                threads[i * (height / baseSize + 1) + j].start();
+                // System.out.println(i + " " + j + " " + (i * (height / baseSize + 1) + j));
             }
-            if (dir == -1) {
-                stack.remove(stack.get(stack.size() - 1));// 移除栈顶
-                if (stack.size() != 0) {
-                    PIXEL tp = stack.get(stack.size() - 1);
-                    x = tp.x;
-                    y = tp.y;
+        }
+        int countBefore = -1;
+        while (true) {
+            int count = 0;
+            for (Thread thread : threads) {
+                if (!thread.isAlive()) {
+                    count++;
                 }
-            } else {
-                PIXEL tp = stack.get(stack.size() - 1);
-                int bX = tp.x;
-                int bY = tp.y;
-                gasMap[x][y] = (int) (gasMap[bX][bY] + (Math.random() - 0.4) * 4);
-                gasMap[x][y] = gasMap[x][y] > top ? top : gasMap[x][y];
-                gasMap[x][y] = gasMap[x][y] < base ? base : gasMap[x][y];
-                stack.add(new PIXEL(x, y));
             }
-            // System.out.println("#" + x + " " + y);
+            if (count != countBefore) {
+                countBefore = count;
+                System.out.print("\rThread: ");
+                for (int i = 0; i < threadCount; i++) {
+                    if (i < count) System.out.print("O ");
+                    else System.out.print("A ");
+                }
+            }
+            if (count == threads.length) break;
+        }
+        System.out.print("\n");
+        for(int i = 0;i < (width / baseSize + 1);i ++){
+            for(int j = 0;j < (height / baseSize + 1);j ++){
+                int w = (i + 1) * baseSize < width ? baseSize : width - i * baseSize;
+                int h = (j + 1) * baseSize < height ? baseSize : height - j * baseSize;
+                // System.out.printf("%3d,%3d,W=%3d,H=%3d\n", i, j, tgm[(i * (height / baseSize + 1) + j)].map.length, tgm[(i * (height / baseSize + 1) + j)].map[0].length);
+                for(int k = 0;k < w;k ++){
+                    for(int l = 0;l < h;l ++){
+                        gasMap[k + i * baseSize][l + j * baseSize] = tgm[(i * (height / baseSize + 1) + j)].map[k][l];
+                    }
+                }
+            }
         }
         return gasMap;
     }
 
+    @Override
     public int getDirection(int[][] map, int x, int y) {
         List<Integer> backDir = new ArrayList<>();
         int u = 0, r = 0;
-        for (int i = 0; i < 4; i++) {
-            if (i == 0) {
-                u = -1;
-                r = 0;
-            }
-            else if (i == 1) {
-                u = 0;
-                r = 1;
-            }
-            else if (i == 2) {
-                u = 1;
-                r = 0;
-            }
-            else if (i == 3) {
-                u = 0;
-                r = -1;
-            }
-            try {
-                if (map[x + r][y + u] == 0) {
-                    backDir.add(i);
+        for(int i = -1;i <= 1;i ++){
+            for(int j = -1;j <= 1;j ++){
+                try {
+                    if (map[x + i][y + j] == 0) {
+                        backDir.add((i + 1) * 3 + (j + 1));
+                    }
+                } catch (Exception ignored) {
                 }
-            } catch (Exception ignored) {
             }
         }
         if (backDir.size() == 0) {
@@ -419,5 +415,15 @@ public class ICalculateServiceImpl implements ICalculateService {
 //            System.out.print(value + " ");
 //        });
         return backDir.get(rand);
+    }
+
+    public int[][] getSubMatrix(int[][] matrix, int sx, int sy, int width, int height){
+        int[][] result = new int[width][height];
+        for(int i = sx;i < sx + width;i ++){
+            for(int j = sy;j < sy + height;j ++){
+                result[i - sx][j - sy] = matrix[i][j];
+            }
+        }
+        return result;
     }
 }

@@ -61,4 +61,6 @@ public interface ICalculateService {
     public int[][] getEnhanceMatrix(IMAGE img, double theta);
 
     public int[][] getGasMap(IMAGE img, int base, int top);
+
+    public int getDirection(int[][] map, int x, int y);
 }
