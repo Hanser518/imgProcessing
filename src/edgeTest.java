@@ -13,23 +13,22 @@ public class edgeTest {
         imgCtrl.closeAccCalc();
         imgCtrl.setPureEdge(false);
 
-        for(int i = 1;i <= 5;i ++){
-            imgCtrl.setPureEdge(false);
-            String fileName = "index" + i;
-            IMAGE px = new IMAGE(fileName + ".jpg");
 
-            IMAGE edge = imgCtrl.getEdgeImage(px, true);
-            imgCtrl.saveByName(edge, "edge_erosion_" + fileName);
+        imgCtrl.setPureEdge(false);
+        String fileName = "index2";
+        IMAGE px = new IMAGE(fileName + ".png");
 
-            edge = imgCtrl.getEdgeImage(px, false);
-            imgCtrl.saveByName(edge, "edge_" + fileName);
+        IMAGE edge = imgCtrl.getEdgeImage(px, true);
+        imgCtrl.saveByName(edge, "edge_erosion_" + fileName);
 
-            imgCtrl.setPureEdge(true);
-            edge = imgCtrl.getEdgeImage(px, true);
-            imgCtrl.saveByName(edge, "edge_pure_erosion_" + fileName);
+        edge = imgCtrl.getEdgeImage(px, false);
+        imgCtrl.saveByName(edge, "edge_" + fileName);
 
-            edge = imgCtrl.getEdgeImage(px, false);
-            imgCtrl.saveByName(edge, "edge_pure_" + fileName);
-        }
+        imgCtrl.setPureEdge(true);
+        edge = imgCtrl.getEdgeImage(px, true);
+        imgCtrl.saveByName(edge, "edge_pure_erosion_" + fileName);
+
+        edge = imgCtrl.getEdgeImage(px, false);
+        imgCtrl.saveByName(edge, "edge_pure_" + fileName);
     }
 }

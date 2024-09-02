@@ -84,16 +84,9 @@ public class IPictureServiceImpl implements IPictureService {
         int[][] map = img.getPixelMatrix();
         int[][] result = new int[img.getWidth()][img.getHeight()];
         int[][] maxFill = calculateServer.pixFill(map, calculateServer.getGasKernel(maxSize));
+        System.out.printf("Building Map...\n");
+        int[][] gasMap = calculateServer.getGasMap(img, baseSize, maxSize);
         double[][] maxKernel = calculateServer.getGasKernel(maxSize);
-//        int sum = img.getHeight() * img.getHeight();
-//        for(int w = 0;w < img.getWidth();w ++){
-//            for(int h = 0;h < img.getHeight();h ++){
-//                int rand = (int) (Math.random() * (maxSize - baseSize) + baseSize);
-//                double[][] kernel = calculateServer.getGasKernel(rand);
-//                result[w][h] = calculateServer.picMarCalc(maxFill, kernel, w + (maxSize - rand) / 2, h + (maxSize - rand) / 2);
-//                System.out.print("\r" + (w * img.getHeight() + h) + "|" + sum);
-//            }
-//        }
         int minStep = Math.min(maxFill.length, maxFill[0].length) / Math.max(maxKernel.length, maxKernel[0].length) + 1;
         int threadCount = (int) Math.sqrt(Math.max(maxKernel.length, maxKernel[0].length)) * 2;
         threadCount = Math.min(threadCount, 32);
@@ -103,10 +96,9 @@ public class IPictureServiceImpl implements IPictureService {
         Thread[] threads = new Thread[threadCount];
         IUGTServiceImpl[] conVs = new IUGTServiceImpl[threadCount];
         for (int i = 0; i < threadCount; i++) {
-            conVs[i] = new IUGTServiceImpl(maxFill, baseSize, maxSize, step * i, step, img.getWidth(), img.getHeight());
+            conVs[i] = new IUGTServiceImpl(maxFill, gasMap, maxSize, step * i, step, img.getWidth(), img.getHeight());
             threads[i] = new Thread(conVs[i]);
             threads[i].start();
-            System.out.print("\rthread " + (i + 1) + " is start");
         }
         System.out.println();
         int countBefore = -1;
@@ -119,7 +111,7 @@ public class IPictureServiceImpl implements IPictureService {
             }
             if (count != countBefore) {
                 countBefore = count;
-                System.out.print("\r");
+                System.out.print("\rThread: ");
                 for (int i = 0; i < threadCount; i++) {
                     if (i < count) System.out.print("O  ");
                     else System.out.print("A  ");

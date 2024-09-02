@@ -1,6 +1,7 @@
 package Service.Impl;
 
 import Entity.IMAGE;
+import Entity.PIXEL;
 import Service.ICalculateService;
 
 import java.util.*;
@@ -101,7 +102,6 @@ public class ICalculateServiceImpl implements ICalculateService {
                 conVs[i] = new IPMCTServerImpl(picFill, kernel, step * i, step, img.getWidth(), img.getHeight());
                 threads[i] = new Thread(conVs[i]);
                 threads[i].start();
-                System.out.print("\rthread " + (i + 1) + " is start");
             }
             System.out.println();
             int countBefore = -1;
@@ -114,7 +114,7 @@ public class ICalculateServiceImpl implements ICalculateService {
                 }
                 if (count != countBefore) {
                     countBefore = count;
-                    System.out.print("\r");
+                    System.out.print("\rThread: ");
                     for (int i = 0; i < threadCount; i++) {
                         if (i < count) System.out.print("O  ");
                         else System.out.print("A  ");
@@ -335,5 +335,89 @@ public class ICalculateServiceImpl implements ICalculateService {
             }
         }
         return result;
+    }
+
+    @Override
+    public int[][] getGasMap(IMAGE img, int base, int top) {
+        int width = img.getWidth();     // 宽
+        int height = img.getHeight();   // 高
+        int[][] gasMap = new int[width][height];// 高斯图，用于记录对应点位高斯核半径
+        int x = (int) (Math.random() * width);  // 对应点位坐标
+        int y = (int) (Math.random() * height);
+        gasMap[x][y] = base;    // 初始化
+        List<PIXEL> stack = new ArrayList<>();// 存量栈
+        stack.add(new PIXEL(x, y));    // 初始化
+        while (!stack.isEmpty()) {
+            int dir = getDirection(gasMap, x, y);
+            switch (dir) {
+                case 0:
+                    y -= 1;
+                    break;
+                case 1:
+                    x += 1;
+                    break;
+                case 2:
+                    y += 1;
+                    break;
+                case 3:
+                    x -= 1;
+                    break;
+            }
+            if (dir == -1) {
+                stack.remove(stack.get(stack.size() - 1));// 移除栈顶
+                if (stack.size() != 0) {
+                    PIXEL tp = stack.get(stack.size() - 1);
+                    x = tp.x;
+                    y = tp.y;
+                }
+            } else {
+                PIXEL tp = stack.get(stack.size() - 1);
+                int bX = tp.x;
+                int bY = tp.y;
+                gasMap[x][y] = (int) (gasMap[bX][bY] + (Math.random() - 0.4) * 4);
+                gasMap[x][y] = gasMap[x][y] > top ? top : gasMap[x][y];
+                gasMap[x][y] = gasMap[x][y] < base ? base : gasMap[x][y];
+                stack.add(new PIXEL(x, y));
+            }
+            // System.out.println("#" + x + " " + y);
+        }
+        return gasMap;
+    }
+
+    public int getDirection(int[][] map, int x, int y) {
+        List<Integer> backDir = new ArrayList<>();
+        int u = 0, r = 0;
+        for (int i = 0; i < 4; i++) {
+            if (i == 0) {
+                u = -1;
+                r = 0;
+            }
+            else if (i == 1) {
+                u = 0;
+                r = 1;
+            }
+            else if (i == 2) {
+                u = 1;
+                r = 0;
+            }
+            else if (i == 3) {
+                u = 0;
+                r = -1;
+            }
+            try {
+                if (map[x + r][y + u] == 0) {
+                    backDir.add(i);
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        if (backDir.size() == 0) {
+            return -1;
+        }
+        int rand = (int) (Math.random() * backDir.size());
+//        backDir.forEach((value) -> {
+//            System.out.print(value + " ");
+//        });
+        return backDir.get(rand);
     }
 }
