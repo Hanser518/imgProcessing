@@ -417,6 +417,69 @@ public class ICalculateServiceImpl implements ICalculateService {
         return backDir.get(rand);
     }
 
+    @Override
+    public int[][] getHistogram(IMAGE img) {
+        double[][] kernelX = new double[][]{
+                { 0, 0, 0},
+                {-1, 0, 1},
+                { 0, 0, 0}
+        };
+        double[][] kernelY = new double[][]{
+                { 0, 1, 0},
+                { 0, 0, 0},
+                { 0,-1, 0}
+        };
+        int w = img.getWidth();
+        int h = img.getHeight();
+        int[][] sobelX = convolution(img, kernelX, true, true).getPixelMatrix();
+        int[][] sobelY = convolution(img, kernelY, true, true).getPixelMatrix();
+        double[][] angle = new double[w][h];    // 角度
+        double[][] gradient = new double[w][h];       // 梯度值
+        for(int i = 0;i < w;i ++){
+            for(int j = 0;j < h;j ++){
+                gradient[i][j] = Math.sqrt(Math.pow(sobelX[i][j], 2) + Math.pow(sobelY[i][j], 2));
+                angle[i][j] = Math.atan((double) sobelY[i][j] / sobelX[i][j]);
+            }
+        }
+        int[][] result = new int[w][h];
+        Map<Integer, Integer> count = new HashMap<>();
+        for(int i = 0;i < w;i ++){
+            for(int j = 0;j < h;j ++){
+                int theta = (int)(angle[i][j] / Math.PI * 180 / 11.25);
+                // System.out.println(gradient[i][j]);
+                if(gradient[i][j] > 160)
+                    theta = -1;
+                int num = count.computeIfAbsent(theta, key -> 0);
+                // System.out.printf("%.2f\t", angle[i][j] / Math.PI);
+                count.put(theta, num + 1);
+                switch (theta){
+                    case 0:
+                        result[i][j] = img.getPixParams(new int[]{255, 94, 94, 94}); break;
+                    case 1:
+                        result[i][j] = img.getPixParams(new int[]{255, 94, 94, 188}); break;
+                    case 2:
+                        result[i][j] = img.getPixParams(new int[]{255, 94, 188, 94}); break;
+                    case 3:
+                        result[i][j] = img.getPixParams(new int[]{255, 94, 188, 188}); break;
+                    case 4:
+                        result[i][j] = img.getPixParams(new int[]{255, 188, 94, 94}); break;
+                    case 5:
+                        result[i][j] = img.getPixParams(new int[]{255, 188, 94, 188}); break;
+                    case 6:
+                        result[i][j] = img.getPixParams(new int[]{255, 188, 188, 94}); break;
+                    case 7:
+                        result[i][j] = img.getPixParams(new int[]{255, 188, 188, 188}); break;
+                    default:
+                        result[i][j] = img.getPixParams(new int[]{255, 0, 0, 0}); break;
+                }
+            }
+        }
+        count.forEach((key, value) -> {
+            System.out.println(key + " " + value);
+        });
+        return result;
+    }
+
     public int[][] getSubMatrix(int[][] matrix, int sx, int sy, int width, int height){
         int[][] result = new int[width][height];
         for(int i = sx;i < sx + width;i ++){

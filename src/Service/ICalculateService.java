@@ -63,4 +63,6 @@ public interface ICalculateService {
     public int[][] getGasMap(IMAGE img, int base, int top);
 
     public int getDirection(int[][] map, int x, int y);
+
+    public int[][] getHistogram(IMAGE img);
 }

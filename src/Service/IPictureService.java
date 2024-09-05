@@ -44,6 +44,8 @@ public interface IPictureService {
      */
     public IMAGE getGrayImage(IMAGE img);
 
+    public IMAGE getCalcGray(IMAGE img);
+
     public IMAGE getEdge(IMAGE img, boolean multiThreads, boolean accurateCalculate, boolean erosion, boolean pureEdge);
 
     /**
@@ -55,4 +57,6 @@ public interface IPictureService {
     public IMAGE getEnhanceImage(IMAGE img, double theta);
 
     public IMAGE getEnhanceImage2(IMAGE img);
+
+    public IMAGE getGammaFix(IMAGE img, double param);
 }

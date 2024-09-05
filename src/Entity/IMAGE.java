@@ -132,7 +132,7 @@ public class IMAGE {
     }
 
     public int getGrayPixel(int[] p){
-        return (int)(p[1] * 0.287 + p[2] * 0.589 + p[3] * 0.114);
+        return (int)(p[1] * 0.29 + p[2] * 0.59 + p[3] * 0.12);
     }
 
     /**

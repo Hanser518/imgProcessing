@@ -136,6 +136,12 @@ public class IPictureServiceImpl implements IPictureService {
     }
 
     @Override
+    public IMAGE getCalcGray(IMAGE img) {
+        int[][] gray = img.getGrayMatrix();
+        return new IMAGE(gray);
+    }
+
+    @Override
     public IMAGE getEdge(IMAGE img, boolean multiThreads, boolean accurateCalculate, boolean erosion, boolean pureEdge) {
         double[][] kernel_x = {
                 {1, 0, -1},
@@ -252,5 +258,33 @@ public class IPictureServiceImpl implements IPictureService {
             }
         }
         return new IMAGE(rawMatrix);
+    }
+
+    @Override
+    public IMAGE getGammaFix(IMAGE img, double param) {
+        // 得到灰度图
+        int[][] g = img.getGrayMatrix();
+        int[][] px = img.getPixelMatrix();
+        // 根据输入的参数进行gamma修正，采用对数法
+        // 对函数y = ln((x + 1.0/param) * param)求导，得到导数表达式gamma（g）
+        // 函数g = param / (x * param + 1)，对g进行增强
+        // 函数g` = Math.pow(param, 2) / (x * param + 1)，以g`为增强曲线
+        int w = img.getWidth();
+        int h = img.getHeight();
+        for(int i = 0;i < w;i ++){
+            for(int j = 0;j < h;j ++){
+                int[] p = img.getArgbParams(px[i][j]);
+                double num = Math.pow(param, 1) / Math.pow(g[i][j], 1.5) + 0.9;
+                //System.out.println("raw:  " + p[1] + " " + p[2] + " " + p[3]);
+                p[1] = (int) (g[i][j] * num);
+                p[2] = (int) (g[i][j] * num);
+                p[3] = (int) (g[i][j] * num);
+                //System.out.println((Math.pow(param, 2) / (g[i][j] * param + 1)));
+                //System.out.println("plus: " + p[1] + " " + p[2] + " " + p[3]);
+                // g[i][j] = img.getPixParams(p);
+                px[i][j] = img.getPixParams(p);
+            }
+        }
+        return new IMAGE(px);
     }
 }
