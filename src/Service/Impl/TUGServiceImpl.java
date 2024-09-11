@@ -34,7 +34,7 @@ public class TUGServiceImpl implements Runnable{
             for(int j = 0;j < H - 1;j ++){
                 int rand = (int)(Math.random() * base) + (maxSize - base);
                 double[][] kernel = calculateServer.getGasKernel(rand);
-                result[i - start][j] = calculateServer.picMarCalc(matrix, kernel, i + (maxSize - rand) / 2, j + (maxSize - rand) / 2);
+                result[i - start][j] = calculateServer.picMarCalc(matrix, kernel, i + (maxSize - rand) / 2, j + (maxSize - rand) / 2, true);
             }
         }
     }

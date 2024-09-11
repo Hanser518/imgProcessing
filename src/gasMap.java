@@ -11,6 +11,7 @@ public class gasMap {
     static ICalculateService calculateServer = new ICalculateServiceImpl();
     static IPictureService picService = new IPictureServiceImpl();
     static ImgProcessingController imgCtrl = new ImgProcessingController();
+
     public static void main(String[] args) throws IOException {
         IMAGE px = new IMAGE("rx78.jpg");
 //        int[][] map = calculateServer.getGasMap(px, 30, 80);
@@ -27,9 +28,9 @@ public class gasMap {
 //        calculateServer.getGList(gray).forEach((key, value) -> {
 //            System.out.println(key + ": " + value + ",Rate= " + (float)value / w / h);
 //        });
-        calculateServer.getGList(px).forEach((key, value) -> {
-            System.out.println(key + ": " + value + ",Rate= " + (float)value / w / h);
-        });
+//        calculateServer.getGList(px).forEach((key, value) -> {
+//            System.out.println(key + ": " + value + ",Rate= " + (float)value / w / h);
+//        });
 
 //        double param = 255;
 //        for(int i = 1;i < 256;i ++){
@@ -37,25 +38,38 @@ public class gasMap {
 //            System.out.printf("%3d : %3.2f, %3d\n", i, num, (int)(i * num));
 //        }
 
-//        System.out.println(px.getPixParams(new int[]{255, 94, 94, 94}));
-//        System.out.println(px.getPixParams(new int[]{255, 94, 94,188}));
-//        System.out.println(px.getPixParams(new int[]{255, 94,188, 94}));
-//        System.out.println(px.getPixParams(new int[]{255, 94,188,188}));
+        System.out.println(px.getPixParams(new int[]{255, 101, 101, 101}));
+        System.out.println(px.getPixParams(new int[]{255, 101, 101, 188}));
+        System.out.println(px.getPixParams(new int[]{255, 188, 101, 188}));
+        System.out.println(px.getPixParams(new int[]{255, 188, 101, 101}));
+        System.out.println(px.getPixParams(new int[]{255, 0, 0, 0}));
 //        System.out.println(px.getPixParams(new int[]{255,188, 94, 94}));
 //        System.out.println(px.getPixParams(new int[]{255,188, 94,188}));
 //        System.out.println(px.getPixParams(new int[]{255,188,188, 94}));
 //        System.out.println(px.getPixParams(new int[]{255,188,188,188}));
 
 
-
-        IMAGE his = new IMAGE(calculateServer.getHistogram(px));
-        imgCtrl.saveByName(his, "his");
-
         IMAGE gamma = picService.getGammaFix(px, 255);
-        imgCtrl.saveByName(gamma, "gamma");
+        // imgCtrl.saveByName(gamma, "gamma");
 
-        IMAGE gray = picService.getGrayImage(px);
-        imgCtrl.saveByName(gray, "gray");
+        IMAGE his;
+        imgCtrl.openMultiThreads();
+
+//        IMAGE gasImage1 = imgCtrl.getGasImage(px, 3);
+//        his = new IMAGE(calculateServer.getHistogram(gasImage1));
+//        imgCtrl.saveByName(his, "his1");
+
+        IMAGE gasImage2 = imgCtrl.getGasImage(px, 4);
+        his = new IMAGE(calculateServer.getHistogram(gasImage2));
+        imgCtrl.saveByName(his, "his2");
+
+//        IMAGE gasImage3 = imgCtrl.getGasImage(px, 13);
+//        his = new IMAGE(calculateServer.getHistogram(gasImage3));
+//        imgCtrl.saveByName(his, "his3");
+
+//        IMAGE gasImage4 = imgCtrl.getGasImage(px, 27);
+//        his = new IMAGE(calculateServer.getHistogram(gasImage4));
+//        imgCtrl.saveByName(his, "his4");
 
 
     }

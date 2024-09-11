@@ -155,8 +155,8 @@ public class IPictureServiceImpl implements IPictureService {
         };
         IMAGE gray = getGrayImage(img);
         // Sobel计算边缘
-        int[][] sobelX = calculateServer.convolution(gray, kernel_x, multiThreads, accurateCalculate).getPixelMatrix();
-        int[][] sobelY = calculateServer.convolution(gray, kernel_y, multiThreads, accurateCalculate).getPixelMatrix();
+        int[][] sobelX = calculateServer.convolution(gray, kernel_x, multiThreads, accurateCalculate, true).getPixelMatrix();
+        int[][] sobelY = calculateServer.convolution(gray, kernel_y, multiThreads, accurateCalculate, true).getPixelMatrix();
         int[][] matrix = new int[img.getWidth()][img.getHeight()];
         int[][] edge = new int[img.getWidth()][img.getHeight()];
         List<PIXEL> pointList = new ArrayList<>();

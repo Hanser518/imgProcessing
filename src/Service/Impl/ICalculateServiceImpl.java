@@ -3,11 +3,13 @@ package Service.Impl;
 import Entity.IMAGE;
 import Entity.PIXEL;
 import Service.ICalculateService;
+import Service.IPictureService;
 
 import java.util.*;
 
 public class ICalculateServiceImpl implements ICalculateService {
     private IMAGE img = new IMAGE();
+    private IPictureService picService = new IPictureServiceImpl();
 
     @Override
     public double[][] getGasKernel(int size,
@@ -37,7 +39,7 @@ public class ICalculateServiceImpl implements ICalculateService {
     @Override
     public IMAGE convolution(IMAGE img,
                              double[][] kernel,
-                             boolean multiThreads, boolean accurateCalculate) {
+                             boolean multiThreads, boolean accurateCalculate, boolean negativeFix) {
         int[][] rawP = img.getPixelMatrix();
         int[][] picFill = pixFill(rawP, kernel);
         // 进行卷积运算
@@ -45,14 +47,14 @@ public class ICalculateServiceImpl implements ICalculateService {
             if (accurateCalculate) {
                 for (int i = 0; i < img.getWidth(); i++) {
                     for (int j = 0; j < img.getHeight(); j++) {
-                        rawP[i][j] = picMarCalc(picFill, kernel, i, j);
+                        rawP[i][j] = picMarCalc(picFill, kernel, i, j, negativeFix);
                     }
                 }
             } else {
                 for (int i = 0; i < img.getWidth(); i++) {
                     for (int j = 0; j < img.getHeight(); j++) {
                         if (i % 2 == 0 || j % 2 == 0)
-                            rawP[i][j] = picMarCalc(picFill, kernel, i, j);
+                            rawP[i][j] = picMarCalc(picFill, kernel, i, j, negativeFix);
                         else {
                             rawP[i][j] = 0;
                         }
@@ -287,7 +289,7 @@ public class ICalculateServiceImpl implements ICalculateService {
 
     // 图片矩阵计算
     @Override
-    public int picMarCalc(int[][] matrix, double[][] kernel, int x, int y) {
+    public int picMarCalc(int[][] matrix, double[][] kernel, int x, int y, boolean negativeFix) {
         double r = 0, g = 0, b = 0;
         double rate = 0;
         for (int i = 0; i < kernel.length; i++) {
@@ -299,9 +301,15 @@ public class ICalculateServiceImpl implements ICalculateService {
             }
         }
         rate = rate < 10e-2 ? 1.0 : rate;
-        r = Math.abs(r / rate);
-        g = Math.abs(g / rate);
-        b = Math.abs(b / rate);
+        if(negativeFix) {
+            r = Math.abs(r / rate);
+            g = Math.abs(g / rate);
+            b = Math.abs(b / rate);
+        }else {
+            r /= rate;
+            g /= rate;
+            b /= rate;
+        }
         // System.out.println(r + " " + g + " " + b);
         int px = (255 << 24) | ((int) r << 16) | ((int) g << 8) | (int) b;
         return px;
@@ -420,63 +428,95 @@ public class ICalculateServiceImpl implements ICalculateService {
     @Override
     public int[][] getHistogram(IMAGE img) {
         double[][] kernelX = new double[][]{
-                { 0, 0, 0},
-                {-1, 0, 1},
-                { 0, 0, 0}
+                { -1, 0, 1},
+                { -2, 0, 2},
+                { -1, 0, 1}
         };
         double[][] kernelY = new double[][]{
-                { 0, 1, 0},
+                { 1, 2, 1},
                 { 0, 0, 0},
-                { 0,-1, 0}
+                {-1,-2,-1}
         };
         int w = img.getWidth();
         int h = img.getHeight();
-        int[][] sobelX = convolution(img, kernelX, true, true).getPixelMatrix();
-        int[][] sobelY = convolution(img, kernelY, true, true).getPixelMatrix();
+        IMAGE gray = picService.getGrayImage(img);
+        int[][] sobelX = convolution(gray, kernelX, true, true, true).getPixelMatrix();
+        int[][] sobelY = convolution(gray, kernelY, true, true, true).getPixelMatrix();
         double[][] angle = new double[w][h];    // 角度
-        double[][] gradient = new double[w][h];       // 梯度值
+        int[][] gradient = new int[w][h];       // 梯度值
         for(int i = 0;i < w;i ++){
             for(int j = 0;j < h;j ++){
-                gradient[i][j] = Math.sqrt(Math.pow(sobelX[i][j], 2) + Math.pow(sobelY[i][j], 2));
-                angle[i][j] = Math.atan((double) sobelY[i][j] / sobelX[i][j]);
+                int[] sx = img.getArgbParams(sobelX[i][j]);
+                int[] sy = img.getArgbParams(sobelY[i][j]);
+                int[] gd = new int[4];
+                for(int c = 0;c < 4;c ++){
+                    gd[c] = (int) Math.sqrt(Math.pow(sx[c], 2) + Math.pow(sy[c], 2));
+                }
+                gradient[i][j] = img.getPixParams(gd);
+                if(sx[1] != 0)
+                    angle[i][j] = Math.atan((double) sy[1] / sx[1]);
+                else
+                    angle[i][j] = Math.atan((double) sy[1] / 1.01);
             }
         }
+        int[][] thetaMap = new int[w][h];
         int[][] result = new int[w][h];
-        Map<Integer, Integer> count = new HashMap<>();
+        int dirCount = 4;
         for(int i = 0;i < w;i ++){
             for(int j = 0;j < h;j ++){
-                int theta = (int)(angle[i][j] / Math.PI * 180 / 11.25);
-                // System.out.println(gradient[i][j]);
-                if(gradient[i][j] > 160)
+                int theta = (int)(angle[i][j] / Math.PI * 2 * dirCount);
+                if(img.getArgbParams(gradient[i][j])[1] <= 32)
                     theta = -1;
-                int num = count.computeIfAbsent(theta, key -> 0);
-                // System.out.printf("%.2f\t", angle[i][j] / Math.PI);
-                count.put(theta, num + 1);
+                thetaMap[i][j] = theta;
+            }
+        }
+        int[][] tm1 = new int[w / 4][h / 4];
+        int blockSize = 8;
+        int step = blockSize / 2;
+        for(int i = 0;i < w - blockSize;i += step){
+            for(int j = 0;j < h - blockSize;j += step){
+                Map<Integer, Integer> thetaCount = new HashMap<>();
+                int maxCount = 0;
+                int maxTheta = -1;
+                for(int x = i;x < i + blockSize;x ++){
+                    for(int y = j;y < j + blockSize;y ++){
+                        int counts = thetaCount.computeIfAbsent(thetaMap[x][y], value -> 0) + 1;
+                        if(counts > maxCount){
+                            maxCount = counts;
+                            maxTheta = thetaMap[i][j];
+                        }
+                        thetaCount.put(thetaMap[x][y], counts);
+                    }
+                }
+                tm1[i / 4][j / 4] = maxTheta;
+            }
+        }
+        for(int i = 0;i < tm1.length;i ++){
+            for(int j = 0;j < tm1[0].length;j ++){
+                int theta = tm1[i][j];
+                combineMatrix(result, theta, i * 4, j * 4);
                 switch (theta){
                     case 0:
-                        result[i][j] = img.getPixParams(new int[]{255, 94, 94, 94}); break;
+                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 101, 101, 101}); break;
                     case 1:
-                        result[i][j] = img.getPixParams(new int[]{255, 94, 94, 188}); break;
+                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 101, 101, 188}); break;
                     case 2:
-                        result[i][j] = img.getPixParams(new int[]{255, 94, 188, 94}); break;
+                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 101, 188, 188}); break;
                     case 3:
-                        result[i][j] = img.getPixParams(new int[]{255, 94, 188, 188}); break;
+                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 101, 188, 101}); break;
                     case 4:
-                        result[i][j] = img.getPixParams(new int[]{255, 188, 94, 94}); break;
+                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 188, 188, 101}); break;
                     case 5:
-                        result[i][j] = img.getPixParams(new int[]{255, 188, 94, 188}); break;
+                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 188, 101, 101}); break;
                     case 6:
-                        result[i][j] = img.getPixParams(new int[]{255, 188, 188, 94}); break;
+                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 188, 101, 188}); break;
                     case 7:
-                        result[i][j] = img.getPixParams(new int[]{255, 188, 188, 188}); break;
+                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 188, 188, 188}); break;
                     default:
-                        result[i][j] = img.getPixParams(new int[]{255, 0, 0, 0}); break;
+                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 0, 0, 0}); break;
                 }
             }
         }
-        count.forEach((key, value) -> {
-            System.out.println(key + " " + value);
-        });
         return result;
     }
 
@@ -488,5 +528,67 @@ public class ICalculateServiceImpl implements ICalculateService {
             }
         }
         return result;
+    }
+
+    public int[][] combineMatrix(int[][] matrix, int theta, int x, int y){
+        int[][][] basic = new int[4][8][8];
+        basic[0] = new int[][]{
+                {-16777216,-16777216,-16777216,-16777216,-16777216,-16777216,-16777216,-16777216},
+                {-16777216,-16777216,-16777216,-10132123,-10132123,-16777216,-16777216,-16777216},
+                {-16777216,-16777216,-16777216,-10132123,-10132123,-16777216,-16777216,-16777216},
+                {-16777216,-16777216,-10132123,-10132123,-10132123,-10132123,-16777216,-16777216},
+                {-16777216,-16777216,-10132123,-10132123,-10132123,-10132123,-16777216,-16777216},
+                {-16777216,-16777216,-16777216,-10132123,-10132123,-16777216,-16777216,-16777216},
+                {-16777216,-16777216,-16777216,-10132123,-10132123,-16777216,-16777216,-16777216},
+                {-16777216,-16777216,-16777216,-16777216,-16777216,-16777216,-16777216,-16777216}
+        };
+        basic[1] = new int[][]{
+                {-16777216,-16777216,-16777216,-16777216,-10132036,-10132036,-10132036,-10132036},
+                {-16777216,-16777216,-16777216,-10132036,-10132036,-10132036,-10132036,-10132036},
+                {-16777216,-16777216,-10132036,-10132036,-10132036,-10132036,-10132036,-16777216},
+                {-16777216,-10132036,-10132036,-10132036,-10132036,-10132036,-16777216,-16777216},
+                {-10132036,-10132036,-10132036,-10132036,-10132036,-16777216,-16777216,-16777216},
+                {-10132036,-10132036,-10132036,-10132036,-16777216,-16777216,-16777216,-16777216},
+                {-10132036,-10132036,-10132036,-16777216,-16777216,-16777216,-16777216,-16777216},
+                {-10132036,-10132036,-16777216,-16777216,-16777216,-16777216,-16777216,-16777216}
+        };
+        basic[2] = new int[][]{
+                {-16777216,-16777216,-16777216,-16777216,-16777216,-16777216,-16777216,-16777216},
+                {-16777216,-16777216,-16777216,-16777216,-16777216,-16777216,-16777216,-16777216},
+                {-16777216,-4430404,-4430404,-16777216,-16777216,-4430404,-4430404,-16777216},
+                {-16777216,-4430404,-4430404,-4430404,-4430404,-4430404,-4430404,-16777216},
+                {-16777216,-4430404,-4430404,-4430404,-4430404,-4430404,-4430404,-16777216},
+                {-16777216,-4430404,-4430404,-16777216,-16777216,-4430404,-4430404,-16777216},
+                {-16777216,-16777216,-16777216,-16777216,-16777216,-16777216,-16777216,-16777216},
+                {-16777216,-16777216,-16777216,-16777216,-16777216,-16777216,-16777216,-16777216}
+        };
+        basic[3] = new int[][]{
+                {-4430491,-4430491,-4430491,-4430491,-16777216,-16777216,-16777216,-16777216},
+                {-4430491,-4430491,-4430491,-4430491,-4430491,-16777216,-16777216,-16777216},
+                {-4430491,-4430491,-4430491,-4430491,-4430491,-4430491,-16777216,-16777216},
+                {-4430491,-4430491,-4430491,-4430491,-4430491,-4430491,-4430491,-16777216},
+                {-16777216,-4430491,-4430491,-4430491,-4430491,-4430491,-4430491,-4430491},
+                {-16777216,-16777216,-4430491,-4430491,-4430491,-4430491,-4430491,-4430491},
+                {-16777216,-16777216,-16777216,-4430491,-4430491,-4430491,-4430491,-4430491},
+                {-16777216,-16777216,-16777216,-16777216,-4430491,-4430491,-4430491,-4430491},
+        };
+        if(theta == -1){
+            for(int i = 0;i < basic[0].length;i ++){
+                for(int j = 0;j < basic[0][0].length;j ++){
+                    matrix[i + x][j + y] = -16777216;
+                }
+            }
+        }else{
+            for(int i = 0;i < basic[0].length;i ++){
+                for(int j = 0;j < basic[0][0].length;j ++){
+                    try{
+                        matrix[i + x][j + y] = basic[theta][i][j];
+                    }catch (Exception ignored){
+
+                    }
+                }
+            }
+        }
+        return matrix;
     }
 }

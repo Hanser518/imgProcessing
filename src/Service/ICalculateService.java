@@ -17,7 +17,7 @@ public interface ICalculateService {
 
     public int[][] pixFill(int[][] img, double[][] kernel);
 
-    public int picMarCalc(int[][] matrix, double[][] kernel, int x, int y);
+    public int picMarCalc(int[][] matrix, double[][] kernel, int x, int y, boolean negativeFix);
 
     /**
      * 卷积计算
@@ -29,7 +29,7 @@ public interface ICalculateService {
      */
     public IMAGE convolution(IMAGE img,
                              double[][] kernel,
-                             boolean multiThreads, boolean accurateCalculate);
+                             boolean multiThreads, boolean accurateCalculate, boolean negativeFix);
 
     /**
      * 侵蚀算法

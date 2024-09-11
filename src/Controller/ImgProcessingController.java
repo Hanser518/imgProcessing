@@ -91,7 +91,7 @@ public class ImgProcessingController {
      */
     public IMAGE getGasImage(IMAGE px, int size) {
         double[][] kernel = calcServer.getGasKernel(size);
-        return calcServer.convolution(px, kernel, multiThreads, accurateCalculate);
+        return calcServer.convolution(px, kernel, multiThreads, accurateCalculate, true);
     }
 
     /**

@@ -31,7 +31,7 @@ public class TPMCServerImpl implements Runnable{
     public void run() {
         for(int i = start;i < start + step && i < W;i ++){
             for(int j = 0;j < H - 1;j ++){
-                result[i - start][j] = calculateServer.picMarCalc(matrix, kernel, i, j);
+                result[i - start][j] = calculateServer.picMarCalc(matrix, kernel, i, j, true);
             }
         }
     }
