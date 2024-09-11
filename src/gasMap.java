@@ -40,7 +40,7 @@ public class gasMap {
 
         System.out.println(px.getPixParams(new int[]{255, 101, 101, 101}));
         System.out.println(px.getPixParams(new int[]{255, 101, 101, 188}));
-        System.out.println(px.getPixParams(new int[]{255, 188, 101, 188}));
+        System.out.println(px.getPixParams(new int[]{255, 101, 188, 188}));
         System.out.println(px.getPixParams(new int[]{255, 188, 101, 101}));
         System.out.println(px.getPixParams(new int[]{255, 0, 0, 0}));
 //        System.out.println(px.getPixParams(new int[]{255,188, 94, 94}));
