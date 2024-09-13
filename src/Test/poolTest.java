@@ -12,12 +12,11 @@ public class poolTest {
     static ICalculateService calcService = new ICalculateServiceImpl();
     static ImgProcessingController imgCtrl = new ImgProcessingController();
     public static void main(String[] args) throws IOException {
-        String fileName = "rx78";
-        int blurSize = 100;
-        IMAGE px = new IMAGE(fileName + ".jpg");
+        String fileName = "index1";
+        int blurSize = 1;
+        IMAGE px = new IMAGE(fileName + ".png");
         int[][] m = px.getPixelMatrix();
-        ConcurrentRequestController crc =
-                new ConcurrentRequestController(m, calcService.getGasKernel(blurSize), 4);
+        ConcurrentRequestController crc = new ConcurrentRequestController(m, calcService.getGasKernel(blurSize), 4);
 
         long set = System.currentTimeMillis();
         crc.start();
@@ -29,5 +28,12 @@ public class poolTest {
         long set3 = System.currentTimeMillis();
         IMAGE gasImage3 = imgCtrl.getGasImage(px, blurSize);
         System.out.println((System.currentTimeMillis() - set3) / 1000.0);
+
+        // 关闭超线程，精确计算
+        imgCtrl.closeMultiThreads();
+        imgCtrl.openAccCalc();
+        long set1 = System.currentTimeMillis();
+        IMAGE gasImage1 = imgCtrl.getGasImage(px, blurSize);
+        System.out.println((System.currentTimeMillis() - set1) / 1000.0);
     }
 }

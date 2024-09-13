@@ -9,12 +9,14 @@ import java.util.*;
 
 public class ConcurrentRequestController {
     int[][] data;
-    double[][] kernel;
+    double[][] fillKernel;
+    double[] calcKernel;
     int width, height;
     int threadCount;
-    int threadCountLimit = 24;
-    int blockSize = 240;
+    int threadCountLimit = 32;
+    int blockSize = 300;
     Stack<EventPool> events = new Stack<>();
+    Stack<TConcurrentRequest> cache = new Stack<>();
     Stack<TConcurrentRequest> leisureThreads = new Stack<>();
     List<Thread> threadPool = new ArrayList<>();
     boolean listLock = false;
@@ -33,10 +35,22 @@ public class ConcurrentRequestController {
         this.data = requestData;
         this.width = requestData.length;
         this.height = requestData[0].length;
-        this.kernel = ConVKernel;
-        int tc = (int) Math.sqrt(Math.max(kernel.length, kernel[0].length)) + 3;
+        this.fillKernel = ConVKernel;
+        this.calcKernel = getKernel((ConVKernel.length - 1) / 2);
+        int tc = (int) Math.sqrt(Math.max(fillKernel.length, fillKernel[0].length)) + 3;
         this.threadCount = Math.max(tc, InitThreadCount);
         init();
+    }
+
+    public double[] getKernel(int size){
+        double theta = Math.sqrt(Math.log(0.1) * -1.0 * 2 / Math.pow(-size, 2));
+        int kernelSize = size * 2 + 1;
+        double[][] gasKernel = new double[kernelSize][kernelSize];
+        double[] w = new double[kernelSize];
+        for (int i = 0; i < kernelSize; i++) {
+            w[i] = Math.exp(-1.0 * (i - size) * (i - size) / 2 * theta * theta);
+        }
+        return w;
     }
 
     /**
@@ -44,7 +58,7 @@ public class ConcurrentRequestController {
      */
     private void init() {
         // 对图像进行填充处理，此时数据矩阵长宽发生改变，原矩阵长宽存储于width和height中
-        data = calcService.pixFill(data, kernel);
+        data = calcService.pixFill(data, fillKernel);
         // 对矩阵数据进行任务分配及切分，每200*200为一个事件组，同时生成对应点位的标识符
         int w = data.length;
         int h = data[0].length;
@@ -74,7 +88,6 @@ public class ConcurrentRequestController {
             for (int i = 0; i < threadPool.size(); i++) {
                 Thread t = threadPool.get(i);
                 if (!t.isAlive()) {
-                    // threadPool.remove(t);
                     index.add(t);
                     leisureThreads.push(new TConcurrentRequest());
                 }
@@ -83,7 +96,7 @@ public class ConcurrentRequestController {
                 threadPool.remove(num);
             });
             initThread();
-            if ((System.currentTimeMillis() - set) / 1000.0 > 2) {
+            if ((System.currentTimeMillis() - set) / 1000.0 > 1) {
                 if (threadCount < threadCountLimit) {
                     threadCount++;
                     leisureThreads.push(new TConcurrentRequest());
@@ -114,7 +127,7 @@ public class ConcurrentRequestController {
             if (!events.isEmpty()) {
                 TConcurrentRequest cr = leisureThreads.pop();
                 EventPool en = events.pop();
-                cr = new TConcurrentRequest(en, data, kernel);
+                cr = new TConcurrentRequest(en, data, calcKernel);
                 Thread t = new Thread(cr);
                 threadPool.add(t);
                 t.start();

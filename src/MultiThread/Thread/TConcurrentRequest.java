@@ -6,30 +6,33 @@ import MultiThread.entity.EventPool;
 public class TConcurrentRequest implements Runnable{
     EventPool ep;
     int[][] data;
-    double[][] kernel;
+    double[] kernel;
 
 
     public TConcurrentRequest() {
 
     }
 
-    public TConcurrentRequest(EventPool ep, int[][] data, double[][] kernel){
+    public TConcurrentRequest(EventPool ep, int[][] data, double[] kernel){
         this.ep = ep;
         this.data = data;
         this.kernel = kernel;
     }
 
-    public int picMarCalc(int[][] matrix, double[][] kernel, int x, int y) {
+    public int picMarCalc(int[][] matrix, double[] kernel, int x, int y) {
         double r = 0, g = 0, b = 0;
         double rate = 0;
         for (int i = 0; i < kernel.length; i++) {
-            for (int j = 0; j < kernel[0].length; j++) {
-                r += kernel[i][j] * ((matrix[x + i][y + j] >> 16) & 0xFF);
-                g += kernel[i][j] * ((matrix[x + i][y + j] >> 8) & 0xFF);
-                b += kernel[i][j] * (matrix[x + i][y + j] & 0xFF);
-                rate += kernel[i][j];
-            }
+            r += kernel[i] * ((matrix[x + i][y] >> 16) & 0xFF + (matrix[x][y + i] >> 16) & 0xFF);
+            g += kernel[i] * ((matrix[x + i][y] >> 8) & 0xFF + (matrix[x][y + i] >> 8) & 0xFF);
+            b += kernel[i] * (matrix[x + i][y] & 0xFF + matrix[x][y + i] & 0xFF);
+            rate += kernel[i] * 2;
         }
+//        for(int i = 0, j = 0; i < kernel.length;i ++, j ++){
+//            r += kernel[j] * ((matrix[x + i][y + j] >> 16) & 0xFF);
+//            g += kernel[j] * ((matrix[x + i][y + j] >> 8) & 0xFF);
+//            b += kernel[j] * (matrix[x + 1][y + j] & 0xFF);
+//        }
         rate = rate < 10e-2 ? 1.0 : rate;
         r = Math.abs(r / rate);
         g = Math.abs(g / rate);

@@ -2,7 +2,7 @@ package Service.Impl;
 
 import Entity.IMAGE;
 import Entity.PIXEL;
-import MultiThread.TUGServiceImpl;
+import Service.TUGServiceImpl;
 import Service.ICalculateService;
 import Service.IPictureService;
 
