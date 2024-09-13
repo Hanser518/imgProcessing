@@ -1,3 +1,5 @@
+package Test;
+
 import Controller.ImgProcessingController;
 import Entity.IMAGE;
 

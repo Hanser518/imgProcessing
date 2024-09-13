@@ -1,11 +1,11 @@
+package Test;
+
 import Controller.ImgProcessingController;
 import Entity.IMAGE;
 import Service.ICalculateService;
 import Service.Impl.ICalculateServiceImpl;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 public class grilleTest {
     static ICalculateService calculateServer = new ICalculateServiceImpl();

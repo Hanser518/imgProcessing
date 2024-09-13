@@ -2,6 +2,7 @@ package Service.Impl;
 
 import Entity.IMAGE;
 import Entity.PIXEL;
+import MultiThread.TUGServiceImpl;
 import Service.ICalculateService;
 import Service.IPictureService;
 
@@ -82,7 +83,7 @@ public class IPictureServiceImpl implements IPictureService {
         int[][] result = new int[img.getWidth()][img.getHeight()];
         int[][] maxFill = calculateServer.pixFill(map, calculateServer.getGasKernel(maxSize));
         // System.out.printf("Building Map...\n");
-        // int[][] gasMap = calculateServer.getGasMap(img, baseSize, maxSize);
+        // int[][] Test.gasMap = calculateServer.getGasMap(img, baseSize, maxSize);
         double[][] maxKernel = calculateServer.getGasKernel(maxSize);
         int minStep = Math.min(maxFill.length, maxFill[0].length) / Math.max(maxKernel.length, maxKernel[0].length) + 1;
         int threadCount = (int) Math.sqrt(Math.max(maxKernel.length, maxKernel[0].length)) * 2;

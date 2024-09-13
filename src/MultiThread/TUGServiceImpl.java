@@ -1,4 +1,6 @@
-package Service.Impl;
+package MultiThread;
+
+import Service.Impl.ICalculateServiceImpl;
 
 public class TUGServiceImpl implements Runnable{
     private ICalculateServiceImpl calculateServer = new ICalculateServiceImpl();

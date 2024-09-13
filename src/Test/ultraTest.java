@@ -1,8 +1,9 @@
+package Test;
+
 import Controller.ImgProcessingController;
 import Entity.IMAGE;
 
 import java.io.IOException;
-import java.util.List;
 
 public class ultraTest {
     static ImgProcessingController imgCtrl = new ImgProcessingController();
