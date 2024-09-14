@@ -9,17 +9,17 @@ import java.util.*;
 
 public class ConcurrentRequestController {
     int[][] data;
+    double[] kernel;
+    double[] param;
     double[][] fillKernel;
-    double[] calcKernel;
     int width, height;
     int threadCount;
-    int threadCountLimit = 32;
-    int blockSize = 300;
-    Stack<EventPool> events = new Stack<>();
-    Stack<TConcurrentRequest> cache = new Stack<>();
+    int threadCountLimit = 24;
+    int blockSize = 240;
+    EventPool[] ePools;
+    Stack<Integer> eventIndex = new Stack<>();
     Stack<TConcurrentRequest> leisureThreads = new Stack<>();
     List<Thread> threadPool = new ArrayList<>();
-    boolean listLock = false;
 
 
     private final ICalculateService calcService = new ICalculateServiceImpl();
@@ -29,18 +29,19 @@ public class ConcurrentRequestController {
      *
      * @param requestData
      * @param ConVKernel
-     * @param InitThreadCount
+     * @param MaxThreadCount
      */
-    public ConcurrentRequestController(int[][] requestData, double[][] ConVKernel, int InitThreadCount) {
+    public ConcurrentRequestController(int[][] requestData, double[][] ConVKernel, int MaxThreadCount) {
         this.data = requestData;
         this.width = requestData.length;
         this.height = requestData[0].length;
         this.fillKernel = ConVKernel;
-        this.calcKernel = getKernel((ConVKernel.length - 1) / 2);
-        int tc = (int) Math.sqrt(Math.max(fillKernel.length, fillKernel[0].length)) + 3;
-        this.threadCount = Math.max(tc, InitThreadCount);
+        this.kernel = getKernel((ConVKernel.length - 1) / 2);
+        this.threadCount = Math.max((int) Math.sqrt(kernel.length) + 3, MaxThreadCount);
+        this.threadCountLimit = MaxThreadCount;
         init();
     }
+
 
     public double[] getKernel(int size){
         double theta = Math.sqrt(Math.log(0.1) * -1.0 * 2 / Math.pow(-size, 2));
@@ -51,6 +52,29 @@ public class ConcurrentRequestController {
             w[i] = Math.exp(-1.0 * (i - size) * (i - size) / 2 * theta * theta);
         }
         return w;
+    }
+
+    public int[][] getData(){
+        return data;
+    }
+
+    public double[] getIIRParam(int size){
+        // 顺序为b0,b1,b2,b3,B
+        double[] params = new double[5];
+        double theta = Math.sqrt(Math.log(0.1) * -1.0 * 2 / Math.pow(-size, 2));
+        double q;
+        if(theta > 2.5d){
+            q = 0.98711 * theta - 0.96330;
+        }else{
+            q = 3.97156 - 4.14554 * Math.sqrt(1 - 0.26891 * theta);
+        }
+        // 依次计算b0,b1,b2,b3,B
+        params[0] = 1.57825 + (2.44413 * q) + (1.4281 * q * q) + (0.422205 * q * q * q);
+        params[1] = (2.44413 * q) + (2.85619 * q * q) + (1.26661 * q * q * q);
+        params[2] = -(1.4281 * q * q + 1.26661 * q * q * q);
+        params[3] = 0.422205 * q * q * q;
+        params[4] = 1 - ((params[1] + params[2] + params[3]) / params[0]);
+        return params;
     }
 
     /**
@@ -64,13 +88,16 @@ public class ConcurrentRequestController {
         int h = data[0].length;
         int wCount = width % blockSize == 0 ? width / blockSize : width / blockSize + 1;
         int hCount = height % blockSize == 0 ? height / blockSize : height / blockSize + 1;
+        ePools = new EventPool[wCount * hCount];
         for (int i = 0; i < wCount; i++) {
             for(int j = 0;j < hCount;j ++){
                 int wStep = i * blockSize + blockSize < width ? blockSize : width - i * blockSize;
                 int hStep = j * blockSize + blockSize < height ? blockSize : height - j * blockSize;
                 EventPool ep = new EventPool(i * blockSize, j * blockSize, wStep, hStep);
-                ep.setIndex(i * hCount + j);
-                events.add(ep);
+                int index = i * hCount + j;
+                ep.setIndex(index);
+                ePools[i * hCount + j] = ep;
+                eventIndex.add(index);
             }
         }
         // 压入未激活的处理线程
@@ -79,15 +106,17 @@ public class ConcurrentRequestController {
         }
     }
 
-    public boolean start() {
+    public void start() {
+        this.param = getIIRParam(kernel.length);
         initThread();
         long set = System.currentTimeMillis();
-        while (!events.isEmpty()) {
+        while (!eventIndex.isEmpty()) {
             List<Thread> index = new ArrayList<>();
             // 遍历threadPool
             for (int i = 0; i < threadPool.size(); i++) {
                 Thread t = threadPool.get(i);
                 if (!t.isAlive()) {
+                    // threadPool.remove(t);
                     index.add(t);
                     leisureThreads.push(new TConcurrentRequest());
                 }
@@ -96,17 +125,18 @@ public class ConcurrentRequestController {
                 threadPool.remove(num);
             });
             initThread();
-            if ((System.currentTimeMillis() - set) / 1000.0 > 1) {
+            if ((System.currentTimeMillis() - set) / 1000.0 > 2) {
                 if (threadCount < threadCountLimit) {
                     threadCount++;
                     leisureThreads.push(new TConcurrentRequest());
                     System.out.print(threadCount + "&");
                 }
                 set = System.currentTimeMillis();
-                System.out.print("\n@" + events.size() + ".");
+                System.out.print("\n@" + eventIndex.size() + ".");
             }
-            // System.out.println("event:" + events.size() + "|leisure:" + leisureThreads.size() + "|thread:" + threadPool.size());
+            // System.out.println("event:" + eventIndex.size() + "|leisure:" + leisureThreads.size() + "|thread:" + threadPool.size());
         }
+        System.out.println("event empty now");
         int limit = threadPool.size();
         while (true) {
             int alive = 0;
@@ -118,20 +148,42 @@ public class ConcurrentRequestController {
             }
             if (limit == alive) break;
         }
+        System.out.println();
+        data = combineData();
         System.out.println("ThreadCount:" + threadCount);
-        return true;
+    }
+
+    private int[][] combineData(){
+        int wCount = width % blockSize == 0 ? width / blockSize : width / blockSize + 1;
+        int hCount = height % blockSize == 0 ? height / blockSize : height / blockSize + 1;
+        int[][] result = new int[width][height];
+        for(int i = 0;i < wCount;i ++){
+            for(int j = 0;j < hCount;j ++){
+                int[][] ePool = ePools[i * hCount + j].result;
+                for(int x = 0;x < ePool.length;x ++){
+                    for(int y = 0;y < ePool[0].length;y ++){
+                        result[x + i * blockSize][y + j * blockSize] = ePool[x][y];
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     private void initThread() {
         while (!leisureThreads.isEmpty()) {
-            if (!events.isEmpty()) {
+            if (!eventIndex.isEmpty()) {
                 TConcurrentRequest cr = leisureThreads.pop();
-                EventPool en = events.pop();
-                cr = new TConcurrentRequest(en, data, calcKernel);
+                int index = eventIndex.pop();
+                cr = new TConcurrentRequest(ePools[index], data, fillKernel);
+                cr.setConvKernel(kernel);
+                cr.setParam(param);
                 Thread t = new Thread(cr);
                 threadPool.add(t);
                 t.start();
-                System.out.print(en.index + "#");
+                System.out.print(ePools[index].index + "#");
+            }else{
+                break;
             }
         }
     }

@@ -36,7 +36,19 @@ public class ImgProcessingController {
      */
     public void saveByName(IMAGE img,
                            String imgName) throws IOException {
-        ImageIO.write(img.getImg(), "png", new File("./output/" + imgName + ".png"));
+        // 确保输出目录存在
+        File outputDir = new File("./output");
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+        }
+
+        // 写入图像
+        File outputFile = new File(outputDir, imgName + ".png");
+        boolean success = ImageIO.write(img.getImg(), "png", outputFile);
+        if (!success) {
+            throw new IOException("无法保存图像到指定位置: " + outputFile.getAbsolutePath());
+        }
+        // ImageIO.write(img.getImg(), "jpg", new File("./output/" + imgName + ".jpg"));
     }
 
     /**
