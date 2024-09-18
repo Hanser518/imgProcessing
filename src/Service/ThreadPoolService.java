@@ -1,6 +1,5 @@
 package Service;
 
-import Thread.ConVCalc;
 import Entity.EventPool;
 import Service.Impl.ICalculateServiceImpl;
 
@@ -8,52 +7,37 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-public class ThreadPoolConVService {
-    int[][] data;
-    double[][] kernel;
-    int width, height;
-    int threadCount;
-    int threadCountLimit = 24;
-    int blockSize = 240;
-    EventPool[] ePools;
-    Stack<Integer> eventIndex = new Stack<>();
-    Stack<ConVCalc> leisureThreads = new Stack<>();
-    List<Thread> threadPool = new ArrayList<>();
+public abstract class ThreadPoolService {
+    public int[][] data;
+    public double[] kernel;
+    public double[] param;
+    public double[][] fillKernel;
+    public int width, height;
+    public int threadCount;
+    public int threadCountLimit = 24;
+    public int blockSize = 240;
+    public EventPool[] ePools;
+    public Stack<Integer> eventIndex = new Stack<>();
+    public List<Thread> threadPool = new ArrayList<>();
 
     private final ICalculateService calcService = new ICalculateServiceImpl();
 
-    public ThreadPoolConVService(){
-
-    }
-
-    /**
-     * 输入原始数据、卷积核、初始线程数量
-     *
-     * @param requestData
-     * @param ConVKernel
-     * @param MaxThreadCount
-     */
-    public ThreadPoolConVService(int[][] requestData, double[][] ConVKernel, int MaxThreadCount) {
+    public ThreadPoolService(int[][] requestData, double[][] ConVKernel, int MaxThreadCount) {
         this.data = requestData;
         this.width = requestData.length;
         this.height = requestData[0].length;
-        this.kernel = ConVKernel;
-        this.threadCountLimit = MaxThreadCount < 1 ? 999 : MaxThreadCount;
-        this.threadCount = Math.min((int) Math.sqrt(kernel.length) + 3, this.threadCountLimit);
-
+        this.fillKernel = ConVKernel;
+        this.kernel = getKernel((ConVKernel.length - 1) / 2);
+        this.threadCountLimit = MaxThreadCount < 0 ? 999 : MaxThreadCount;
+        this.threadCount = Math.min((int) Math.sqrt(kernel.length) + 3, threadCountLimit);
         init();
     }
 
-    public int[][] getData(){
-        return data;
-    }
-
-    /**
-     * 请求初始化
-     */
     private void init() {
+        blockSize = (int) (800 * 800 / Math.sqrt(width * height));
+        // System.out.println(blockSize);
         // 对图像进行填充处理，此时数据矩阵长宽发生改变，原矩阵长宽存储于width和height中
-        data = calcService.pixFill(data, kernel);
+        data = calcService.pixFill(data, fillKernel);
         // 对矩阵数据进行任务分配及切分，每200*200为一个事件组，同时生成对应点位的标识符
         int w = data.length;
         int h = data[0].length;
@@ -64,6 +48,7 @@ public class ThreadPoolConVService {
             for(int j = 0;j < hCount;j ++){
                 int wStep = i * blockSize + blockSize < width ? blockSize : width - i * blockSize;
                 int hStep = j * blockSize + blockSize < height ? blockSize : height - j * blockSize;
+                // int hStep = j * blockSize + blockSize < height ? blockSize : height - j * blockSize;
                 EventPool ep = new EventPool(i * blockSize, j * blockSize, wStep, hStep);
                 int index = i * hCount + j;
                 ep.setIndex(index);
@@ -71,13 +56,24 @@ public class ThreadPoolConVService {
                 eventIndex.add(index);
             }
         }
-        // 压入未激活的处理线程
-        for (int i = 0; i < threadCount; i++) {
-            leisureThreads.add(new ConVCalc());
-        }
     }
 
-    public void start() {
+    public double[] getKernel(int size){
+        double theta = Math.sqrt(Math.log(0.1) * -1.0 * 2 / Math.pow(-size, 2));
+        int kernelSize = size * 2 + 1;
+        double[][] gasKernel = new double[kernelSize][kernelSize];
+        double[] w = new double[kernelSize];
+        for (int i = 0; i < kernelSize; i++) {
+            w[i] = Math.exp(-1.0 * (i - size) * (i - size) / 2 * theta * theta);
+        }
+        return w;
+    }
+
+    public int[][] getData(){
+        return data;
+    }
+
+    public void start(){
         initThread();
         long set = System.currentTimeMillis();
         while (!eventIndex.isEmpty()) {
@@ -88,7 +84,7 @@ public class ThreadPoolConVService {
                 if (!t.isAlive()) {
                     // threadPool.remove(t);
                     index.add(t);
-                    leisureThreads.push(new ConVCalc());
+                    leisurePush();
                 }
             }
             index.forEach(num -> {
@@ -98,11 +94,13 @@ public class ThreadPoolConVService {
             if ((System.currentTimeMillis() - set) / 1000.0 > 2) {
                 if (threadCount < threadCountLimit) {
                     threadCount++;
-                    leisureThreads.push(new ConVCalc());
+                    leisurePush();
                     System.out.print(threadCount + "&");
                 }
                 set = System.currentTimeMillis();
                 System.out.print("\n@" + eventIndex.size() + ".");
+                System.out.print("\n&" + threadPool.size()+ ".");
+
             }
             // System.out.println("event:" + eventIndex.size() + "|leisure:" + leisureThreads.size() + "|thread:" + threadPool.size());
         }
@@ -121,9 +119,12 @@ public class ThreadPoolConVService {
         System.out.println();
         data = combineData();
         System.out.println("ThreadCount:" + threadCount);
+
     }
 
-    private int[][] combineData(){
+    protected abstract void leisurePush();
+
+    protected int[][] combineData(){
         int wCount = width % blockSize == 0 ? width / blockSize : width / blockSize + 1;
         int hCount = height % blockSize == 0 ? height / blockSize : height / blockSize + 1;
         int[][] result = new int[width][height];
@@ -140,20 +141,5 @@ public class ThreadPoolConVService {
         return result;
     }
 
-    private void initThread() {
-        while (!leisureThreads.isEmpty()) {
-            if (!eventIndex.isEmpty()) {
-                ConVCalc cc = leisureThreads.pop();
-                int index = eventIndex.pop();
-                cc = new ConVCalc(ePools[index], data, kernel);
-                Thread t = new Thread(cc);
-                threadPool.add(t);
-                t.start();
-                System.out.print(ePools[index].index + "#");
-            }else{
-                break;
-            }
-        }
-    }
-
+    protected abstract void initThread();
 }

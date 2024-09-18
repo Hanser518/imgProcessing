@@ -109,7 +109,7 @@ public class IPictureServiceImpl implements IPictureService {
             }
             if (count != countBefore) {
                 countBefore = count;
-                System.out.print("\rThread: ");
+                System.out.print("\rService.Thread: ");
                 for (int i = 0; i < threadCount; i++) {
                     if (i < count) System.out.print("O ");
                     else System.out.print("A ");

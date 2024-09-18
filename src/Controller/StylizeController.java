@@ -1,9 +1,10 @@
 package Controller;
 
 import Entity.IMAGE;
-import Service.ThreadPoolPaperService;
+import Service.Extends.ThreadPoolPaper;
 import Service.ICalculateService;
 import Service.Impl.ICalculateServiceImpl;
+import Service.ThreadPoolService;
 
 import java.util.List;
 
@@ -16,11 +17,12 @@ public class StylizeController {
     static ICalculateService calcService = new ICalculateServiceImpl();
     static BlurController BlurCtrl = new BlurController();
     static ImgProcessingController imgCtrl = new ImgProcessingController();
+    static ThreadPoolService conV;
 
     public IMAGE transPaperStyle(IMAGE img, int maxTreadCount){
-        ThreadPoolPaperService paper = new ThreadPoolPaperService(img.getPixelMatrix(), calcService.getGasKernel(100), maxTreadCount);
-        paper.start();
-        return new IMAGE(paper.getData());
+        conV = new ThreadPoolPaper(img.getPixelMatrix(), calcService.getGasKernel(100), maxTreadCount);
+        conV.start();
+        return new IMAGE(conV.getData());
     }
 
     public IMAGE transGrilleStyle(IMAGE img, int grilleType){

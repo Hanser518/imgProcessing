@@ -108,6 +108,19 @@ public class IMAGE {
         return matrix;
     }
 
+    public int[][] getGrayMatrix4() {
+        int[][] m = getPixelMatrix();
+        int[][] result = new int[width][height];
+        for(int i = 0;i < width;i ++){
+            for(int j = 0;j < height;j ++){
+                int[] p = getArgbParams(m[i][j]);
+                int value = (int)(p[1] * 0.287 + p[2] * 0.589 + p[3] * 0.114);
+                result[i][j] = (254 << 24) | (value << 16) | (value << 8) | value;
+            }
+        }
+        return result;
+    }
+
     public int[][] getGrayMatrix(int[][] pixelMatrix) {
         int[][] result = new int[width][height];
         for(int i = 0;i < width;i ++){

@@ -1,5 +1,6 @@
 package Test;
 
+import Controller.EdgeController;
 import Controller.ImgProcessingController;
 import Entity.IMAGE;
 import Controller.StylizeController;
@@ -12,15 +13,18 @@ public class poolTest {
     static ICalculateService calcService = new ICalculateServiceImpl();
     static ImgProcessingController imgCtrl = new ImgProcessingController();
     static StylizeController styleCtrl = new StylizeController();
+    static EdgeController edgeCtrl = new EdgeController();
     public static void main(String[] args) throws IOException {
-        String fileName = "index1";
-        IMAGE px = new IMAGE(fileName + ".png");
+        String fileName = "rx78";
+        IMAGE px = new IMAGE(fileName + ".jpg");
         int blurSize = 67;
 
         // 使用线程池
         long set = System.currentTimeMillis();
-        IMAGE gasImage1 = styleCtrl.transGrilleStyle(px, styleCtrl.GRILLE_REGULAR);
+        // IMAGE gasImage1 = styleCtrl.transGrilleStyle(px, styleCtrl.GRILLE_REGULAR);
+        // IMAGE gasImage1 = styleCtrl.transPaperStyle(px, 24);
         System.out.println((System.currentTimeMillis() - set) / 1000.0);
+        IMAGE gasImage1 = edgeCtrl.getImgEdge(px);
         imgCtrl.saveByName(gasImage1, "gas1");
 
         // 开启多线程
