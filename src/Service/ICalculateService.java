@@ -60,6 +60,27 @@ public interface ICalculateService {
     public Map<Integer, Double> getGAccumulateRate(IMAGE img);
 
     /**
+     * 获取Active分布
+     * @param img
+     * @return
+     */
+    public Map<Integer, Integer> getActiveList(IMAGE img);
+
+    /**
+     * 获取Active值分布比例
+     * @param img
+     * @return
+     */
+    public Map<Integer, Double> getActiveRate(IMAGE img);
+
+    /**
+     * 获取Active值累计分布比例
+     * @param img
+     * @return
+     */
+    public Map<Integer, Double> getActiveAccumulateRate(IMAGE img);
+
+    /**
      * 获取增强矩阵
      * @param img
      * @param theta

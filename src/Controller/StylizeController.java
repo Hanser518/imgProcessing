@@ -20,31 +20,34 @@ public class StylizeController {
     static ImgProcessingController imgCtrl = new ImgProcessingController();
     static ThreadPoolCore conV;
 
-    public IMAGE transPaperStyle(IMAGE img, int maxTreadCount){
+    public IMAGE transPaperStyle(IMAGE img, int maxTreadCount, int... kernelSize){
         IMAGE cdr = AdCtrl.CDR(img);
-        conV = new ThreadPoolPaper(cdr.getPixelMatrix(), calcService.getGasKernel(67), maxTreadCount);
+        int size = kernelSize.length > 0 ? kernelSize[0] : 131;
+        conV = new ThreadPoolPaper(cdr.getPixelMatrix(), calcService.getGasKernel(size), maxTreadCount);
         conV.start();
-        // return new IMAGE(conV.getData());
-        return cdr;
+        return new IMAGE(conV.getData());
+        // return cdr;
     }
 
     public IMAGE transGrilleStyle(IMAGE img, int grilleType){
-        IMAGE cdr = AdCtrl.CDR(img);
-        IMAGE gas = BlurCtrl.getGasBlur(cdr, 67, -1);
         double radio = 1;
+        int kernelSize = 156;
         switch (grilleType){
             case 0:
-                radio = 0.125;
+                radio = 0.01025;
+                System.out.println(1 / radio);
+                kernelSize = 101;
                 break;
             case 1:
-                radio = 0.25;
+                radio = 0.0625;
                 break;
             case 2:
-                radio = 0.0625;
+                radio = 0.02125;
                 break;
             default:
                 radio = 0.5;
         }
+        IMAGE gas = transPaperStyle(img, -1, kernelSize);
         List<IMAGE> imgList = imgCtrl.asyncSplit(gas, (int) (1 / radio), true);
         return imgCtrl.combineImages(imgList, grilleType);
     }

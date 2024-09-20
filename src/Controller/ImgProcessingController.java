@@ -229,8 +229,9 @@ public class ImgProcessingController {
             for(int i = 0;i < imgList.size(); i ++){
                 if(i % 2 == 0)
                     resized.add(resizeImage(imgList.get(i), 0.96, RESIZE_LANDSCAPE));
-                else
+                else {
                     resized.add(resizeImage(imgList.get(i), 0.04, RESIZE_LANDSCAPE));
+                }
             }
         }else{
             resized = imgList;

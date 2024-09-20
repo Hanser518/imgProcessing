@@ -209,6 +209,46 @@ public class ICalculateServiceImpl implements ICalculateService {
     }
 
     @Override
+    public Map<Integer, Integer> getActiveList(IMAGE img) {
+        Map<Integer, Integer> ActiveMap = new HashMap<>();
+        for (int i = 0; i < 8; i++)
+            ActiveMap.put(i, 0);
+        int[] list = img.getPixelList();
+        for (int px : list) {
+            int gray = img.getAcValue(px);
+            int G = (int) (Math.log(gray) / Math.log(2));
+            G = Math.max(G, 0);
+            // System.out.println(G + " " + gray);
+            ActiveMap.put(G, ActiveMap.get(G) + 1);
+        }
+        return ActiveMap;
+    }
+
+    @Override
+    public Map<Integer, Double> getActiveRate(IMAGE img) {
+        Map<Integer, Double> Ac2Map = new HashMap<>();
+        Map<Integer, Integer> GMap = getActiveList(img);
+        double total = img.getWidth() * img.getHeight();
+        for (int i = 0; i < 8; i++) {
+            Ac2Map.put(i, GMap.get(i) / total);
+        }
+        return Ac2Map;
+    }
+
+    @Override
+    public Map<Integer, Double> getActiveAccumulateRate(IMAGE img) {
+        Map<Integer, Double> Ac2Map = new HashMap<>();
+        Map<Integer, Double> GRate = getActiveRate(img);
+        for (int i = 0; i < 8; i++) {
+            double base = GRate.get(i);
+            if (i != 0)
+                base += Ac2Map.get(i - 1);
+            Ac2Map.put(i, base);
+        }
+        return Ac2Map;
+    }
+
+    @Override
     public int[][] getEnhanceMatrix(IMAGE img, double theta) {
         int width = img.getWidth();
         int height = img.getHeight();

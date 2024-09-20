@@ -26,8 +26,8 @@ public class poolTest {
 
         // 使用线程池
         long set = System.currentTimeMillis();
-        // IMAGE gasImage1 = styleCtrl.transGrilleStyle(px, styleCtrl.GRILLE_REGULAR);
-        IMAGE gasImage1 = styleCtrl.transPaperStyle(px, 24);
+        IMAGE gasImage1 = styleCtrl.transGrilleStyle(px, styleCtrl.GRILLE_REGULAR);
+        // IMAGE gasImage1 = styleCtrl.transPaperStyle(px, 24);
         System.out.println((System.currentTimeMillis() - set) / 1000.0);
         // IMAGE gasImage1 = edgeCtrl.getImgEdge(px);
         imgCtrl.saveByName(gasImage1, "gas1");

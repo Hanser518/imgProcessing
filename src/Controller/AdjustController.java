@@ -15,25 +15,23 @@ public class AdjustController {
      * @return
      */
     public IMAGE compressDynamicRange(IMAGE px) {
-        Map<Integer, Double> rate = calcService.getGAccumulateRate(px);
-        rate.forEach((key, value) -> {
-            System.out.println(key + ": " + value);
-        });
+        Map<Integer, Double> rate = calcService.getActiveAccumulateRate(px);
 
         // 1.判断方向
         double top = 1.518; // 1.05;
         double center = 1.0;
         double bottom = 0.874; // 1 - 0.318 / 2;
         if(rate.get(4) < 0.5){
-            top = 1.001;
-            bottom = 0.717;
+            top = 1.341;
+            bottom = 0.792;
+            System.out.println("acccccccc!!!");
         }
 
         // 2.计算关键点、计算起始/终止位点
         int starPoint = 0;
         int endPoint = 0;
         int base = 0;
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < rate.size(); i++) {
             if (rate.get(i) >= 0.05 && starPoint == 0) {
                 starPoint = (int) (base + (Math.pow(2, i) * (0.05 / rate.get(i))));
             }
@@ -57,15 +55,15 @@ public class AdjustController {
         int[][] result = px.getPixelMatrix();
         for (int i = 0; i < result.length; i++) {
             for (int j = 0; j < result[i].length; j++) {
-                int gray = px.getGrayPixel(result[i][j]);
                 double enhance = 1;
                 int r = ((result[i][j] >> 16) & 0xFF);
                 int g = ((result[i][j] >> 8) & 0xFF);
                 int b = (result[i][j] & 0xFF);
-                if(gray > starPoint && gray <= centerPoint){
-                    enhance = a1 * Math.pow(gray, 2) + b1 * gray + c1;
+                int ac = px.getAcValue(result[i][j]);
+                if(ac < centerPoint){
+                    enhance = a1 * Math.pow(ac, 2) + b1 * ac + c1;
                 }else {
-                    enhance = a2 * Math.pow(gray, 2) + b2 * gray + c2;
+                    enhance = a2 * Math.pow(ac, 2) + b2 * ac + c2;
                 }
                 int r0 = r * enhance > 255 ? 254 : (int) (r * enhance);
                 int g0 = g * enhance > 255 ? 254 : (int) (g * enhance);

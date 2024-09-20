@@ -46,14 +46,14 @@ public class IMAGE {
         pixelList = rawFile.getRGB(0, 0, width, height, null, 0, width);
     }
 
-    public IMAGE(BufferedImage img){
+    public IMAGE(BufferedImage img) {
         rawFile = img;
         width = rawFile.getWidth();
         height = rawFile.getHeight();
         pixelList = rawFile.getRGB(0, 0, width, height, null, 0, width);
     }
 
-    public IMAGE(){
+    public IMAGE() {
 
     }
 
@@ -111,10 +111,10 @@ public class IMAGE {
     public int[][] getGrayMatrix4() {
         int[][] m = getPixelMatrix();
         int[][] result = new int[width][height];
-        for(int i = 0;i < width;i ++){
-            for(int j = 0;j < height;j ++){
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
                 int[] p = getArgbParams(m[i][j]);
-                int value = (int)(p[1] * 0.287 + p[2] * 0.589 + p[3] * 0.114);
+                int value = (int) (p[1] * 0.287 + p[2] * 0.589 + p[3] * 0.114);
                 result[i][j] = (254 << 24) | (value << 16) | (value << 8) | value;
             }
         }
@@ -123,32 +123,32 @@ public class IMAGE {
 
     public int[][] getGrayMatrix(int[][] pixelMatrix) {
         int[][] result = new int[width][height];
-        for(int i = 0;i < width;i ++){
-            for(int j = 0;j < height;j ++){
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
                 int[] p = getArgbParams(pixelMatrix[i][j]);
-                result[i][j] = (int)(p[1] * 0.287 + p[2] * 0.589 + p[3] * 0.114);
+                result[i][j] = (int) (p[1] * 0.287 + p[2] * 0.589 + p[3] * 0.114);
             }
         }
         return result;
     }
 
-    public int[][] getGrayMatrix(){
+    public int[][] getGrayMatrix() {
         int[][] m = getPixelMatrix();
         int[][] result = new int[width][height];
-        for(int i = 0;i < width;i ++){
-            for(int j = 0;j < height;j ++){
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
                 int[] p = getArgbParams(m[i][j]);
-                result[i][j] = (int)(p[1] * 0.287 + p[2] * 0.589 + p[3] * 0.114);
+                result[i][j] = (int) (p[1] * 0.287 + p[2] * 0.589 + p[3] * 0.114);
             }
         }
         return result;
     }
 
-    public int getGrayPixel(int[] p){
-        return (int)(p[1] * 0.29 + p[2] * 0.59 + p[3] * 0.12);
+    public int getGrayPixel(int[] p) {
+        return (int) (p[1] * 0.29 + p[2] * 0.59 + p[3] * 0.12);
     }
 
-    public int getGrayPixel(int p){
+    public int getGrayPixel(int p) {
         int[] array = new int[4];
         array[0] = (p >> 24) & 0xFF;
         array[1] = (p >> 16) & 0xFF;
@@ -191,5 +191,31 @@ public class IMAGE {
             return true;
         }
         return false;
+    }
+
+    public int getAcValue(int px) {
+        int r = (px >> 16) & 0xFF;
+        int g = (px >> 8) & 0xFF;
+        int b = px & 0xFF;
+        int value = 0;
+        int activeThreshold = 32;
+        if (r > activeThreshold && g > activeThreshold && b > activeThreshold)
+            value = (int) (0.3 * r + 0.5 * g + 0.2 * b);
+        else {
+            if (r <= activeThreshold) {
+                if (g <= activeThreshold || b <= activeThreshold)
+                    value = Math.max(g, b);
+                else
+                    value = (int) (0.77 * g + 0.23 * b);
+            } else if (g <= activeThreshold) {
+                if (b <= activeThreshold)
+                    value = r;
+                else
+                    value = (int) (0.6 * r + 0.4 * b);
+            } else {
+                value = (int) (0.375 * r + 0.625 * g);
+            }
+        }
+        return value;
     }
 }
