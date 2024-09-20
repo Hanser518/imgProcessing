@@ -4,8 +4,8 @@ import Entity.EventPool;
 
 public class ActiveConfirm implements Runnable {
     EventPool ep;
-    int[][] data;
-    double[][] kernel;
+    static int[][] data;
+    static double[][] kernel;
     int threshold;
 
 
@@ -15,8 +15,8 @@ public class ActiveConfirm implements Runnable {
 
     public ActiveConfirm(EventPool ep, int[][] data, double[][] kernel, int threshold) {
         this.ep = ep;
-        this.data = data;
-        this.kernel = kernel;
+        ActiveConfirm.data = data;
+        ActiveConfirm.kernel = kernel;
         this.threshold = threshold;
     }
 

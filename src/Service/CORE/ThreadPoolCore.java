@@ -1,28 +1,29 @@
-package Service;
+package Service.CORE;
 
 import Entity.EventPool;
+import Service.ICalculateService;
 import Service.Impl.ICalculateServiceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-public abstract class ThreadPoolService {
-    public int[][] data;
-    public double[] kernel;
-    public double[] param;
-    public double[][] fillKernel;
-    public int width, height;
-    public int threadCount;
-    public int threadCountLimit = 24;
-    public int blockSize = 240;
-    public EventPool[] ePools;
-    public Stack<Integer> eventIndex = new Stack<>();
-    public List<Thread> threadPool = new ArrayList<>();
+public abstract class ThreadPoolCore {
+    protected int[][] data;
+    protected double[] kernel;
+    protected double[] param;
+    protected double[][] fillKernel;
+    protected int width, height;
+    protected int threadCount;
+    protected int threadCountLimit = 24;
+    protected int blockSize = 240;
+    protected EventPool[] ePools;
+    protected Stack<Integer> eventIndex = new Stack<>();
+    protected List<Thread> threadPool = new ArrayList<>();
 
     private final ICalculateService calcService = new ICalculateServiceImpl();
 
-    public ThreadPoolService(int[][] requestData, double[][] ConVKernel, int MaxThreadCount) {
+    public ThreadPoolCore(int[][] requestData, double[][] ConVKernel, int MaxThreadCount) {
         this.data = requestData;
         this.width = requestData.length;
         this.height = requestData[0].length;
@@ -34,7 +35,7 @@ public abstract class ThreadPoolService {
     }
 
     private void init() {
-        blockSize = (int) (800 * 800 / Math.sqrt(width * height));
+        blockSize = (int) (Math.pow(2, 23) / Math.sqrt(width * height) / Math.sqrt(kernel.length));
         // System.out.println(blockSize);
         // 对图像进行填充处理，此时数据矩阵长宽发生改变，原矩阵长宽存储于width和height中
         data = calcService.pixFill(data, fillKernel);
@@ -118,7 +119,7 @@ public abstract class ThreadPoolService {
         }
         System.out.println();
         data = combineData();
-        System.out.println("ThreadCount:" + threadCount);
+        System.out.println("ThreadCount:" + threadCount + ", EventPool:" + ePools.length);
 
     }
 

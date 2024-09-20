@@ -4,7 +4,7 @@ import Entity.IMAGE;
 import Service.Extends.ThreadPoolPaper;
 import Service.ICalculateService;
 import Service.Impl.ICalculateServiceImpl;
-import Service.ThreadPoolService;
+import Service.CORE.ThreadPoolCore;
 
 import java.util.List;
 
@@ -16,17 +16,21 @@ public class StylizeController {
 
     static ICalculateService calcService = new ICalculateServiceImpl();
     static BlurController BlurCtrl = new BlurController();
+    static AdjustController AdCtrl = new AdjustController();
     static ImgProcessingController imgCtrl = new ImgProcessingController();
-    static ThreadPoolService conV;
+    static ThreadPoolCore conV;
 
     public IMAGE transPaperStyle(IMAGE img, int maxTreadCount){
-        conV = new ThreadPoolPaper(img.getPixelMatrix(), calcService.getGasKernel(100), maxTreadCount);
+        IMAGE cdr = AdCtrl.CDR(img);
+        conV = new ThreadPoolPaper(cdr.getPixelMatrix(), calcService.getGasKernel(67), maxTreadCount);
         conV.start();
-        return new IMAGE(conV.getData());
+        // return new IMAGE(conV.getData());
+        return cdr;
     }
 
     public IMAGE transGrilleStyle(IMAGE img, int grilleType){
-        IMAGE gas = BlurCtrl.getGasBlur(img, 67, -1);
+        IMAGE cdr = AdCtrl.CDR(img);
+        IMAGE gas = BlurCtrl.getGasBlur(cdr, 67, -1);
         double radio = 1;
         switch (grilleType){
             case 0:

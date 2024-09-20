@@ -46,6 +46,13 @@ public interface ICalculateService {
     public Map<Integer, Integer> getGList(IMAGE img);
 
     /**
+     * 获取G值分布比例
+     * @param img
+     * @return
+     */
+    public Map<Integer, Double> getGRate(IMAGE img);
+
+    /**
      * 获取G值累计分布比例
      * @param img
      * @return

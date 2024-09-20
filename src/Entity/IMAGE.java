@@ -148,6 +148,15 @@ public class IMAGE {
         return (int)(p[1] * 0.29 + p[2] * 0.59 + p[3] * 0.12);
     }
 
+    public int getGrayPixel(int p){
+        int[] array = new int[4];
+        array[0] = (p >> 24) & 0xFF;
+        array[1] = (p >> 16) & 0xFF;
+        array[2] = (p >> 8) & 0xFF;
+        array[3] = p & 0xFF;
+        return getGrayPixel(array);
+    }
+
     /**
      * 转换为argb数组
      *

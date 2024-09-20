@@ -185,15 +185,25 @@ public class ICalculateServiceImpl implements ICalculateService {
     }
 
     @Override
-    public Map<Integer, Double> getGAccumulateRate(IMAGE img) {
+    public Map<Integer, Double> getGRate(IMAGE img) {
         Map<Integer, Double> GAccumulateMap = new HashMap<>();
         Map<Integer, Integer> GMap = getGList(img);
         double total = img.getWidth() * img.getHeight();
         for (int i = 0; i < 8; i++) {
-            double base = 0;
+            GAccumulateMap.put(i, GMap.get(i) / total);
+        }
+        return GAccumulateMap;
+    }
+
+    @Override
+    public Map<Integer, Double> getGAccumulateRate(IMAGE img) {
+        Map<Integer, Double> GAccumulateMap = new HashMap<>();
+        Map<Integer, Double> GRate = getGRate(img);
+        for (int i = 0; i < 8; i++) {
+            double base = GRate.get(i);
             if (i != 0)
-                base = GAccumulateMap.get(i - 1);
-            GAccumulateMap.put(i, GMap.get(i) / total + base);
+                base += GAccumulateMap.get(i - 1);
+            GAccumulateMap.put(i, base);
         }
         return GAccumulateMap;
     }

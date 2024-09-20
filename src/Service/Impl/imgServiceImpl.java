@@ -3,11 +3,11 @@ package Service.Impl;
 import Entity.IMAGE;
 import Service.Extends.ThreadPoolActive;
 import Service.Extends.ThreadPoolConV;
-import Service.ThreadPoolService;
+import Service.CORE.ThreadPoolCore;
 import Service.imgService;
 
 public class imgServiceImpl implements imgService {
-    static private ThreadPoolService conv;
+    static private ThreadPoolCore conv;
 
     @Override
     public int[][] getSobelEdge(IMAGE px) {

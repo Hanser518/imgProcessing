@@ -2,12 +2,12 @@ package Controller;
 
 import Entity.IMAGE;
 import Service.Extends.ThreadPoolConV;
-import Service.ThreadPoolService;
+import Service.CORE.ThreadPoolCore;
 
 import static Controller.StylizeController.calcService;
 
 public class BlurController {
-    static ThreadPoolService conV;
+    static ThreadPoolCore conV;
 
     /**
      * 获取一个半径为1的高斯滤波图像

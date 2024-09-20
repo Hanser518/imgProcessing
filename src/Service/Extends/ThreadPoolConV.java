@@ -2,11 +2,11 @@ package Service.Extends;
 
 
 import Service.Thread.ConVCalc;
-import Service.ThreadPoolService;
+import Service.CORE.ThreadPoolCore;
 
 import java.util.Stack;
 
-public class ThreadPoolConV extends ThreadPoolService {
+public class ThreadPoolConV extends ThreadPoolCore {
     Stack<ConVCalc> leisureThreads = new Stack<>();
 
     public ThreadPoolConV(int[][] requestData, double[][] ConVKernel, int MaxThreadCount) {

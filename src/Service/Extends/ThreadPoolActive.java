@@ -1,12 +1,12 @@
 package Service.Extends;
 
 import Service.Thread.ActiveConfirm;
-import Service.ThreadPoolService;
+import Service.CORE.ThreadPoolCore;
 
 import java.util.Arrays;
 import java.util.Stack;
 
-public class ThreadPoolActive extends ThreadPoolService {
+public class ThreadPoolActive extends ThreadPoolCore {
     Stack<ActiveConfirm> leisureThreads = new Stack<>();
     public ThreadPoolActive(int[][] requestData, double[][] ConVKernel, int searchRadius, int MaxThreadCount) {
         super(requestData, ConVKernel, MaxThreadCount);
