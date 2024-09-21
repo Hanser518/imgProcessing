@@ -29,17 +29,17 @@ public class StylizeController {
         // return cdr;
     }
 
-    public IMAGE transGrilleStyle(IMAGE img, int grilleType){
+    public IMAGE transGrilleStyle(IMAGE img, int grilleType, boolean multiple) {
         double radio = 1;
-        int kernelSize = 156;
+        int kernelSize = 117;
         switch (grilleType){
             case 0:
                 radio = 0.01025;
                 System.out.println(1 / radio);
-                kernelSize = 101;
+                kernelSize = 67;
                 break;
             case 1:
-                radio = 0.0625;
+                radio = 0.0425;
                 break;
             case 2:
                 radio = 0.02125;
@@ -47,9 +47,18 @@ public class StylizeController {
             default:
                 radio = 0.5;
         }
-        IMAGE gas = transPaperStyle(img, -1, kernelSize);
-        List<IMAGE> imgList = imgCtrl.asyncSplit(gas, (int) (1 / radio), true);
-        return imgCtrl.combineImages(imgList, grilleType);
+        if(multiple){
+            IMAGE gas = transPaperStyle(img, -1, kernelSize); // kernelSize
+            List<IMAGE> imgList = imgCtrl.asyncSplit(gas, (int) (1 / radio), true);
+            IMAGE ver = imgCtrl.combineImages(imgList, grilleType, true);
+            imgList = imgCtrl.asyncSplit(ver, (int) (1 / (radio * 1.73)), false);
+            IMAGE res = imgCtrl.combineImages(imgList, grilleType, false);
+            return res;
+        }else{
+            IMAGE gas = transPaperStyle(img, -1, kernelSize); // kernelSize
+            List<IMAGE> imgList = imgCtrl.asyncSplit(gas, (int) (1 / radio), true);
+            return imgCtrl.combineImages(imgList, grilleType, true);
+        }
     }
 
 

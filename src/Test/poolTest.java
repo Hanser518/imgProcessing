@@ -17,7 +17,7 @@ public class poolTest {
     static EdgeController edgeCtrl = new EdgeController();
     static AdjustController adCtrl = new AdjustController();
     public static void main(String[] args) throws IOException {
-        String fileName = "rx78";
+        String fileName = "index3";
         IMAGE px = new IMAGE(fileName + ".jpg");
         int blurSize = 67;
 
@@ -26,7 +26,7 @@ public class poolTest {
 
         // 使用线程池
         long set = System.currentTimeMillis();
-        IMAGE gasImage1 = styleCtrl.transGrilleStyle(px, styleCtrl.GRILLE_REGULAR);
+        IMAGE gasImage1 = styleCtrl.transGrilleStyle(px, styleCtrl.GRILLE_REGULAR, false);
         // IMAGE gasImage1 = styleCtrl.transPaperStyle(px, 24);
         System.out.println((System.currentTimeMillis() - set) / 1000.0);
         // IMAGE gasImage1 = edgeCtrl.getImgEdge(px);

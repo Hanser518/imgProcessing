@@ -145,7 +145,7 @@ public class ImgProcessingController {
     public List<IMAGE> asyncSplit(IMAGE img, int count, boolean horizontal){
         List<IMAGE> result = new ArrayList<>();
         int width = horizontal ? img.getWidth() / (count + 1) + 1 : img.getWidth() ;
-        int height = horizontal ? img.getHeight() : img.getHeight() / (count + 1) + 1;
+        int height = horizontal ? img.getHeight() : img.getHeight() / (count + 1);
         for(int i = 0;i < count;i ++){
             int x = horizontal ? width * i : 0;
             int y = horizontal ? 0 : height * i;
@@ -205,38 +205,38 @@ public class ImgProcessingController {
         }else{
             enhance = picServer.getEnhanceImage2(px);
         }
-        List<IMAGE> imgList = asyncSplit(enhance, (int) (1 / radio), true);
-        return combineImages(imgList, type);
+        List<IMAGE> imgList = asyncSplit(enhance, (int) (1 / radio), false);
+        return combineImages(imgList, type, false);
     }
 
     /**
      * 对输入的图组按比例进行组合
      */
-    public IMAGE combineImages(List<IMAGE> imgList, int type){
+    public IMAGE combineImages(List<IMAGE> imgList, int type, boolean horizontal){
         List<IMAGE> resized = new ArrayList<>();
         if(type == 0){
             for(IMAGE img: imgList){
-                resized.add(resizeImage(img, 0.5, RESIZE_LANDSCAPE));
+                resized.add(resizeImage(img, 0.5, horizontal ? RESIZE_LANDSCAPE : RESIZE_VERTICAL));
             }
         }else if(type == 1){
             for(int i = 0;i < imgList.size(); i ++){
                 if(i % 2 == 0)
-                    resized.add(resizeImage(imgList.get(i), 0.7, RESIZE_LANDSCAPE));
+                    resized.add(resizeImage(imgList.get(i), 0.8, horizontal ? RESIZE_LANDSCAPE : RESIZE_VERTICAL));
                 else
-                    resized.add(resizeImage(imgList.get(i), 0.3, RESIZE_LANDSCAPE));
+                    resized.add(resizeImage(imgList.get(i), 0.2, horizontal ? RESIZE_LANDSCAPE : RESIZE_VERTICAL));
             }
         }else if(type == 2){
             for(int i = 0;i < imgList.size(); i ++){
                 if(i % 2 == 0)
-                    resized.add(resizeImage(imgList.get(i), 0.96, RESIZE_LANDSCAPE));
+                    resized.add(resizeImage(imgList.get(i), 0.97, horizontal ? RESIZE_LANDSCAPE : RESIZE_VERTICAL));
                 else {
-                    resized.add(resizeImage(imgList.get(i), 0.04, RESIZE_LANDSCAPE));
+                    resized.add(resizeImage(imgList.get(i), 0.03, horizontal ? RESIZE_LANDSCAPE : RESIZE_VERTICAL));
                 }
             }
         }else{
             resized = imgList;
         }
-        return picServer.getCombineImage(resized, true);
+        return picServer.getCombineImage(resized, horizontal);
     }
 
     public IMAGE getEnhanceImage(IMAGE px, double theta){

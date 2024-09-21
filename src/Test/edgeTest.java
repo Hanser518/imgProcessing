@@ -17,8 +17,8 @@ public class edgeTest {
 
 
         imgCtrl.setPureEdge(false);
-        String fileName = "index2";
-        IMAGE px = new IMAGE(fileName + ".png");
+        String fileName = "index1";
+        IMAGE px = new IMAGE(fileName + ".jpg");
 
         IMAGE edge = imgCtrl.getEdgeImage(px, true);
         imgCtrl.saveByName(edge, "edge_erosion_" + fileName);

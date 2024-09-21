@@ -17,6 +17,9 @@ public class IPictureServiceImpl implements IPictureService {
     public IMAGE getSubImage(IMAGE img, int width, int height, int startX, int startY) {
         int W = width + startX > img.getWidth() ? img.getWidth() - startX : width;
         int H = height + startY > img.getHeight() ? img.getHeight() - startY : height;
+        if(H == 0){
+            System.out.println("no");
+        }
         int[][] px = new int[W][H];
         int[][] raw = img.getPixelMatrix();
         for(int i = 0;i < W;i ++){
@@ -46,7 +49,7 @@ public class IPictureServiceImpl implements IPictureService {
             for(int count = 0;count < images.size();count ++){
                 int[][] raw = images.get(count).getPixelMatrix();
                 for(int i = 0;i < raw.length;i ++){
-                    for(int j = 0;j < height;j ++){
+                    for(int j = 0;j < raw[0].length;j ++){
                         px[x][j] = raw[i][j];
                     }
                     x ++;
@@ -57,11 +60,14 @@ public class IPictureServiceImpl implements IPictureService {
             for(int count = 0;count < images.size();count ++){
                 int[][] raw = images.get(count).getPixelMatrix();
                 for(int j = 0;j < raw[0].length;j ++){
-                    for(int i = 0;i < width;i ++){
+                    for(int i = 0;i < raw.length;i ++){
+//                        if(y > 120){
+//                            System.out.println(i + " " + j + " " + raw.length + " " + raw[0].length);
+//                        }
                         px[i][y] = raw[i][j];
                     }
+                    y ++;
                 }
-                y ++;
             }
         }
         return new IMAGE(px);

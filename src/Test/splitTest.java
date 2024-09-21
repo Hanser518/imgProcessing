@@ -25,7 +25,7 @@ public class splitTest {
         }
 
         // 组合图像
-        IMAGE comImg = imgCtrl.combineImages(splitList, 2);
+        IMAGE comImg = imgCtrl.combineImages(splitList, 2, true);
         imgCtrl.saveByName(comImg, "combineImage");
 
         // 等值切分
