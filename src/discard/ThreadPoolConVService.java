@@ -1,4 +1,4 @@
-package Service.discard;
+package discard;
 
 import Service.ICalculateService;
 import Service.Thread.ConVCalc;

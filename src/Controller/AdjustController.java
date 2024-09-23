@@ -6,8 +6,6 @@ import Service.ICalculateService;
 import Service.Impl.AdjustServiceImpl;
 import Service.Impl.ICalculateServiceImpl;
 
-import java.util.Map;
-
 public class AdjustController {
     private static final ICalculateService calcService = new ICalculateServiceImpl();
     public static final IAdjustService adService = new AdjustServiceImpl();
@@ -37,11 +35,18 @@ public class AdjustController {
      * @param value 饱和度调整值，范围为-100~100，超出范围的值将被压缩至-100~100以内
      * @return  输出图像
      */
-    public IMAGE AdjustSaturation(IMAGE px, int value){
+    public IMAGE adjustSaturation(IMAGE px, int value){
         return new IMAGE(adService.AdjustSaturation(px, value));
     }
 
-    public IMAGE AdjustSatAndVal(IMAGE px, int saturation, int value){
+    /**
+     * 调整图像饱和度和亮度
+     * @param px    输入图像
+     * @param saturation    饱和度调整值，范围为-100~100，超出范围的值将被压缩至-100~100以内
+     * @param value 亮度调整值，范围为-100~100，超出范围的值将被压缩至-100~100以内
+     * @return  返回值
+     */
+    public IMAGE adjustSatAndVal(IMAGE px, int saturation, int value){
         int sat = Math.max(-100, Math.min(100, saturation));
         int val = Math.max(-100, Math.min(100, value));
         int[][] pxSaturation = adService.AdjustSaturation(px, sat);

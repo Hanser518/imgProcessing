@@ -21,12 +21,10 @@ public class StylizeController {
     static ThreadPoolCore conV;
 
     public IMAGE transPaperStyle(IMAGE img, int maxTreadCount, int... kernelSize){
-        IMAGE cdr = AdCtrl.CDR(img);
         int size = kernelSize.length > 0 ? kernelSize[0] : 131;
-        conV = new ThreadPoolPaper(cdr.getPixelMatrix(), calcService.getGasKernel(size), maxTreadCount);
+        conV = new ThreadPoolPaper(img.getPixelMatrix(), calcService.getGasKernel(size), maxTreadCount);
         conV.start();
         return new IMAGE(conV.getData());
-        // return cdr;
     }
 
     public IMAGE transGrilleStyle(IMAGE img, int grilleType, boolean multiple) {
@@ -34,7 +32,7 @@ public class StylizeController {
         int kernelSize = 117;
         switch (grilleType){
             case 0:
-                radio = 0.01025;
+                radio = 0.01024;
                 System.out.println(1 / radio);
                 kernelSize = 81;
                 break;
@@ -47,7 +45,7 @@ public class StylizeController {
             default:
                 radio = 0.5;
         }
-        IMAGE ad = AdCtrl.AdjustSatAndVal(img, 72, 36);
+        IMAGE ad = AdCtrl.adjustSatAndVal(img, 72, 36);
         if(multiple){
             IMAGE gas = transPaperStyle(ad, -1, kernelSize); // kernelSize
             List<IMAGE> imgList = imgCtrl.asyncSplit(gas, (int) (1 / radio), true);

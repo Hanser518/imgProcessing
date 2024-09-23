@@ -18,8 +18,8 @@ public class AdjustServiceImpl implements IAdjustService {
         double center = 1.0;
         double bottom = 0.874; // 1 - 0.318 / 2;
         if(rate.get(4) < 0.5){
-            top = 1.341;
-            bottom = 0.992;
+            top = 1.102;
+            bottom = 0.692;
             System.out.println("acccccccc!!!");
         }
 

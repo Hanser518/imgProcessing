@@ -21,6 +21,10 @@ public class IPictureServiceImpl implements IPictureService {
             System.out.println("no");
         }
         int[][] px = new int[W][H];
+        if(W == 0 || H == 0){
+            System.out.println(width + " " + height + " " + startX + " " + startY);
+            System.out.println(W + " " + H);
+        }
         int[][] raw = img.getPixelMatrix();
         for(int i = 0;i < W;i ++){
             for(int j = 0;j < H;j ++){

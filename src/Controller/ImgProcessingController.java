@@ -7,6 +7,8 @@ import Service.Impl.ICalculateServiceImpl;
 import Service.Impl.IPictureServiceImpl;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -77,6 +79,39 @@ public class ImgProcessingController {
         // 写入图像
         File outputFile = new File(outputDir, imgName + "_" + tips + ".jpg");
         ImageIO.write(result, "jpg", outputFile);
+    }
+
+    public void showImg(IMAGE img, String name){
+        // 图像宽高
+        int imgWidth = img.getWidth();
+        int imgHeight = img.getHeight();
+        // 屏幕宽高
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Dimension screenSize = toolkit.getScreenSize();
+        int screenWidth = screenSize.width;
+        int screenHeight = screenSize.height;
+        // 确定缩放比
+        double rateW = (double) screenWidth / imgWidth;
+        double rateH = (double) screenHeight / imgHeight;
+        double rate;
+        if(rateW > rateH)
+            rate = rateH * 0.6;
+        else
+            rate = rateW * 0.8;
+        // 窗口大小
+        int frameWidth = (int) (imgWidth * rate);
+        int frameHeight = (int) (imgHeight * rate);
+        JFrame frame = new JFrame();
+        frame.setTitle(name);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(frameWidth, frameHeight);
+
+        JLabel label = new JLabel(new ImageIcon(resizeImage(img, rate, RESIZE_ENTIRETY).getImg()));
+        JPanel panel = new JPanel();
+        panel.add(label);
+
+        frame.add(panel);
+        frame.setVisible(true);
     }
 
     /**
@@ -172,8 +207,8 @@ public class ImgProcessingController {
      */
     public List<IMAGE> asyncSplit(IMAGE img, int count, boolean horizontal){
         List<IMAGE> result = new ArrayList<>();
-        int width = horizontal ? img.getWidth() / (count + 1) + 1 : img.getWidth() ;
-        int height = horizontal ? img.getHeight() : img.getHeight() / (count + 1);
+        int width = horizontal ? img.getWidth() / (count + 1) : img.getWidth() ;
+        int height = horizontal ? img.getHeight() : img.getHeight() / (count + 1) + 1;
         for(int i = 0;i < count;i ++){
             int x = horizontal ? width * i : 0;
             int y = horizontal ? 0 : height * i;

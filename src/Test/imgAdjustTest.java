@@ -21,13 +21,18 @@ public class imgAdjustTest {
         String fileName = "Red";
         IMAGE px = new IMAGE(fileName + ".jpg");
 
-        IMAGE saturation = new IMAGE(adService.AdjustSaturation(px, 72));
-        imgCtrl.saveByName(saturation, fileName, "saturation");
+        IMAGE cdr = adCtrl.CDR(px);
+        // imgCtrl.saveByName(cdr, fileName, "cdr");
 
-        IMAGE value = new IMAGE(adService.AdjustValue(px, 72));
-        imgCtrl.saveByName(value, fileName, "value");
+        IMAGE saturation = adCtrl.adjustSaturation(px, -72);
+        // imgCtrl.saveByName(saturation, fileName, "saturation");
 
-        IMAGE both = adCtrl.AdjustSatAndVal(px, 72, 36);
-        imgCtrl.saveByName(both, fileName, "both");
+        IMAGE both = adCtrl.adjustSatAndVal(px, 72, 36);
+        // imgCtrl.saveByName(both, fileName, "both");
+
+
+        imgCtrl.showImg(cdr, "cdr");
+        imgCtrl.showImg(saturation, "saturation");
+        imgCtrl.showImg(both, "both");
     }
 }
