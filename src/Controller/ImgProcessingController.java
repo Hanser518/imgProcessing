@@ -52,12 +52,14 @@ public class ImgProcessingController {
 
     /**
      * 保存图像，格式为jpg，不支持透明图像
-     * @param img
-     * @param imgName
+     * @param img   图像源
+     * @param imgName   图像名称/保存目录
+     * @param tips  图像标注
      * @throws IOException
      */
     public void saveByName(IMAGE img,
-                           String imgName) throws IOException {
+                           String imgName,
+                           String tips) throws IOException {
         // 确保输出目录存在
         File outputDir = new File("./output/" + imgName);
         if (!outputDir.exists()) {
@@ -73,7 +75,7 @@ public class ImgProcessingController {
             }
         }
         // 写入图像
-        File outputFile = new File(outputDir, imgName + ".jpg");
+        File outputFile = new File(outputDir, imgName + "_" + tips + ".jpg");
         ImageIO.write(result, "jpg", outputFile);
     }
 

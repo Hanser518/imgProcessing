@@ -11,7 +11,7 @@ import Service.Impl.ICalculateServiceImpl;
 
 import java.io.IOException;
 
-public class adjustTest {
+public class imgAdjustTest {
     static ICalculateService calculateServer = new ICalculateServiceImpl();
     static IAdjustService adService = new AdjustServiceImpl();
     static ImgProcessingController imgCtrl = new ImgProcessingController();
@@ -22,12 +22,12 @@ public class adjustTest {
         IMAGE px = new IMAGE(fileName + ".jpg");
 
         IMAGE saturation = new IMAGE(adService.AdjustSaturation(px, 72));
-        imgCtrl.saveByName(saturation, fileName + "_saturation");
+        imgCtrl.saveByName(saturation, fileName, "saturation");
 
         IMAGE value = new IMAGE(adService.AdjustValue(px, 72));
-        imgCtrl.saveByName(value, fileName + "_value");
+        imgCtrl.saveByName(value, fileName, "value");
 
         IMAGE both = adCtrl.AdjustSatAndVal(px, 72, 36);
-        imgCtrl.saveByName(both, fileName + "_both");
+        imgCtrl.saveByName(both, fileName, "both");
     }
 }
