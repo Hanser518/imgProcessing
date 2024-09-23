@@ -35,6 +35,6 @@ public class gasTest {
 
         // imgCtrl.saveByName(gasImage1, "gasImage_1");
         // imgCtrl.saveByName(gasImage2, "gasImage_2");
-        imgCtrl.saveByName(gasImage3, "gasImage_3");
+        imgCtrl.save(gasImage3, "gasImage_3");
     }
 }

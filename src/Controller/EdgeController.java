@@ -10,6 +10,7 @@ public class EdgeController {
     public IMAGE getImgEdge(IMAGE img){
         IMAGE gas = blurCtrl.quickGasBlur(img);
         IMAGE raw = new IMAGE(imgServ.getSobelEdge(gas));
-        return new IMAGE(imgServ.dilateImg(raw));
+        return raw;
+        // return new IMAGE(imgServ.dilateImg(raw));
     }
 }

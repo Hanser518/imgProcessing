@@ -30,12 +30,13 @@ public class imgServiceImpl implements imgService {
                 int value1 = px.getArgbParams(sobelX[i][j])[1];
                 int value2 = px.getArgbParams(sobelY[i][j])[1];
                 int value = (int) Math.sqrt(Math.pow(value1, 2) + Math.pow(value2, 2));
-                value = value > 10 ? value : 0;
+                value = value > 16 ? value : 0;
                 result[i][j] = px.getPixParams(new int[]{255, value, value, value});
             }
         }
         return result;
     }
+
 
     @Override
     public int[][] dilateImg(IMAGE px) {

@@ -11,6 +11,6 @@ public class ultraTest {
         IMAGE px = new IMAGE("rx78.jpg");
         imgCtrl.openMultiThreads();
         IMAGE gas = imgCtrl.getUltraGas(px, 30, 80);
-        imgCtrl.saveByName(gas, "gas");
+        imgCtrl.save(gas, "gas");
     }
 }

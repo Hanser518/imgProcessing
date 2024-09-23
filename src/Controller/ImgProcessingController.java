@@ -7,6 +7,7 @@ import Service.Impl.ICalculateServiceImpl;
 import Service.Impl.IPictureServiceImpl;
 
 import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,25 +31,50 @@ public class ImgProcessingController {
     public final Integer RESIZE_VERTICAL = 2;
 
     /**
-     * 保存图像
-     * @param img
-     * @param imgName
+     * 保存图像，允许保存透明图像，格式固定为png
+     * @param img   图像源
+     * @param imgName   保存名称
      */
-    public void saveByName(IMAGE img,
-                           String imgName) throws IOException {
+    public void save(IMAGE img,
+                     String imgName) throws IOException {
         // 确保输出目录存在
-        File outputDir = new File("./output");
+        File outputDir = new File("./output" + imgName);
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }
-
         // 写入图像
         File outputFile = new File(outputDir, imgName + ".png");
         boolean success = ImageIO.write(img.getImg(), "png", outputFile);
         if (!success) {
             throw new IOException("无法保存图像到指定位置: " + outputFile.getAbsolutePath());
         }
-        // ImageIO.write(img.getImg(), "jpg", new File("./output/" + imgName + ".jpg"));
+    }
+
+    /**
+     * 保存图像，格式为jpg，不支持透明图像
+     * @param img
+     * @param imgName
+     * @throws IOException
+     */
+    public void saveByName(IMAGE img,
+                           String imgName) throws IOException {
+        // 确保输出目录存在
+        File outputDir = new File("./output/" + imgName);
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+        }
+        int[][] p = img.getPixelMatrix();
+        int width = img.getWidth();
+        int height = img.getHeight();
+        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        for(int i = 0;i < width;i ++){
+            for(int j = 0;j < height;j ++){
+                result.setRGB(i, j, p[i][j]);
+            }
+        }
+        // 写入图像
+        File outputFile = new File(outputDir, imgName + ".jpg");
+        ImageIO.write(result, "jpg", outputFile);
     }
 
     /**

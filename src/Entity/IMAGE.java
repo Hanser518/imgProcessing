@@ -15,6 +15,7 @@ public class IMAGE {
      * 像素存储
      */
     private int[] pixelList;
+    private int[] hsvList;
 
     /**
      * 图像宽高
@@ -91,6 +92,92 @@ public class IMAGE {
      */
     public int[] getPixelList() {
         return pixelList;
+    }
+
+    public double[][][] RGB2HSV() {
+        int[][] rgb = getPixelMatrix();
+        return RGB2HSV(rgb);
+    }
+
+    public double[][][] RGB2HSV(int[][] rgb) {
+        // 0-H, 1-S, 2-V
+        double[][][] hsv = new double[width][height][3];
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                double r = ((rgb[i][j] >> 16) & 0xFF) / 255.0;
+                double g = ((rgb[i][j] >> 8) & 0xFF) / 255.0;
+                double b = ((rgb[i][j]) & 0xFF) / 255.0;
+                double min = Math.min(r, Math.min(g, b));
+                double v = Math.max(r, Math.max(g, b));
+
+                double delta = v - min;
+                double s = delta / (Math.abs(v) + 2.2204460492503131e-16);
+                delta = 60.0 / (delta + 2.2204460492503131e-16);
+
+                double h;
+                if (v == r) {
+                    h = (g - b) * delta;
+                } else if (v == g) {
+                    h = (b - r) * delta + 120;
+                } else {
+                    h = (r - g) * delta + 240;
+                }
+                h = h < 0 ? h + 360 : h;
+                hsv[i][j] = new double[]{h, s, v};
+            }
+        }
+        return hsv;
+    }
+
+    public int[][] HSV2RGB(double[][][] hsv) {
+        int[][] rgb = new int[width][height];
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                double h = hsv[i][j][0];
+                double s = hsv[i][j][1];
+                double v = hsv[i][j][2];
+                int h1 = (int) Math.floor(h / 60);
+                double f = h / 60 - h1;
+                double p = v * (1 - s);
+                double q = v * (1 - f * s);
+                double t = v * (1 - (1 - f) * s);
+                int r = 0, g = 0, b = 0;
+                switch (h1) {
+                    case 0:
+                        r = (int) (v * 255);
+                        g = (int) (t * 255);
+                        b = (int) (p * 255);
+                        break;
+                    case 1:
+                        r = (int) (q * 255);
+                        g = (int) (v * 255);
+                        b = (int) (p * 255);
+                        break;
+                    case 2:
+                        r = (int) (p * 255);
+                        g = (int) (v * 255);
+                        b = (int) (t * 255);
+                        break;
+                    case 3:
+                        r = (int) (p * 255);
+                        g = (int) (q * 255);
+                        b = (int) (v * 255);
+                        break;
+                    case 4:
+                        r = (int) (t * 255);
+                        g = (int) (p * 255);
+                        b = (int) (v * 255);
+                        break;
+                    case 5:
+                        r = (int) (v * 255);
+                        g = (int) (p * 255);
+                        b = (int) (q * 255);
+                        break;
+                }
+                rgb[i][j] = (255 << 24) | ((r) << 16) | ((g) << 8) | (b);
+            }
+        }
+        return rgb;
     }
 
     /**

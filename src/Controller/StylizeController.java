@@ -36,7 +36,7 @@ public class StylizeController {
             case 0:
                 radio = 0.01025;
                 System.out.println(1 / radio);
-                kernelSize = 67;
+                kernelSize = 81;
                 break;
             case 1:
                 radio = 0.0425;
@@ -47,15 +47,16 @@ public class StylizeController {
             default:
                 radio = 0.5;
         }
+        IMAGE ad = AdCtrl.AdjustSatAndVal(img, 72, 36);
         if(multiple){
-            IMAGE gas = transPaperStyle(img, -1, kernelSize); // kernelSize
+            IMAGE gas = transPaperStyle(ad, -1, kernelSize); // kernelSize
             List<IMAGE> imgList = imgCtrl.asyncSplit(gas, (int) (1 / radio), true);
             IMAGE ver = imgCtrl.combineImages(imgList, grilleType, true);
             imgList = imgCtrl.asyncSplit(ver, (int) (1 / (radio * 1.73)), false);
             IMAGE res = imgCtrl.combineImages(imgList, grilleType, false);
             return res;
         }else{
-            IMAGE gas = transPaperStyle(img, -1, kernelSize); // kernelSize
+            IMAGE gas = transPaperStyle(ad, -1, kernelSize); // kernelSize
             List<IMAGE> imgList = imgCtrl.asyncSplit(gas, (int) (1 / radio), true);
             return imgCtrl.combineImages(imgList, grilleType, true);
         }

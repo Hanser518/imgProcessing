@@ -17,12 +17,12 @@ public class grilleTest {
         imgCtrl.openMultiThreads();
 
         IMAGE grille = imgCtrl.getGrilleImage(px, imgCtrl.GRILLE_REGULAR, 0);
-        imgCtrl.saveByName(grille, "Grille_0" + fileName);
+        imgCtrl.save(grille, "Grille_0" + fileName);
 
         grille = imgCtrl.getGrilleImage(px, imgCtrl.GRILLE_REGULAR, 1);
-        imgCtrl.saveByName(grille, "Grille_1" + fileName);
+        imgCtrl.save(grille, "Grille_1" + fileName);
 
         grille = imgCtrl.getGrilleImage(px, imgCtrl.GRILLE_REGULAR, 2);
-        imgCtrl.saveByName(grille, "Grille_2" + fileName);
+        imgCtrl.save(grille, "Grille_2" + fileName);
     }
 }

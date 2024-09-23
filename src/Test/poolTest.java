@@ -17,7 +17,7 @@ public class poolTest {
     static EdgeController edgeCtrl = new EdgeController();
     static AdjustController adCtrl = new AdjustController();
     public static void main(String[] args) throws IOException {
-        String fileName = "index3";
+        String fileName = "Red";
         IMAGE px = new IMAGE(fileName + ".jpg");
         int blurSize = 67;
 
@@ -26,11 +26,11 @@ public class poolTest {
 
         // 使用线程池
         long set = System.currentTimeMillis();
-        IMAGE gasImage1 = styleCtrl.transGrilleStyle(px, styleCtrl.GRILLE_REGULAR, false);
+        IMAGE gasImage1 = styleCtrl.transGrilleStyle(px, styleCtrl.GRILLE_MEDIUM, false);
         // IMAGE gasImage1 = styleCtrl.transPaperStyle(px, 24);
         System.out.println((System.currentTimeMillis() - set) / 1000.0);
         // IMAGE gasImage1 = edgeCtrl.getImgEdge(px);
-        imgCtrl.saveByName(gasImage1, "gas1");
+        imgCtrl.save(gasImage1, fileName + "_grille");
 
         // 开启多线程
 //        imgCtrl.openMultiThreads();

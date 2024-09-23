@@ -14,6 +14,6 @@ public class enhanceTest {
         IMAGE px = new IMAGE(fileName + ".jpg");
 
         IMAGE enhance = imgCtrl.getEnhanceImage(px, 3.14);
-        imgCtrl.saveByName(enhance, "enhance_" + fileName);
+        imgCtrl.save(enhance, "enhance_" + fileName);
     }
 }

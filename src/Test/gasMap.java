@@ -64,7 +64,7 @@ public class gasMap {
         IMAGE gasImage2 = imgCtrl.getGasImage(px, 3);
         his = new IMAGE(calculateServer.getHistogram(gasImage2));
         // his = new IMAGE(calculateServer.getHistogram(px));
-        imgCtrl.saveByName(his, "his2");
+        imgCtrl.save(his, "his2");
 
 //        IMAGE gasImage3 = imgCtrl.getGasImage(px, 13);
 //        his = new IMAGE(calculateServer.getHistogram(gasImage3));
