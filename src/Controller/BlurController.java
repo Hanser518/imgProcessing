@@ -3,6 +3,7 @@ package Controller;
 import Entity.IMAGE;
 import Service.Extends.ThreadPoolConV;
 import Service.CORE.ThreadPoolCore;
+import Service.Extends.ThreadPoolStrange;
 
 import static Controller.StylizeController.calcService;
 
@@ -34,5 +35,10 @@ public class BlurController {
         return new IMAGE(conV.getData());
     }
 
-
+    public IMAGE getStrangeBlur(IMAGE img, int size){
+        double[][] kernel = calcService.getGasKernel(size);
+        conV = new ThreadPoolStrange(img.getPixelMatrix(), kernel, 24);
+        conV.start();
+        return new IMAGE(conV.getData());
+    }
 }
