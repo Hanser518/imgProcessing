@@ -1,4 +1,4 @@
-package Controller;
+package Discard;
 
 import Entity.IMAGE;
 import Service.ICalculateService;

@@ -33,7 +33,7 @@ public class ConVStrange extends ThreadCore {
         double rate = 0;
         // int value = Math.abs((x * y) % (x + y + 1));
         int random = (int) (Math.random() * 100) + 1;
-        if ((x + y) % random > 1 || (x + y) % 100 > random || (Math.abs(x - y) % 100 > random)) {
+        if ((x + y) % random > 5 || (x + y) % 100 > random || (Math.abs(x - y) % 100 > random)) {
             int s = (kernel.length - kernels.length) / 2;
             for (int i = s; i < kernels.length + s; i++) {
                 for (int j = s; j < kernels.length + s; j++) {

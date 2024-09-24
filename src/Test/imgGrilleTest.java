@@ -1,6 +1,6 @@
 package Test;
 
-import Controller.ImgProcessingController;
+import Discard.ImgProcessingController;
 import Controller.StylizeController;
 import Entity.IMAGE;
 import Service.ICalculateService;

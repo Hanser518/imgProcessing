@@ -1,4 +1,4 @@
-package discard;
+package Discard;
 
 import Service.ICalculateService;
 import Service.Thread.PaperBlurCalc;

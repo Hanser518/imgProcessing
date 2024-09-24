@@ -37,7 +37,6 @@ public class ThreadPoolStrange extends ThreadPoolCore {
                 ConVStrange cS = leisureThreads.pop();
                 int index = eventIndex.pop();
                 cS = new ConVStrange(ePools[index]);
-
                 Thread t = new Thread(cS);
                 threadPool.add(t);
                 t.start();

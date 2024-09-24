@@ -11,6 +11,13 @@ public interface imgService {
     public int[][] getSobelEdge(IMAGE px);
 
     /**
+     * 获取Prewitt算子计算的图像边缘
+     */
+    public int[][] getPrewittEdge(IMAGE px);
+
+    public int[][] getMarrEdge(IMAGE px);
+
+    /**
      * 膨胀算法
      * @param px
      * @return

@@ -2,7 +2,8 @@ package Test;
 
 import Controller.AdjustController;
 import Controller.EdgeController;
-import Controller.ImgProcessingController;
+import Controller.ImgController;
+import Discard.ImgProcessingController;
 import Entity.IMAGE;
 import Service.IAdjustService;
 import Service.ICalculateService;
@@ -15,6 +16,7 @@ public class imgAdjustTest {
     static ICalculateService calculateServer = new ICalculateServiceImpl();
     static IAdjustService adService = new AdjustServiceImpl();
     static ImgProcessingController imgCtrl = new ImgProcessingController();
+    static ImgController imgCtrl2 = new ImgController();
     static AdjustController adCtrl = new AdjustController();
     static EdgeController edgeCtrl = new EdgeController();
     public static void main(String[] args) throws IOException {
@@ -31,8 +33,8 @@ public class imgAdjustTest {
         // imgCtrl.saveByName(both, fileName, "both");
 
 
-        imgCtrl.showImg(cdr, "cdr");
-        imgCtrl.showImg(saturation, "saturation");
-        imgCtrl.showImg(both, "both");
+        imgCtrl2.showImg(cdr, "cdr");
+        imgCtrl2.showImg(saturation, "saturation");
+        imgCtrl2.showImg(both, "both");
     }
 }

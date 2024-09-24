@@ -1,6 +1,6 @@
 package Test;
 
-import Controller.ImgProcessingController;
+import Discard.ImgProcessingController;
 import Entity.IMAGE;
 
 import java.io.IOException;

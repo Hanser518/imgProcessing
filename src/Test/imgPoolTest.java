@@ -1,9 +1,8 @@
 package Test;
 
 import Controller.*;
+import Discard.ImgProcessingController;
 import Entity.IMAGE;
-import Service.ICalculateService;
-import Service.Impl.ICalculateServiceImpl;
 
 import java.io.IOException;
 

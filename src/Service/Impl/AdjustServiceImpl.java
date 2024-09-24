@@ -4,6 +4,8 @@ import Entity.IMAGE;
 import Service.IAdjustService;
 import Service.ICalculateService;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.Map;
 
 public class AdjustServiceImpl implements IAdjustService {
@@ -97,5 +99,15 @@ public class AdjustServiceImpl implements IAdjustService {
             }
         }
         return px.HSV2RGB(hsv);
+    }
+
+    @Override
+    public IMAGE getReizedImage(IMAGE px, int wSize, int hSize) {
+        BufferedImage raw = px.getImg();
+        Image scaledImage = raw.getScaledInstance(wSize, hSize, Image.SCALE_SMOOTH);
+        // 将调整尺寸后的图像转换为BufferedImage
+        BufferedImage result = new BufferedImage(wSize, hSize, BufferedImage.TYPE_INT_ARGB);
+        result.getGraphics().drawImage(scaledImage, 0, 0, null);
+        return new IMAGE(result);
     }
 }

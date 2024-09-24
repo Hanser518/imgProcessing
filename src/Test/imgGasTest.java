@@ -1,7 +1,7 @@
 package Test;
 
 import Controller.BlurController;
-import Controller.ImgProcessingController;
+import Discard.ImgProcessingController;
 import Entity.IMAGE;
 import Service.ICalculateService;
 import Service.Impl.ICalculateServiceImpl;

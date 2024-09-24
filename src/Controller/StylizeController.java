@@ -1,5 +1,6 @@
 package Controller;
 
+import Discard.ImgProcessingController;
 import Entity.IMAGE;
 import Service.Extends.ThreadPoolPaper;
 import Service.ICalculateService;
