@@ -21,7 +21,7 @@ public class ImgController {
 
     /**
      * 保存图像，格式为jpg，不支持透明图像
-     *
+     * jpg格式存储占用小，但清晰度不如png格式
      * @param img     图像源
      * @param imgName 图像名称/保存目录
      * @param tips    图像标注
@@ -49,6 +49,27 @@ public class ImgController {
         ImageIO.write(result, "jpg", outputFile);
     }
 
+    /**
+     * 保存图像，格式为png，支持透明图像
+     * 相较于jpg格式更加清晰，但对存储空间的要求较大
+     * @param img     图像源
+     * @param imgName 图像名称/保存目录
+     * @param tips    图像标注
+     * @throws IOException
+     */
+    public void saveByName2(IMAGE img,
+                           String imgName,
+                           String tips) throws IOException {
+        // 确保输出目录存在
+        File outputDir = new File("./output/" + imgName);
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+        }
+        // 写入图像
+        File outputFile = new File(outputDir, imgName + "_" + tips + ".png");
+        ImageIO.write(img.getImg(), "png", outputFile);
+    }
+
     public void showImg(IMAGE img, String name) {
         // 图像宽高
         int imgWidth = img.getWidth();
@@ -71,17 +92,32 @@ public class ImgController {
         int frameHeight = (int) (imgHeight * rate) + 80;
         JFrame frame = new JFrame();
         frame.setTitle(name);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(frameWidth, frameHeight);
 
         JLabel label = new JLabel(new ImageIcon(pcsCtrl.resizeImage(img, rate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
 
-        JButton button = new JButton("Save");
-        button.addActionListener(action -> {
+
+        final boolean[] png = {false};
+        JButton select = new JButton("jpg");
+        select.addActionListener(action -> {
+            png[0] = !png[0];
+            if(png[0])
+                select.setText("png");
+            else
+                select.setText("jpg");
+        });
+
+        JButton saveButton = new JButton("Save");
+        saveButton.addActionListener(action -> {
             try {
                 LocalDateTime date = LocalDateTime.now();
                 String time = date.format(DateTimeFormatter.ofPattern("yyyyMMdd_hhmmss")) + "_" + (int) (Math.random() * 1000);
-                saveByName(img, "QuickSave", name + time);
+                if(!png[0])
+                    saveByName(img, "QuickSave", name + time);
+                else
+                    saveByName2(img, "QuickSave", name + time);
+                frame.dispose();
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
@@ -89,7 +125,8 @@ public class ImgController {
 
         JPanel panel = new JPanel();
         panel.add(label);
-        panel.add(button);
+        panel.add(saveButton);
+        panel.add(select);
 
         frame.add(panel);
         frame.setVisible(true);

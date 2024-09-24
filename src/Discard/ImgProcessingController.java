@@ -1,5 +1,6 @@
 package Discard;
 
+import Controller.AdjustController;
 import Entity.IMAGE;
 import Service.ICalculateService;
 import Service.IPictureService;
@@ -18,6 +19,7 @@ import java.util.List;
 public class ImgProcessingController {
     private final ICalculateService calcServer = new ICalculateServiceImpl();
     private final IPictureService picServer = new IPictureServiceImpl();
+    static AdjustController AdCtrl = new AdjustController();
     // 计算预设
     private boolean multiThreads = false;
     private boolean accurateCalculate = true;
@@ -40,7 +42,7 @@ public class ImgProcessingController {
     public void save(IMAGE img,
                      String imgName) throws IOException {
         // 确保输出目录存在
-        File outputDir = new File("./output" + imgName);
+        File outputDir = new File("./output");
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }
@@ -290,10 +292,13 @@ public class ImgProcessingController {
             }
         }else if(type == 2){
             for(int i = 0;i < imgList.size(); i ++){
-                if(i % 2 == 0)
-                    resized.add(resizeImage(imgList.get(i), 0.97, horizontal ? RESIZE_LANDSCAPE : RESIZE_VERTICAL));
+                if(i % 2 == 0) {
+                    IMAGE aim = AdCtrl.adjustSatAndVal(imgList.get(i), -8, 12);
+                    resized.add(resizeImage(aim, 0.96, horizontal ? RESIZE_LANDSCAPE : RESIZE_VERTICAL));
+                }
                 else {
-                    resized.add(resizeImage(imgList.get(i), 0.03, horizontal ? RESIZE_LANDSCAPE : RESIZE_VERTICAL));
+                    IMAGE aim = AdCtrl.adjustSatAndVal(imgList.get(i), 16, -4);
+                    resized.add(resizeImage(imgList.get(i), 0.04, horizontal ? RESIZE_LANDSCAPE : RESIZE_VERTICAL));
                 }
             }
         }else{

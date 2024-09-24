@@ -9,7 +9,7 @@ import Service.Impl.ICalculateServiceImpl;
 
 import java.io.IOException;
 
-public class edgeTest {
+public class imgEdgeTest {
     static ICalculateService calculateServer = new ICalculateServiceImpl();
     static ImgProcessingController imgCtrl = new ImgProcessingController();
     static ImgController imgCtrl2 = new ImgController();

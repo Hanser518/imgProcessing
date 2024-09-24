@@ -39,14 +39,15 @@ public class StylizeController {
                 break;
             case 1:
                 radio = 0.0425;
+                kernelSize = 153;
                 break;
             case 2:
-                radio = 0.02125;
+                radio = 0.04125;
                 break;
             default:
                 radio = 0.5;
         }
-        IMAGE ad = AdCtrl.adjustSatAndVal(img, 72, 36);
+        IMAGE ad = AdCtrl.adjustSatAndVal(img, 36, 24);
         if(multiple){
             IMAGE gas = transPaperStyle(ad, -1, kernelSize); // kernelSize
             List<IMAGE> imgList = imgCtrl.asyncSplit(gas, (int) (1 / radio), true);
