@@ -1,4 +1,4 @@
-package Service.Thread;
+package Service.Extends.Thread;
 
 
 import Entity.EventPool;
@@ -78,6 +78,6 @@ public class PaperBlurCalc implements Runnable {
                 ep.result[i - ep.sx][j - ep.sy] = picMarCalc(data, kernel, i, j);
             }
         }
-        System.out.print(ep.index + "|");
+        // System.out.print(ep.index + "|");
     }
 }

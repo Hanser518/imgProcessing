@@ -1,6 +1,7 @@
 package Service.CORE;
 
 import Entity.EventPool;
+import Service.Extends.Thread.PaperBlur;
 import Service.ICalculateService;
 import Service.Impl.ICalculateServiceImpl;
 
@@ -20,6 +21,7 @@ public abstract class ThreadPoolCore {
     protected EventPool[] ePools;
     protected Stack<Integer> eventIndex = new Stack<>();
     protected List<Thread> threadPool = new ArrayList<>();
+    protected Stack<?> leisure = new Stack<>();
 
     private final ICalculateService calcService = new ICalculateServiceImpl();
 
@@ -77,6 +79,7 @@ public abstract class ThreadPoolCore {
     public void start(){
         initThread();
         long set = System.currentTimeMillis();
+        long outSet = System.currentTimeMillis();
         while (!eventIndex.isEmpty()) {
             List<Thread> index = new ArrayList<>();
             // 遍历threadPool
@@ -96,16 +99,13 @@ public abstract class ThreadPoolCore {
                 if (threadCount < threadCountLimit) {
                     threadCount++;
                     leisurePush();
-                    System.out.print(threadCount + "&");
                 }
-                set = System.currentTimeMillis();
-                System.out.print("\n@" + eventIndex.size() + ".");
-                System.out.print("\n&" + threadPool.size()+ ".");
-
             }
-            // System.out.println("event:" + eventIndex.size() + "|leisure:" + leisureThreads.size() + "|thread:" + threadPool.size());
+            if((System.currentTimeMillis() - outSet) / 100.0 > 1){
+                outSet = System.currentTimeMillis();
+                System.out.printf("\r@ %2.4f percent", (1 - (double)eventIndex.size() / ePools.length));
+            }
         }
-        System.out.println("event empty now");
         int limit = threadPool.size();
         while (true) {
             int alive = 0;
@@ -116,6 +116,10 @@ public abstract class ThreadPoolCore {
                 }
             }
             if (limit == alive) break;
+            if((System.currentTimeMillis() - outSet) / 100.0 > 1){
+                outSet = System.currentTimeMillis();
+                System.out.printf("\r@ %2.4f percent", (1 - (double)eventIndex.size() / ePools.length));
+            }
         }
         System.out.println();
         data = combineData();

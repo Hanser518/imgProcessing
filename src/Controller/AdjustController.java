@@ -54,4 +54,8 @@ public class AdjustController {
         return new IMAGE(pxValue);
     }
 
+    public IMAGE test(IMAGE px, int value) {
+        return new IMAGE(adService.test(px, value));
+    }
+
 }

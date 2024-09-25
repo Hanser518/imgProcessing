@@ -1,7 +1,7 @@
 package Service.Extends;
 
 
-import Service.Thread.ConVCalc;
+import Service.Extends.Thread.ConVCalc;
 import Service.CORE.ThreadPoolCore;
 
 import java.util.Stack;
@@ -12,6 +12,8 @@ public class ThreadPoolConV extends ThreadPoolCore {
     public ThreadPoolConV(int[][] requestData, double[][] ConVKernel, int MaxThreadCount) {
         super(requestData, ConVKernel, MaxThreadCount);
         initLeisureThread();
+        ConVCalc.setData(data);
+        ConVCalc.setKernel(fillKernel);
     }
 
     @Override
@@ -20,7 +22,7 @@ public class ThreadPoolConV extends ThreadPoolCore {
     }
 
     // 压入未激活的处理线程
-    protected void initLeisureThread(){
+    protected void initLeisureThread() {
         for (int i = 0; i < threadCount; i++) {
             leisureThreads.add(new ConVCalc());
         }
@@ -32,11 +34,11 @@ public class ThreadPoolConV extends ThreadPoolCore {
             if (!eventIndex.isEmpty()) {
                 ConVCalc cc = leisureThreads.pop();
                 int index = eventIndex.pop();
-                cc = new ConVCalc(ePools[index], data, fillKernel);
+                cc = new ConVCalc(ePools[index]);
                 Thread t = new Thread(cc);
                 threadPool.add(t);
                 t.start();
-                System.out.print(ePools[index].index + "#");
+                // System.out.print(ePools[index].index + "#");
             } else {
                 break;
             }

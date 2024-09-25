@@ -1,7 +1,7 @@
 package Discard;
 
 import Service.ICalculateService;
-import Service.Thread.ConVCalc;
+import Service.Extends.Thread.ConVCalc;
 import Entity.EventPool;
 import Service.Impl.ICalculateServiceImpl;
 
@@ -146,7 +146,7 @@ public class ThreadPoolConVService {
             if (!eventIndex.isEmpty()) {
                 ConVCalc cc = leisureThreads.pop();
                 int index = eventIndex.pop();
-                cc = new ConVCalc(ePools[index], data, kernel);
+                cc = new ConVCalc(ePools[index]);
                 Thread t = new Thread(cc);
                 threadPool.add(t);
                 t.start();

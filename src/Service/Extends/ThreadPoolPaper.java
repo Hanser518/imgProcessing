@@ -1,8 +1,7 @@
 package Service.Extends;
 
 
-import Service.Thread.PaperBlur;
-import Service.Thread.PaperBlurCalc;
+import Service.Extends.Thread.PaperBlur;
 import Service.CORE.ThreadPoolCore;
 
 import java.util.Stack;
@@ -12,7 +11,7 @@ public class ThreadPoolPaper extends ThreadPoolCore {
 
     public ThreadPoolPaper(int[][] requestData, double[][] ConVKernel, int MaxThreadCount) {
         super(requestData, ConVKernel, MaxThreadCount);
-        initLeisureThread();
+        leisure = new Stack<PaperBlur>();
         PaperBlur.setData(data);
         PaperBlur.setKernel(fillKernel);
     }
@@ -23,7 +22,7 @@ public class ThreadPoolPaper extends ThreadPoolCore {
     }
 
     // 压入未激活的处理线程
-    protected void initLeisureThread(){
+    protected void initLeisureThread() {
         for (int i = 0; i < threadCount; i++) {
             leisureThreads.add(new PaperBlur());
         }
@@ -39,8 +38,8 @@ public class ThreadPoolPaper extends ThreadPoolCore {
                 Thread t = new Thread(pb);
                 threadPool.add(t);
                 t.start();
-                System.out.print(ePools[index].index + "#");
-            }else{
+                // System.out.print(ePools[index].index + "#");
+            } else {
                 break;
             }
         }

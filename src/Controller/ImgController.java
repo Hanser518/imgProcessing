@@ -92,7 +92,7 @@ public class ImgController {
         int frameHeight = (int) (imgHeight * rate) + 80;
         JFrame frame = new JFrame();
         frame.setTitle(name);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(frameWidth, frameHeight);
 
         JLabel label = new JLabel(new ImageIcon(pcsCtrl.resizeImage(img, rate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
@@ -123,10 +123,16 @@ public class ImgController {
             }
         });
 
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(action -> {
+            frame.dispose();
+        });
+
         JPanel panel = new JPanel();
         panel.add(label);
         panel.add(saveButton);
         panel.add(select);
+        panel.add(closeButton);
 
         frame.add(panel);
         frame.setVisible(true);

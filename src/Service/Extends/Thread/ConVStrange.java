@@ -1,4 +1,4 @@
-package Service.Thread;
+package Service.Extends.Thread;
 
 import Entity.EventPool;
 import Service.CORE.ThreadCore;

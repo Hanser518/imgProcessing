@@ -36,4 +36,7 @@ public interface IAdjustService {
      */
     public IMAGE getReizedImage(IMAGE px, int wSize, int hSize);
 
+
+    public int[][] test(IMAGE px, int value);
+
 }

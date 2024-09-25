@@ -32,6 +32,6 @@ public abstract class ThreadCore implements Runnable {
                 ep.result[i - ep.sx][j - ep.sy] = matrixCalc(i, j);
             }
         }
-        System.out.print(ep.index + "|");
+        // System.out.print(ep.index + "|");
     }
 }

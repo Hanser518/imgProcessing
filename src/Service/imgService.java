@@ -22,5 +22,7 @@ public interface imgService {
      * @param px
      * @return
      */
-    public int[][] dilateImg(IMAGE px);
+    public int[][] dilateImg(IMAGE px, int radius);
+
+    public int[][] erosionImg(IMAGE px, int radius);
 }

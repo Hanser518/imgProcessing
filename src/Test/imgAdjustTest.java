@@ -20,21 +20,26 @@ public class imgAdjustTest {
     static AdjustController adCtrl = new AdjustController();
     static EdgeController edgeCtrl = new EdgeController();
     public static void main(String[] args) throws IOException {
-        String fileName = "Red";
+        String fileName = "7820";
         IMAGE px = new IMAGE(fileName + ".jpg");
 
-        IMAGE cdr = adCtrl.CDR(px);
-        // imgCtrl.saveByName(cdr, fileName, "cdr");
+//         IMAGE cdr = adCtrl.CDR(px);
+//         imgCtrl.saveByName(cdr, fileName, "cdr");
+//
+//         IMAGE saturation = adCtrl.adjustSaturation(px, -72);
+//         imgCtrl.saveByName(saturation, fileName, "saturation");
+//
+//         IMAGE both = adCtrl.adjustSatAndVal(px, 0, 0);
+//         imgCtrl.saveByName(both, fileName, "both");
+//
+//
+//         imgCtrl2.showImg(cdr, "cdr");
+//         imgCtrl2.showImg(saturation, "saturation");
+//         imgCtrl2.showImg(both, "both");
+        for(int i = 0;i <= 360;i += 10){
+            IMAGE test = adCtrl.test(px, i);
+            imgCtrl2.showImg(test, "test" + i);
+        }
 
-        IMAGE saturation = adCtrl.adjustSaturation(px, -72);
-        // imgCtrl.saveByName(saturation, fileName, "saturation");
-
-        IMAGE both = adCtrl.adjustSatAndVal(px, 72, 36);
-        // imgCtrl.saveByName(both, fileName, "both");
-
-
-        imgCtrl2.showImg(cdr, "cdr");
-        imgCtrl2.showImg(saturation, "saturation");
-        imgCtrl2.showImg(both, "both");
     }
 }

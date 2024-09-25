@@ -69,18 +69,62 @@ public class imgServiceImpl implements imgService {
 
 
     @Override
-    public int[][] dilateImg(IMAGE px) {
-        double[][] kernel = new double[7][7];
-        conv = new ThreadPoolActive(px.getPixelMatrix(), kernel, 3, 24);
-        conv.start();
-        int[][] ac = conv.getData();
+    public int[][] dilateImg(IMAGE px, int radius) {
+        double[][] kernel = new double[radius * 2 + 1][radius * 2 + 1];
+//        conv = new ThreadPoolActive(px.getPixelMatrix(), kernel, radius, 24);
+//        conv.start();
+//        int[][] ac = conv.getData();
         int width = px.getWidth();
         int height = px.getHeight();
-        int[][] result = new int[width][height];
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                int value = ac[i][j] * 255;
-                result[i][j] = px.getPixParams(new int[]{255, value, value, value});
+        int[][] result = px.getPixelMatrix();
+        for (int j = 0; j < height; j++) {
+            for (int i = 0; i < width; i++) {
+                double act = 0;
+                for (int k = -radius; k < radius * 2 + 1; k++) {
+                    for (int l = -radius; l < radius * 2 + 1; l++) {
+                        try {
+                            int r = (result[i + k][j + l] >> 16) & 0xFF;
+                            if (r == 187)
+                                act += 0.67;
+                            else if (r >= 32)
+                                act++;
+                        } catch (Exception ignored) {
+                        }
+                    }
+                }
+                if (act > Math.pow(radius * 2 + 1, 2) / 3.0)
+                    result[i][j] = px.getPixParams(new int[]{255, 187, 187, 187});
+//                int value = ac[i][j] * 255;
+//                result[i][j] = px.getPixParams(new int[]{255, value, value, value});
+            }
+        }
+        return result;
+    }
+
+    public int[][] erosionImg(IMAGE px, int radius) {
+        double[][] kernel = new double[radius * 2 + 1][radius * 2 + 1];
+        int width = px.getWidth();
+        int height = px.getHeight();
+        int[][] result = px.getPixelMatrix();
+        for (int j = 0; j < height; j++) {
+            for (int i = 0; i < width; i++) {
+                double act = 0;
+                for (int k = -radius; k < radius * 2 + 1; k++) {
+                    for (int l = -radius; l < radius * 2 + 1; l++) {
+                        try {
+                            int r = (result[i + k][j + l] >> 16) & 0xFF;
+                            if (r >= 32)
+                                act++;
+                        } catch (Exception ignored) {
+                        }
+                    }
+                }
+//                if (act > Math.pow(radius * 2 + 1, 2) * 0.85)
+//                    result[i][j] = px.getPixParams(new int[]{255, 187, 187, 187});
+//                else
+//                    result[i][j] = px.getPixParams(new int[]{255, 0, 0, 0});
+                if (act <= Math.pow(radius * 2 + 1, 2) * 0.85)
+                    result[i][j] = px.getPixParams(new int[]{255, 0, 0, 0});
             }
         }
         return result;

@@ -1,35 +1,26 @@
-package Service.Thread;
+package Service.Extends.Thread;
+
 
 import Entity.EventPool;
 import Service.CORE.ThreadCore;
 
-public class PaperBlur extends ThreadCore {
+public class ConVCalc extends ThreadCore {
 
-    public PaperBlur(){
+    public ConVCalc() {
         super();
     }
 
-    public PaperBlur(EventPool ep){
-        super(ep);
-    }
 
-    // 获取不同位置的步长
-    private int getStep(int loc, int len) {
-        int dis = Math.abs(len / 2 - loc) + 1;
-        return (int) (Math.sqrt(kernel.length) / 2) + 1;
-//        if(dis % 3 != 0)
-//            return (int) Math.log(dis) + dis % 3;
-//        else
-//            return (int) Math.log(kernel.length) + 1;
+    public ConVCalc(EventPool ep) {
+        super(ep);
     }
 
     @Override
     public int matrixCalc(int x, int y) {
         double r = 0, g = 0, b = 0;
         double rate = 0;
-        int len = kernel.length;
-        for (int i = 0; i < kernel.length; i += getStep(i, len)) {
-            for(int j = 0;j < kernel.length; j += getStep(j, len)){
+        for (int i = 0; i < kernel.length; i ++) {
+            for(int j = 0;j < kernel.length; j ++){
                 r += kernel[i][j] * ((data[x + i][y + j] >> 16) & 0xFF);
                 g += kernel[i][j] * ((data[x + i][y + j] >> 8) & 0xFF);
                 b += kernel[i][j] * ((data[x + i][y + j]) & 0xFF);

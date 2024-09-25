@@ -1,9 +1,8 @@
 package Service.Extends;
 
 
-import Service.Thread.ConVCalc;
 import Service.CORE.ThreadPoolCore;
-import Service.Thread.ConVStrange;
+import Service.Extends.Thread.ConVStrange;
 
 import java.util.Stack;
 
@@ -24,7 +23,7 @@ public class ThreadPoolStrange extends ThreadPoolCore {
     }
 
     // 压入未激活的处理线程
-    protected void initLeisureThread(){
+    protected void initLeisureThread() {
         for (int i = 0; i < threadCount; i++) {
             leisureThreads.add(new ConVStrange());
         }
@@ -40,7 +39,7 @@ public class ThreadPoolStrange extends ThreadPoolCore {
                 Thread t = new Thread(cS);
                 threadPool.add(t);
                 t.start();
-                System.out.print(ePools[index].index + "#");
+                // System.out.print(ePools[index].index + "#");
             } else {
                 break;
             }

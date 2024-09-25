@@ -17,9 +17,6 @@ public class IPictureServiceImpl implements IPictureService {
     public IMAGE getSubImage(IMAGE img, int width, int height, int startX, int startY) {
         int W = width + startX > img.getWidth() ? img.getWidth() - startX : width;
         int H = height + startY > img.getHeight() ? img.getHeight() - startY : height;
-        if(H == 0){
-            System.out.println("no");
-        }
         int[][] px = new int[W][H];
         if(W == 0 || H == 0){
             System.out.println(width + " " + height + " " + startX + " " + startY);
@@ -119,7 +116,7 @@ public class IPictureServiceImpl implements IPictureService {
             }
             if (count != countBefore) {
                 countBefore = count;
-                System.out.print("\rService.Thread: ");
+                System.out.print("\rService.Extends.Thread: ");
                 for (int i = 0; i < threadCount; i++) {
                     if (i < count) System.out.print("O ");
                     else System.out.print("A ");
