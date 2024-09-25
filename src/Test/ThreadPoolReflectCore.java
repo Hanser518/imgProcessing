@@ -1,47 +1,57 @@
-package Service.CORE;
+package Test;
 
 import Entity.EventPool;
-import Service.Extends.Thread.PaperBlur;
 import Service.ICalculateService;
 import Service.Impl.ICalculateServiceImpl;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-public abstract class ThreadPoolCore {
-    protected int[][] data;
-    protected double[] kernel;
-    protected double[] param;
-    protected double[][] fillKernel;
-    protected int width, height;
-    protected int threadCount;
-    protected int threadCountLimit = 24;
-    protected int blockSize = 240;
-    protected EventPool[] ePools;
-    protected Stack<Integer> eventIndex = new Stack<>();
-    protected List<Thread> threadPool = new ArrayList<>();
-    protected Stack<?> leisure = new Stack<>();
+public class ThreadPoolReflectCore {
+    protected int[][] data;     // 待处理数据
+    protected double[][] kernel;// 卷积核
+    protected int width, height;// 数据宽高
+    protected int threadCount;  // 当前线程数量
+    protected int threadCountLimit = 24;    // 最大线程数量
+    protected int blockSize = 240;  // 单个事务块的最大单边长度
+
+    protected Class<?> classOfThread; // 线程种类
+    protected Object thread;
+    protected Constructor<?> constructorOfThread;
+
+    protected EventPool[] ePools;   // 事务池
+    protected Stack<Integer> eventIndex = new Stack<>();    // 待处理事务序号列表
+    protected List<Thread> threadPool = new ArrayList<>();  // 线程池
+    protected Stack<Object> leisure = new Stack<>();        // 空闲线程
 
     private final ICalculateService calcService = new ICalculateServiceImpl();
 
-    public ThreadPoolCore(int[][] requestData, double[][] ConVKernel, int MaxThreadCount) {
-        this.data = requestData;
+    public ThreadPoolReflectCore(int[][] requestData, double[][] ConVKernel, int MaxThreadCount, Object threadItem) throws Exception{
+        // 对图像进行填充处理，此时数据矩阵长宽发生改变，原矩阵长宽存储于width和height中
+        this.data = calcService.pixFill(requestData, ConVKernel);;
         this.width = requestData.length;
         this.height = requestData[0].length;
-        this.fillKernel = ConVKernel;
-        this.kernel = getKernel((ConVKernel.length - 1) / 2);
+        this.kernel = ConVKernel;
         this.threadCountLimit = MaxThreadCount < 0 ? 999 : MaxThreadCount;
         this.threadCount = Math.min((int) Math.sqrt(kernel.length) + 3, threadCountLimit);
-        init();
+        classOfThread = threadItem.getClass();
+        initEvent();
+        initLeisure();
+        thread = threadItem;
+        // 填充线程数据、卷积核
+        Method setData = classOfThread.getMethod("setData", int[][].class);
+        setData.invoke(this.thread, (Object) data);
+        Method setKernel = classOfThread.getMethod("setKernel", double[][].class);
+        setKernel.invoke(this.thread, (Object) kernel);
     }
 
-    private void init() {
+    private void initEvent() {
+        // 计算blockSize
         blockSize = (int) (Math.pow(2, 23) / Math.sqrt(width * height) / Math.sqrt(kernel.length));
-        // System.out.println(blockSize);
-        // 对图像进行填充处理，此时数据矩阵长宽发生改变，原矩阵长宽存储于width和height中
-        data = calcService.pixFill(data, fillKernel);
-        // 对矩阵数据进行任务分配及切分，每200*200为一个事件组，同时生成对应点位的标识符
+        // 对矩阵数据进行任务分配及切分，每最大blockSize*blockSize为一个事件组，同时生成对应点位的标识符
         int w = data.length;
         int h = data[0].length;
         int wCount = width % blockSize == 0 ? width / blockSize : width / blockSize + 1;
@@ -51,7 +61,6 @@ public abstract class ThreadPoolCore {
             for(int j = 0;j < hCount;j ++){
                 int wStep = i * blockSize + blockSize < width ? blockSize : width - i * blockSize;
                 int hStep = j * blockSize + blockSize < height ? blockSize : height - j * blockSize;
-                // int hStep = j * blockSize + blockSize < height ? blockSize : height - j * blockSize;
                 EventPool ep = new EventPool(i * blockSize, j * blockSize, wStep, hStep);
                 int index = i * hCount + j;
                 ep.setIndex(index);
@@ -61,22 +70,18 @@ public abstract class ThreadPoolCore {
         }
     }
 
-    public double[] getKernel(int size){
-        double theta = Math.sqrt(Math.log(0.1) * -1.0 * 2 / Math.pow(-size, 2));
-        int kernelSize = size * 2 + 1;
-        double[][] gasKernel = new double[kernelSize][kernelSize];
-        double[] w = new double[kernelSize];
-        for (int i = 0; i < kernelSize; i++) {
-            w[i] = Math.exp(-1.0 * (i - size) * (i - size) / 2 * theta * theta);
+    private void initLeisure() throws Exception {
+        constructorOfThread = classOfThread.getConstructor();
+        for(int i = 0;i < threadCount;i ++){
+            leisure.push(constructorOfThread.newInstance());
         }
-        return w;
     }
 
     public int[][] getData(){
         return data;
     }
 
-    public void start(){
+    public void start() throws Exception{
         initThread();
         long set = System.currentTimeMillis();
         long outSet = System.currentTimeMillis();
@@ -88,7 +93,7 @@ public abstract class ThreadPoolCore {
                 if (!t.isAlive()) {
                     // threadPool.remove(t);
                     index.add(t);
-                    leisurePush();
+                    leisure.push(constructorOfThread.newInstance());
                 }
             }
             index.forEach(num -> {
@@ -98,7 +103,7 @@ public abstract class ThreadPoolCore {
             if ((System.currentTimeMillis() - set) / 1000.0 > 2) {
                 if (threadCount < threadCountLimit) {
                     threadCount++;
-                    leisurePush();
+                    leisure.push(constructorOfThread.newInstance());
                 }
             }
             if((System.currentTimeMillis() - outSet) / 100.0 > 1){
@@ -127,8 +132,6 @@ public abstract class ThreadPoolCore {
 
     }
 
-    protected abstract void leisurePush();
-
     protected int[][] combineData(){
         int wCount = width % blockSize == 0 ? width / blockSize : width / blockSize + 1;
         int hCount = height % blockSize == 0 ? height / blockSize : height / blockSize + 1;
@@ -146,5 +149,21 @@ public abstract class ThreadPoolCore {
         return result;
     }
 
-    protected abstract void initThread();
+    protected void initThread() throws Exception{
+        while (!leisure.isEmpty()) {
+            if (!eventIndex.isEmpty()) {
+                leisure.pop();
+                int index = eventIndex.pop();
+                thread = constructorOfThread.newInstance();
+                Method setEvent = classOfThread.getMethod("setEvent", EventPool.class);
+                setEvent.invoke(thread, ePools[index]);
+                Thread t = new Thread((Runnable) thread);
+                threadPool.add(t);
+                t.start();
+                // System.out.print(ePools[index].index + "#");
+            } else {
+                break;
+            }
+        }
+    }
 }

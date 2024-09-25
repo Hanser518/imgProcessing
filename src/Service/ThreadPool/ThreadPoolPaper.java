@@ -1,31 +1,31 @@
-package Service.Extends;
+package Service.ThreadPool;
 
 
-import Service.CORE.ThreadPoolCore;
-import Service.Extends.Thread.ConVStrange;
+import Service.ThreadPool.Thread.PaperBlur;
+import Service.ThreadPool.CORE.ThreadPoolCore;
 
 import java.util.Stack;
 
-public class ThreadPoolStrange extends ThreadPoolCore {
-    Stack<ConVStrange> leisureThreads = new Stack<>();
+public class ThreadPoolPaper extends ThreadPoolCore {
+    Stack<PaperBlur> leisureThreads = new Stack<>();
 
-    public ThreadPoolStrange(int[][] requestData, double[][] ConVKernel, int MaxThreadCount) {
+    public ThreadPoolPaper(int[][] requestData, double[][] ConVKernel, int MaxThreadCount) {
         super(requestData, ConVKernel, MaxThreadCount);
         initLeisureThread();
-        ConVStrange.setData(data);
-        ConVStrange.setKernel(fillKernel);
-        ConVStrange.setK();
+        PaperBlur.setData(data);
+        PaperBlur.setKernel(fillKernel);
     }
 
     @Override
     protected void leisurePush() {
-        leisureThreads.push(new ConVStrange());
+        leisureThreads.push(new PaperBlur());
     }
 
     // 压入未激活的处理线程
     protected void initLeisureThread() {
+
         for (int i = 0; i < threadCount; i++) {
-            leisureThreads.add(new ConVStrange());
+            leisureThreads.add(new PaperBlur());
         }
     }
 
@@ -33,10 +33,10 @@ public class ThreadPoolStrange extends ThreadPoolCore {
     protected void initThread() {
         while (!leisureThreads.isEmpty()) {
             if (!eventIndex.isEmpty()) {
-                ConVStrange cS = leisureThreads.pop();
+                PaperBlur pb = leisureThreads.pop();
                 int index = eventIndex.pop();
-                cS = new ConVStrange(ePools[index]);
-                Thread t = new Thread(cS);
+                pb = new PaperBlur(ePools[index]);
+                Thread t = new Thread(pb);
                 threadPool.add(t);
                 t.start();
                 // System.out.print(ePools[index].index + "#");

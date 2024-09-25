@@ -1,7 +1,7 @@
-package Service.Extends;
+package Service.ThreadPool;
 
-import Service.CORE.ThreadPoolCore;
-import Service.Extends.Thread.ConfActive;
+import Service.ThreadPool.CORE.ThreadPoolCore;
+import Service.ThreadPool.Thread.ConfActive;
 
 import java.util.Arrays;
 import java.util.Stack;

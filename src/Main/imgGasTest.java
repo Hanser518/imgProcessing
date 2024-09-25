@@ -1,4 +1,4 @@
-package Test;
+package Main;
 
 import Controller.BlurController;
 import Controller.ImgController;

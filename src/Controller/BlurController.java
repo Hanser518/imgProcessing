@@ -1,9 +1,9 @@
 package Controller;
 
 import Entity.IMAGE;
-import Service.Extends.ThreadPoolConV;
-import Service.CORE.ThreadPoolCore;
-import Service.Extends.ThreadPoolStrange;
+import Service.ThreadPool.ThreadPoolConV;
+import Service.ThreadPool.CORE.ThreadPoolCore;
+import Service.ThreadPool.ThreadPoolStrange;
 
 import static Controller.StylizeController.calcService;
 

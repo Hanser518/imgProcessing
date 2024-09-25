@@ -1,9 +1,8 @@
 package Service.Impl;
 
 import Entity.IMAGE;
-import Service.Extends.ThreadPoolActive;
-import Service.Extends.ThreadPoolConV;
-import Service.CORE.ThreadPoolCore;
+import Service.ThreadPool.ThreadPoolConV;
+import Service.ThreadPool.CORE.ThreadPoolCore;
 import Service.imgService;
 
 public class imgServiceImpl implements imgService {

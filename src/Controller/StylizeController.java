@@ -2,10 +2,10 @@ package Controller;
 
 import Discard.ImgProcessingController;
 import Entity.IMAGE;
-import Service.Extends.ThreadPoolPaper;
+import Service.ThreadPool.ThreadPoolPaper;
 import Service.ICalculateService;
 import Service.Impl.ICalculateServiceImpl;
-import Service.CORE.ThreadPoolCore;
+import Service.ThreadPool.CORE.ThreadPoolCore;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ public class StylizeController {
     public final Integer GRILLE_MEDIUM = 0;
     public final Integer GRILLE_BOLD = 1;
 
-    static ICalculateService calcService = new ICalculateServiceImpl();
+    public static ICalculateService calcService = new ICalculateServiceImpl();
     static BlurController BlurCtrl = new BlurController();
     static AdjustController AdCtrl = new AdjustController();
     static ImgProcessingController imgCtrl = new ImgProcessingController();

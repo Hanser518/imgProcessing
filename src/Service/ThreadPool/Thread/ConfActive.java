@@ -1,7 +1,7 @@
-package Service.Extends.Thread;
+package Service.ThreadPool.Thread;
 
 import Entity.EventPool;
-import Service.CORE.ThreadCore;
+import Service.ThreadPool.CORE.ThreadCore;
 
 public class ConfActive extends ThreadCore {
     int threshold;

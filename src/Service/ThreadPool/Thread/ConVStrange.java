@@ -1,7 +1,7 @@
-package Service.Extends.Thread;
+package Service.ThreadPool.Thread;
 
 import Entity.EventPool;
-import Service.CORE.ThreadCore;
+import Service.ThreadPool.CORE.ThreadCore;
 import Service.ICalculateService;
 import Service.Impl.ICalculateServiceImpl;
 
@@ -54,16 +54,6 @@ public class ConVStrange extends ThreadCore {
                 }
             }
         }
-
-//        int len = kernel.length;
-//        for (int i = 0; i < kernel.length; i += getStep(i, len)) {
-//            for(int j = 0;j < kernel.length; j += getStep(j, len)){
-//                r += kernel[i][j] * ((data[x + i][y + j] >> 16) & 0xFF);
-//                g += kernel[i][j] * ((data[x + i][y + j] >> 8) & 0xFF);
-//                b += kernel[i][j] * ((data[x + i][y + j]) & 0xFF);
-//                rate += kernel[i][j];
-//            }
-//        }
         rate = rate < 10e-2 ? 1.0 : rate;
         r = Math.abs(r / rate);
         g = Math.abs(g / rate);

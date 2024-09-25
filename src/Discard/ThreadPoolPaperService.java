@@ -1,7 +1,7 @@
 package Discard;
 
 import Service.ICalculateService;
-import Service.Extends.Thread.PaperBlurCalc;
+import Service.ThreadPool.Thread.PaperBlurCalc;
 import Entity.EventPool;
 import Service.Impl.ICalculateServiceImpl;
 

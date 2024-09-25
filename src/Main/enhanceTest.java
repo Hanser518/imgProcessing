@@ -1,4 +1,4 @@
-package Test;
+package Main;
 
 import Discard.ImgProcessingController;
 import Entity.IMAGE;

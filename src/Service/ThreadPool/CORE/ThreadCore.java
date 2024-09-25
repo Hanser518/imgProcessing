@@ -1,4 +1,4 @@
-package Service.CORE;
+package Service.ThreadPool.CORE;
 
 import Entity.EventPool;
 
@@ -7,20 +7,24 @@ public abstract class ThreadCore implements Runnable {
     protected static int[][] data;
     protected static double[][] kernel;
 
-    public ThreadCore(){
+    public ThreadCore() {
 
     }
 
-    public ThreadCore(EventPool ep){
+    public ThreadCore(EventPool ep) {
         this.ep = ep;
     }
 
-    public static void setData(int[][] data){
+    public static void setData(int[][] data) {
         ThreadCore.data = data;
     }
 
-    public static void setKernel(double[][] kernel){
+    public static void setKernel(double[][] kernel) {
         ThreadCore.kernel = kernel;
+    }
+
+    public void setEvent(EventPool ep) {
+        this.ep = ep;
     }
 
     public abstract int matrixCalc(int x, int y);

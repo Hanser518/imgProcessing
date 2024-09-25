@@ -1,4 +1,4 @@
-package Test;
+package Main;
 
 import Controller.EdgeController;
 import Controller.ImgController;
@@ -19,7 +19,7 @@ public class imgEdgeTest {
     static imgService service = new imgServiceImpl();
 
     public static void main(String[] args) throws IOException {
-        String fileName = "plus";
+        String fileName = "7820";
         IMAGE px = new IMAGE(fileName + ".jpg");
 
         IMAGE edge = new IMAGE();
@@ -27,18 +27,18 @@ public class imgEdgeTest {
         edge = edgeCtrl.getImgEdge(px, EdgeController.SOBEL);
         imgCtrl2.showImg(edge, "sobel");
 
-        edge = new IMAGE(service.erosionImg(edge, 3));
-        imgCtrl2.showImg(edge, "erosion");
-
         edge = new IMAGE(service.dilateImg(edge, 1));
         imgCtrl2.showImg(edge, "dilate");
 
         edge = edgeCtrl.getImgEdge(px, EdgeController.PREWITT);
         imgCtrl2.showImg(edge, "prewitt");
 
-
         edge = edgeCtrl.getImgEdge(px, EdgeController.MARR);
         imgCtrl2.showImg(edge, "marr");
+
+        edge = new IMAGE(service.erosionImg(edge, 3));
+        imgCtrl2.showImg(edge, "erosion");
+
 
 
 //        IMAGE edge = imgCtrl.getEdgeImage(px, true);
