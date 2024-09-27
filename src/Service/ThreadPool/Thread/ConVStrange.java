@@ -7,7 +7,7 @@ import Service.Impl.ICalculateServiceImpl;
 
 public class ConVStrange extends ThreadCore {
     static ICalculateService calcService = new ICalculateServiceImpl();
-    public static double[][] kernels;
+    public static double[][] kernels = null;
 
     public ConVStrange() {
         super();
@@ -15,6 +15,8 @@ public class ConVStrange extends ThreadCore {
 
     public ConVStrange(EventPool ep) {
         super(ep);
+        if(kernels == null)
+            setK();
     }
 
     // 获取不同位置的步长
@@ -29,6 +31,7 @@ public class ConVStrange extends ThreadCore {
 
     @Override
     public int matrixCalc(int x, int y) {
+        setK();
         double r = 0, g = 0, b = 0;
         double rate = 0;
         // int value = Math.abs((x * y) % (x + y + 1));

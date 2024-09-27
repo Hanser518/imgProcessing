@@ -5,6 +5,7 @@ import Service.ICalculateService;
 import Service.Impl.ICalculateServiceImpl;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,9 +30,10 @@ public class ThreadPoolReflectCore {
 
     private final ICalculateService calcService = new ICalculateServiceImpl();
 
-    public ThreadPoolReflectCore(int[][] requestData, double[][] ConVKernel, int MaxThreadCount, Object threadItem) throws Exception{
+    public ThreadPoolReflectCore(int[][] requestData, double[][] ConVKernel, int MaxThreadCount, Object threadItem) throws Exception {
         // 对图像进行填充处理，此时数据矩阵长宽发生改变，原矩阵长宽存储于width和height中
-        this.data = calcService.pixFill(requestData, ConVKernel);;
+        this.data = calcService.pixFill(requestData, ConVKernel);
+        ;
         this.width = requestData.length;
         this.height = requestData[0].length;
         this.kernel = ConVKernel;
@@ -43,22 +45,40 @@ public class ThreadPoolReflectCore {
         thread = threadItem;
         // 填充线程数据、卷积核
         Method setData = classOfThread.getMethod("setData", int[][].class);
-        setData.invoke(this.thread, (Object) data);
+        if (!setData.isDefault())
+            setData.invoke(this.thread, (Object) data);
         Method setKernel = classOfThread.getMethod("setKernel", double[][].class);
-        setKernel.invoke(this.thread, (Object) kernel);
+        if (!setKernel.isDefault())
+            setKernel.invoke(this.thread, (Object) kernel);
+    }
+
+    public void setThreshold(int threshold) throws Exception {
+        try {
+            Method set = classOfThread.getMethod("setThreshold", int.class);
+            if (set.isDefault())
+                System.out.println("Thread not contain method: setThreshold");
+            else
+                set.invoke(thread, threshold);
+        } catch (Exception ignored) {
+        }
+    }
+
+    public void customMethod(String methodName, Object... params) throws Exception{
+        Method set = classOfThread.getMethod(methodName, params[0].getClass());
+        set.invoke(thread, params);
     }
 
     private void initEvent() {
         // 计算blockSize
-        blockSize = (int) (Math.pow(2, 23) / Math.sqrt(width * height) / Math.sqrt(kernel.length));
+        int totalArea = width * height;
+        int totalBlock = totalArea / 6400000 * (int) Math.sqrt(kernel.length) + 1;
+        blockSize = Math.min(width, height) / totalBlock + 1;
         // 对矩阵数据进行任务分配及切分，每最大blockSize*blockSize为一个事件组，同时生成对应点位的标识符
-        int w = data.length;
-        int h = data[0].length;
         int wCount = width % blockSize == 0 ? width / blockSize : width / blockSize + 1;
         int hCount = height % blockSize == 0 ? height / blockSize : height / blockSize + 1;
         ePools = new EventPool[wCount * hCount];
         for (int i = 0; i < wCount; i++) {
-            for(int j = 0;j < hCount;j ++){
+            for (int j = 0; j < hCount; j++) {
                 int wStep = i * blockSize + blockSize < width ? blockSize : width - i * blockSize;
                 int hStep = j * blockSize + blockSize < height ? blockSize : height - j * blockSize;
                 EventPool ep = new EventPool(i * blockSize, j * blockSize, wStep, hStep);
@@ -72,16 +92,16 @@ public class ThreadPoolReflectCore {
 
     private void initLeisure() throws Exception {
         constructorOfThread = classOfThread.getConstructor();
-        for(int i = 0;i < threadCount;i ++){
+        for (int i = 0; i < threadCount; i++) {
             leisure.push(constructorOfThread.newInstance());
         }
     }
 
-    public int[][] getData(){
+    public int[][] getData() {
         return data;
     }
 
-    public void start() throws Exception{
+    public void start() throws Exception {
         initThread();
         long set = System.currentTimeMillis();
         long outSet = System.currentTimeMillis();
@@ -106,9 +126,9 @@ public class ThreadPoolReflectCore {
                     leisure.push(constructorOfThread.newInstance());
                 }
             }
-            if((System.currentTimeMillis() - outSet) / 100.0 > 1){
+            if ((System.currentTimeMillis() - outSet) / 100.0 > 1) {
                 outSet = System.currentTimeMillis();
-                System.out.printf("\r@ %2.4f percent", (1 - (double)eventIndex.size() / ePools.length));
+                System.out.printf("\r@ %2.4f percent", (1 - (double) eventIndex.size() / ePools.length));
             }
         }
         int limit = threadPool.size();
@@ -121,9 +141,9 @@ public class ThreadPoolReflectCore {
                 }
             }
             if (limit == alive) break;
-            if((System.currentTimeMillis() - outSet) / 100.0 > 1){
+            if ((System.currentTimeMillis() - outSet) / 100.0 > 1) {
                 outSet = System.currentTimeMillis();
-                System.out.printf("\r@ %2.4f percent", (1 - (double)eventIndex.size() / ePools.length));
+                System.out.printf("\r@ %2.4f percent", (1 - (double) eventIndex.size() / ePools.length));
             }
         }
         System.out.println();
@@ -132,15 +152,15 @@ public class ThreadPoolReflectCore {
 
     }
 
-    protected int[][] combineData(){
+    protected int[][] combineData() {
         int wCount = width % blockSize == 0 ? width / blockSize : width / blockSize + 1;
         int hCount = height % blockSize == 0 ? height / blockSize : height / blockSize + 1;
         int[][] result = new int[width][height];
-        for(int i = 0;i < wCount;i ++){
-            for(int j = 0;j < hCount;j ++){
+        for (int i = 0; i < wCount; i++) {
+            for (int j = 0; j < hCount; j++) {
                 int[][] ePool = ePools[i * hCount + j].result;
-                for(int x = 0;x < ePool.length;x ++){
-                    for(int y = 0;y < ePool[0].length;y ++){
+                for (int x = 0; x < ePool.length; x++) {
+                    for (int y = 0; y < ePool[0].length; y++) {
                         result[x + i * blockSize][y + j * blockSize] = ePool[x][y];
                     }
                 }
@@ -149,7 +169,7 @@ public class ThreadPoolReflectCore {
         return result;
     }
 
-    protected void initThread() throws Exception{
+    protected void initThread() throws Exception {
         while (!leisure.isEmpty()) {
             if (!eventIndex.isEmpty()) {
                 leisure.pop();
@@ -157,10 +177,9 @@ public class ThreadPoolReflectCore {
                 thread = constructorOfThread.newInstance();
                 Method setEvent = classOfThread.getMethod("setEvent", EventPool.class);
                 setEvent.invoke(thread, ePools[index]);
-                Thread t = new Thread((Runnable) thread);
-                threadPool.add(t);
-                t.start();
-                // System.out.print(ePools[index].index + "#");
+                Thread next = new Thread((Runnable) thread);
+                threadPool.add(next);
+                next.start();
             } else {
                 break;
             }

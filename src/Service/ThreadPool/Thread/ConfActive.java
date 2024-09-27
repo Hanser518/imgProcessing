@@ -4,7 +4,7 @@ import Entity.EventPool;
 import Service.ThreadPool.CORE.ThreadCore;
 
 public class ConfActive extends ThreadCore {
-    int threshold;
+    static int threshold;
 
     public ConfActive() {
         super();
@@ -12,7 +12,15 @@ public class ConfActive extends ThreadCore {
 
     public ConfActive(EventPool ep, int threshold) {
         super(ep);
-        this.threshold = threshold;
+        ConfActive.threshold = threshold;
+    }
+
+    public ConfActive(EventPool ep) {
+        super(ep);
+    }
+
+    public void setThreshold(Integer threshold) {
+        ConfActive.threshold = threshold;
     }
 
     @Override
