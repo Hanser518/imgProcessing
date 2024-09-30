@@ -1,6 +1,7 @@
 package Service.ThreadPool.CORE;
 
 import Entity.EventPool;
+import Entity.IMAGE;
 
 public abstract class ThreadCore implements Runnable {
     protected EventPool ep;

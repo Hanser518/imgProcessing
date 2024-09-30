@@ -1,22 +1,24 @@
 package Service.Impl;
 
 import Entity.IMAGE;
-import Service.ThreadPool.ThreadPoolConV;
+import Service.ThreadPool.Thread.ConVCalc;
 import Service.ThreadPool.CORE.ThreadPoolCore;
 import Service.imgService;
+import Test.ThreadPoolReflectCore;
 
 public class imgServiceImpl implements imgService {
     static private ThreadPoolCore conv;
+    static private ThreadPoolReflectCore conv2;
 
-    private int[][] doubleKernelCalc(IMAGE px, double[][] kernel1, double[][] kernel2) {
+    private int[][] doubleKernelCalc(IMAGE px, double[][] kernel1, double[][] kernel2) throws Exception {
         // 获取x方向的sobel
-        conv = new ThreadPoolConV(px.getGrayMatrix4(), kernel1, 16);
-        conv.start();
-        int[][] sobelX = conv.getData();
+        conv2 = new ThreadPoolReflectCore(px.getGrayMatrixInArgbModule(), kernel1, 24, new ConVCalc());
+        conv2.start();
+        int[][] sobelX = conv2.getData();
         // 获取y方向的sobel
-        conv = new ThreadPoolConV(px.getGrayMatrix4(), kernel2, 16);
-        conv.start();
-        int[][] sobelY = conv.getData();
+        conv2 = new ThreadPoolReflectCore(px.getGrayMatrixInArgbModule(), kernel2, 24, new ConVCalc());
+        conv2.start();
+        int[][] sobelY = conv2.getData();
         // 合并计算结果
         int width = px.getWidth();
         int height = px.getHeight();
@@ -34,32 +36,32 @@ public class imgServiceImpl implements imgService {
     }
 
     @Override
-    public int[][] getSobelEdge(IMAGE px) {
+    public int[][] getSobelEdge(IMAGE px) throws Exception {
         double[][] kernelX = new double[][]{{1, 2, 1}, {0, 0, 0}, {-1, -2, -1},};
         double[][] kernelY = new double[][]{{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1},};
         return doubleKernelCalc(px, kernelX, kernelY);
     }
 
     @Override
-    public int[][] getPrewittEdge(IMAGE px) {
+    public int[][] getPrewittEdge(IMAGE px) throws Exception {
         double[][] kernelX = new double[][]{{1, 1, 1}, {0, 0, 0}, {-1, -1, -1},};
         double[][] kernelY = new double[][]{{-1, 0, 1}, {-1, 0, 1}, {-1, 0, 1},};
         return doubleKernelCalc(px, kernelX, kernelY);
     }
 
     @Override
-    public int[][] getMarrEdge(IMAGE px) {
-        double[][] kernel = new double[][]{{-1, -1, -1}, {-1, 8, -1}, {-1, -1, -1},};
-        conv = new ThreadPoolConV(px.getGrayMatrix4(), kernel, 16);
-        conv.start();
+    public int[][] getMarrEdge(IMAGE px) throws Exception {
+        double[][] kernel = new double[][]{{ 0,-1, 0}, {-1, 4,-1}, { 0,-1, 0},};
+        conv2 = new ThreadPoolReflectCore(px.getGrayMatrixInArgbModule(), kernel, 24, new ConVCalc());
+        conv2.start();
         int width = px.getWidth();
         int height = px.getHeight();
-        int[][] data = conv.getData();
+        int[][] data = conv2.getData();
         int[][] result = new int[width][height];
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 int value = px.getArgbParams(data[i][j])[1];
-                value = value > 16 ? value * 8 : 0;
+                value = value > 16 ? 180 : 0;
                 result[i][j] = px.getPixParams(new int[]{255, value, value, value});
             }
         }
@@ -68,11 +70,7 @@ public class imgServiceImpl implements imgService {
 
 
     @Override
-    public int[][] dilateImg(IMAGE px, int radius) {
-        double[][] kernel = new double[radius * 2 + 1][radius * 2 + 1];
-//        conv = new ThreadPoolActive(px.getPixelMatrix(), kernel, radius, 24);
-//        conv.start();
-//        int[][] ac = conv.getData();
+    public int[][] paddingImg(IMAGE px, int radius) {
         int width = px.getWidth();
         int height = px.getHeight();
         int[][] result = px.getPixelMatrix();
@@ -83,23 +81,56 @@ public class imgServiceImpl implements imgService {
                     for (int l = -radius; l < radius * 2 + 1; l++) {
                         try {
                             int r = (result[i + k][j + l] >> 16) & 0xFF;
-                            if (r == 187)
+                            if (r == 187) {
                                 act += 0.67;
-                            else if (r >= 32)
+                            } else if (r >= 32) {
                                 act++;
+                            }
                         } catch (Exception ignored) {
                         }
                     }
                 }
-                if (act > Math.pow(radius * 2 + 1, 2) / 3.0)
+                if (act > Math.pow(radius * 2 + 1, 2) / 3.0) {
                     result[i][j] = px.getPixParams(new int[]{255, 187, 187, 187});
-//                int value = ac[i][j] * 255;
-//                result[i][j] = px.getPixParams(new int[]{255, value, value, value});
+                }
             }
         }
         return result;
     }
 
+    @Override
+    public int[][] dilateImg(IMAGE px, int radius) {
+        int width = px.getWidth();
+        int height = px.getHeight();
+        int[][] result = new int[width][height];
+        int[][] rawData = px.getGrayMatrix();
+        for(int i = 0;i < width;i ++){
+            for(int j = 0;j < height;j ++){
+                int value = rawData[i][j];
+                int count = 0;
+                int ac = 0;
+                for (int k = -radius; k < radius * 2 + 1; k++) {
+                    for (int l = -radius; l < radius * 2 + 1; l++) {
+                        try {
+                            if (rawData[i + k][j + l] >= 32) {
+                                ac ++;
+                            }
+                            count ++;
+                        } catch (Exception ignored) {
+                        }
+                    }
+                }
+                if(ac > count / 2 || value > 32){
+                    result[i][j] = (255 << 24) | (187 << 16) | (187 << 8) | 187;
+                }else{
+                    result[i][j] = (255 << 24) | (0);
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
     public int[][] erosionImg(IMAGE px, int radius) {
         double[][] kernel = new double[radius * 2 + 1][radius * 2 + 1];
         int width = px.getWidth();
@@ -112,18 +143,16 @@ public class imgServiceImpl implements imgService {
                     for (int l = -radius; l < radius * 2 + 1; l++) {
                         try {
                             int r = (result[i + k][j + l] >> 16) & 0xFF;
-                            if (r >= 32)
+                            if (r >= 32) {
                                 act++;
+                            }
                         } catch (Exception ignored) {
                         }
                     }
                 }
-//                if (act > Math.pow(radius * 2 + 1, 2) * 0.85)
-//                    result[i][j] = px.getPixParams(new int[]{255, 187, 187, 187});
-//                else
-//                    result[i][j] = px.getPixParams(new int[]{255, 0, 0, 0});
-                if (act <= Math.pow(radius * 2 + 1, 2) * 0.85)
+                if (act <= Math.pow(radius * 2 + 1, 2) * 0.85) {
                     result[i][j] = px.getPixParams(new int[]{255, 0, 0, 0});
+                }
             }
         }
         return result;

@@ -195,7 +195,7 @@ public class IMAGE {
         return matrix;
     }
 
-    public int[][] getGrayMatrix4() {
+    public int[][] getGrayMatrixInArgbModule() {
         int[][] m = getPixelMatrix();
         int[][] result = new int[width][height];
         for (int i = 0; i < width; i++) {

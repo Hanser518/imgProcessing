@@ -11,24 +11,25 @@ public class EdgeController {
 
     static private final BlurController blurCtrl = new BlurController();
     static private final imgService imgServ = new imgServiceImpl();
-    public IMAGE getImgEdge(IMAGE img){
+    public IMAGE getImgEdge(IMAGE img) throws Exception {
         IMAGE gas = blurCtrl.quickGasBlur(img);
         IMAGE raw = new IMAGE(imgServ.getSobelEdge(gas));
         return raw;
         // return new IMAGE(imgServ.dilateImg(raw));
     }
 
-    public IMAGE getImgEdge(IMAGE img, int edgeType){
+    public IMAGE getImgEdge(IMAGE img, int edgeType) throws Exception {
         IMAGE gas = blurCtrl.quickGasBlur(img);
         IMAGE result = new IMAGE();
-        if(edgeType == SOBEL)
+        if(edgeType == SOBEL) {
             result = new IMAGE(imgServ.getSobelEdge(gas));
-        else if(edgeType == PREWITT)
+        } else if(edgeType == PREWITT) {
             result = new IMAGE(imgServ.getPrewittEdge(gas));
-        else if(edgeType == MARR)
+        } else if(edgeType == MARR) {
             result = new IMAGE(imgServ.getMarrEdge(img));
-        else
+        } else {
             result = gas;
+        }
         return result;
     }
 }

@@ -63,8 +63,8 @@ public class ThreadPoolReflectCore {
         }
     }
 
-    public void customMethod(String methodName, Object... params) throws Exception{
-        Method set = classOfThread.getMethod(methodName, params[0].getClass());
+    public void customMethod(String methodName, Object params) throws Exception{
+        Method set = classOfThread.getMethod(methodName, params.getClass());
         set.invoke(thread, params);
     }
 
@@ -128,7 +128,7 @@ public class ThreadPoolReflectCore {
             }
             if ((System.currentTimeMillis() - outSet) / 100.0 > 1) {
                 outSet = System.currentTimeMillis();
-                System.out.printf("\r@ %2.4f percent", (1 - (double) eventIndex.size() / ePools.length));
+                System.out.printf("\r@%2d %2.4f percent",threadCount, (1 - (double) eventIndex.size() / ePools.length));
             }
         }
         int limit = threadPool.size();

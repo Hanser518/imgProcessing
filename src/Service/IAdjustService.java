@@ -39,4 +39,5 @@ public interface IAdjustService {
 
     public int[][] test(IMAGE px, int value);
 
+
 }

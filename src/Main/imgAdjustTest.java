@@ -20,7 +20,7 @@ public class imgAdjustTest {
     static AdjustController adCtrl = new AdjustController();
     static EdgeController edgeCtrl = new EdgeController();
     public static void main(String[] args) throws IOException {
-        String fileName = "7820";
+        String fileName = "bus";
         IMAGE px = new IMAGE(fileName + ".jpg");
 
 //         IMAGE cdr = adCtrl.CDR(px);
