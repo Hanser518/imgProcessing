@@ -13,11 +13,10 @@ import java.util.Stack;
  * @author Sanfu
  */
 public class EdgeTrace {
-    public static final int THRESHOLD = 16;
+    public static int THRESHOLD = 16;
     public static final int PATTERN_ONE = 0;
     public static final int PATTERN_ALL = 1;
 
-    public int transCount = 0;
     public int buildPattern;
 
     /**
@@ -57,6 +56,9 @@ public class EdgeTrace {
 
     public void start(int pattern) {
         buildPattern = pattern;
+        if (pattern == PATTERN_ONE) {
+            THRESHOLD = 8;
+        }
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 int value = (imgData[i][j] >> 16) & 0xFF;
@@ -69,6 +71,9 @@ public class EdgeTrace {
     }
 
     public int[][] getData() {
+        if (buildPattern == PATTERN_ONE) {
+            optimizePointPath();
+        }
         for (Node node : pathList) {
             if (buildPattern == PATTERN_ONE) {
                 if (node.getNodeSize() > 4) {
@@ -86,7 +91,12 @@ public class EdgeTrace {
         return result;
     }
 
-    public void transNodeToData(Node node) {
+    /**
+     * 将路径转换为矩阵
+     *
+     * @param node 路径
+     */
+    private void transNodeToData(Node node) {
         if (node.getNext() != null) {
             transNodeToData(node.getNext());
         }
@@ -327,6 +337,13 @@ public class EdgeTrace {
         return new int[]{nx, ny};
     }
 
+    /**
+     * 创建节点数据，包含访问标记
+     *
+     * @param px 起点坐标
+     * @param py 起点坐标
+     * @return 节点数据
+     */
     private List<Point> buildPointPathInAllDirection(int px, int py) {
         List<Point> result = new ArrayList<>();
         Stack<Point> stack = new Stack<>();
@@ -348,6 +365,13 @@ public class EdgeTrace {
         return result;
     }
 
+    /**
+     * 获取下一步方向
+     *
+     * @param lx 当前坐标
+     * @param ly 当前坐标
+     * @return 返回值（-1~7，共9位）
+     */
     private int getNextDir(int lx, int ly) {
         List<Integer> dirBackup = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
@@ -366,6 +390,13 @@ public class EdgeTrace {
         } else {
             return dirBackup.get((int) (Math.random() * dirBackup.size()));
         }
+    }
+
+    /**
+     * 优化路径
+     */
+    private void optimizePointPath() {
+        
     }
 
 }

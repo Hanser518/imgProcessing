@@ -22,12 +22,12 @@ public class algorithmTraceTest {
         IMAGE edge = edgeCtrl.getImgEdge(px, EdgeController.SOBEL);
         imgCtrl2.showImg(edge, "sobel");
 
-        edge = new IMAGE(service.dilateImg(edge, 1));
-        imgCtrl2.showImg(edge, "dilate");
-
         EdgeTrace et = new EdgeTrace(edge);
-        et.start(EdgeTrace.PATTERN_ALL);
+        et.start(EdgeTrace.PATTERN_ONE);
         IMAGE etImg = new IMAGE(et.getData());
         imgCtrl2.showImg(etImg, "et");
+
+        edge = new IMAGE(service.dilateImg(etImg, 1));
+        imgCtrl2.showImg(edge, "dilate");
     }
 }
