@@ -78,10 +78,11 @@ public class ImgController {
         double rateW = (double) screenWidth / imgWidth;
         double rateH = (double) screenHeight / imgHeight;
         double rate;
-        if (rateW > rateH)
-            rate = rateH * 0.5;
-        else
-            rate = rateW * 0.6;
+        if (rateW > rateH) {
+            rate = rateH * 0.7;
+        } else {
+            rate = rateW * 0.9;
+        }
         // 窗口大小
         int frameWidth = (int) (imgWidth * rate);
         int frameHeight = (int) (imgHeight * rate) + 80;
@@ -97,10 +98,11 @@ public class ImgController {
         JButton select = new JButton("jpg");
         select.addActionListener(action -> {
             png[0] = !png[0];
-            if(png[0])
+            if(png[0]) {
                 select.setText("png");
-            else
+            } else {
                 select.setText("jpg");
+            }
         });
 
         JButton saveButton = new JButton("Save");
@@ -108,10 +110,11 @@ public class ImgController {
             try {
                 LocalDateTime date = LocalDateTime.now();
                 String time = date.format(DateTimeFormatter.ofPattern("yyyyMMdd_hhmmss")) + "_" + (int) (Math.random() * 1000);
-                if(!png[0])
+                if(!png[0]) {
                     saveByName(img, "QuickSave", name + time);
-                else
+                } else {
                     saveByName2(img, "QuickSave", name + time);
+                }
                 frame.dispose();
             } catch (IOException ex) {
                 throw new RuntimeException(ex);

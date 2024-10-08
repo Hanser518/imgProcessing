@@ -7,12 +7,18 @@ import entity.IMAGE;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * @author Sanfu
  */
 public class EdgeTrace {
-    public static final int THRESHOLD = 8;
+    public static final int THRESHOLD = 16;
+    public static final int PATTERN_ONE = 0;
+    public static final int PATTERN_ALL = 1;
+
+    public int transCount = 0;
+    public int buildPattern;
 
     /**
      * 路径列表
@@ -49,12 +55,13 @@ public class EdgeTrace {
         }
     }
 
-    public void start() {
+    public void start(int pattern) {
+        buildPattern = pattern;
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 int value = (imgData[i][j] >> 16) & 0xFF;
                 if (value > THRESHOLD && !isVisited[i][j]) {
-                    buildRootNode(i, j);
+                    buildRootNode(i, j, pattern);
                 }
             }
         }
@@ -63,9 +70,16 @@ public class EdgeTrace {
 
     public int[][] getData() {
         for (Node node : pathList) {
-            if (node.getNodeSize() > 4) {
-                System.out.print(node.getNodeSize() + "\t");
-                transNodeToData(node);
+            if (buildPattern == PATTERN_ONE) {
+                if (node.getNodeSize() > 4) {
+                    System.out.print(node.getNodeSize() + "\t");
+                    transNodeToData(node);
+                }
+            } else if (buildPattern == PATTERN_ALL) {
+                if (node.getPointSize() > THRESHOLD) {
+                    System.out.print(node.getPointSize() + "\t");
+                    transNodeToData(node);
+                }
             }
         }
         System.out.println("pathList.size = " + pathList.size());
@@ -76,15 +90,24 @@ public class EdgeTrace {
         if (node.getNext() != null) {
             transNodeToData(node.getNext());
         }
-//        if (node.getNodeType() == Node.LEAF_NODE && node.getPointSize() < THRESHOLD) {
-//            return;
-//        }
-//        if (node.getNodeType() == Node.PATH_NODE && node.getNodeSize() < THRESHOLD / 2) {
-//            return;
-//        }
-        for (Point p : node.getPointList()) {
-            // result[p.getPx()][p.getPy()] = p.getArgbValue();
-            result[p.getPx()][p.getPy()] = node.getArgbValueBySize();
+        if (buildPattern == PATTERN_ONE) {
+            if (node.getNodeType() == Node.LEAF_NODE && node.getPointSize() < THRESHOLD) {
+                return;
+            }
+            if (node.getNodeType() == Node.PATH_NODE && node.getNodeSize() < THRESHOLD / 2) {
+                return;
+            }
+            for (Point p : node.getPointList()) {
+                result[p.getPx()][p.getPy()] = node.getArgbValueBySize();
+            }
+        } else if (buildPattern == PATTERN_ALL) {
+            for (Point p : node.getPointList()) {
+                int index = node.getPointSize();
+                int r = Math.min(255, index);
+                int g = Math.min(255, Math.max(1, index - 255));
+                int b = Math.min(255, Math.max(1, index - 510));
+                result[p.getPx()][p.getPy()] = (255 << 24) | (r << 16) | (g << 8) | b;
+            }
         }
     }
 
@@ -94,13 +117,17 @@ public class EdgeTrace {
      * @param px 起点坐标
      * @param py 起点坐标
      */
-    private void buildRootNode(int px, int py) {
+    private void buildRootNode(int px, int py, int pattern) {
         // 标记该点已访问
         isVisited[px][py] = true;
         // 创建根节点
         Node rootNode = new Node();
         // 添加节点数据
-        rootNode.setPointList(buildPointPathInOneDirection(px, py));
+        if (pattern == PATTERN_ONE) {
+            rootNode.setPointList(buildPointPathInOneDirection(px, py));
+        } else if (pattern == PATTERN_ALL) {
+            rootNode.setPointList(buildPointPathInAllDirection(px, py));
+        }
         rootNode.setPointSize();
         rootNode.setNext(buildChildNode(rootNode));
         if (rootNode.getNext() == null) {
@@ -124,15 +151,19 @@ public class EdgeTrace {
         int lx = local[0];
         int ly = local[1];
         Node childNode = new Node();
-        childNode.setPointList(buildPointPathInOneDirection(lx, ly));
-        for(int index = parent.getPointSize() / 2;index < parent.getPointSize() - 1; index++){
-            if(childNode.getPointList() != null && childNode.getPointList().size() > 4){
-                break;
-            }else{
-                local = parent.getIndexCoordinate(index);
-                lx = local[0];
-                ly = local[1];
-                childNode.setPointList(buildPointPathInOneDirection(lx, ly));
+        if (buildPattern == PATTERN_ALL) {
+            childNode.setPointList(buildPointPathInAllDirection(lx, ly));
+        } else if (buildPattern == PATTERN_ONE) {
+            childNode.setPointList(buildPointPathInOneDirection(lx, ly));
+            for (int index = parent.getPointSize() / 2; index < parent.getPointSize() - 1; index++) {
+                if (childNode.getPointList() != null && childNode.getPointList().size() > 4) {
+                    break;
+                } else {
+                    local = parent.getIndexCoordinate(index);
+                    lx = local[0];
+                    ly = local[1];
+                    childNode.setPointList(buildPointPathInOneDirection(lx, ly));
+                }
             }
         }
         if (!childNode.getPointList().isEmpty()) {
@@ -225,7 +256,7 @@ public class EdgeTrace {
     }
 
     /**
-     * 获取对应方向下一步坐标
+     * 获取对应方向下一步坐标，共8个方向
      *
      * @param dir 方向
      * @param lx  起始坐标
@@ -268,6 +299,14 @@ public class EdgeTrace {
         return new int[]{nx, ny};
     }
 
+    /**
+     * 获取对应方向下一步坐标，共4个方向
+     *
+     * @param dir 方向
+     * @param lx  起始坐标
+     * @param ly  起始坐标
+     * @return 坐标
+     */
     private int[] getNextPoint4(int dir, int lx, int ly) {
         int nx = lx;
         int ny = ly;
@@ -286,6 +325,47 @@ public class EdgeTrace {
                 break;
         }
         return new int[]{nx, ny};
+    }
+
+    private List<Point> buildPointPathInAllDirection(int px, int py) {
+        List<Point> result = new ArrayList<>();
+        Stack<Point> stack = new Stack<>();
+        result.add(new Point(px, py, imgData[px][py]));
+        stack.push(new Point(px, py, imgData[px][py]));
+        while (!stack.isEmpty()) {
+            Point p = stack.peek();
+            int dir = getNextDir(p.getPx(), p.getPy());
+            if (dir == -1) {
+                stack.pop();
+            } else {
+                int[] nextCoordinate = getNextPoint8(dir, p.getPx(), p.getPy());
+                stack.push(new Point(nextCoordinate[0], nextCoordinate[1], imgData[nextCoordinate[0]][nextCoordinate[1]]));
+                result.add(new Point(nextCoordinate[0], nextCoordinate[1], imgData[nextCoordinate[0]][nextCoordinate[1]]));
+                isVisited[nextCoordinate[0]][nextCoordinate[1]] = true;
+            }
+        }
+        // System.out.print(result.size() + " ");
+        return result;
+    }
+
+    private int getNextDir(int lx, int ly) {
+        List<Integer> dirBackup = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            int[] nc = getNextPoint8(i, lx, ly);
+            if (nc[0] < width && nc[1] < height && nc[0] > -1 && nc[1] > -1) {
+                if (!isVisited[nc[0]][nc[1]]) {
+                    int value = (imgData[nc[0]][nc[1]] >> 16) & 0xFF;
+                    if (value > THRESHOLD) {
+                        dirBackup.add(i);
+                    }
+                }
+            }
+        }
+        if (dirBackup.isEmpty()) {
+            return -1;
+        } else {
+            return dirBackup.get((int) (Math.random() * dirBackup.size()));
+        }
     }
 
 }

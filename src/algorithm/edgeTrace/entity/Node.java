@@ -47,16 +47,14 @@ public class Node {
      * 根节点不允许含有父节点，叶子节点不允许包含子节点
      *
      * @param type 节点类型
-     * @return 设置情况
      */
-    public boolean setNodeType(int type) {
+    public void setNodeType(int type) {
         if (type == ROOT_NODE && prev != null) {
-            return false;
+            return;
         } else if (type == LEAF_NODE && next != null) {
-            return false;
+            return;
         }
         this.nodeType = type;
-        return true;
     }
 
     public int[] getIndexCoordinate(int index) {
