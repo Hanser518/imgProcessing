@@ -265,6 +265,29 @@ public class EdgeTrace {
         return 0;
     }
 
+    public static int[] getNextCoordinate(int dir, int lx, int ly){
+        int nx = lx;
+        int ny = ly;
+        switch (dir) {
+            case 0:
+                ny -= 1;
+                break;
+            case 2:
+                nx += 1;
+                break;
+            case 4:
+                ny += 1;
+                break;
+            case 6:
+                nx -= 1;
+                break;
+            default:
+                return getNextCoordinate8(dir, lx, ly);
+        }
+        return new int[]{nx, ny};
+    }
+
+
     /**
      * 获取对应方向下一步坐标，共8个方向
      *
@@ -273,7 +296,7 @@ public class EdgeTrace {
      * @param ly  起始坐标
      * @return 坐标
      */
-    private int[] getNextCoordinate8(int dir, int lx, int ly) {
+    private static int[] getNextCoordinate8(int dir, int lx, int ly) {
         int nx = lx;
         int ny = ly;
         switch (dir) {
@@ -319,7 +342,7 @@ public class EdgeTrace {
      * @param ly  起始坐标
      * @return 坐标
      */
-    private int[] getNextCoordinate16(int dir, int lx, int ly) {
+    private static int[] getNextCoordinate16(int dir, int lx, int ly) {
         int nx = lx;
         int ny = ly;
         switch (dir) {
@@ -458,6 +481,10 @@ public class EdgeTrace {
         }
     }
 
+    /**
+     * 跟随填充
+     * @param node  节点
+     */
     private void trackAndDilate(Node node){
         if (node.getNext() != null) {
             trackAndDilate(node.getNext());
@@ -476,5 +503,13 @@ public class EdgeTrace {
                 }
             }
         }
+    }
+
+    /**
+     * 获取节点列表
+     * @return  节点列表
+     */
+    public List<Node> getPathList(){
+        return pathList;
     }
 }

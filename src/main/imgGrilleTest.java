@@ -15,7 +15,7 @@ public class imgGrilleTest {
     static ImgController imgCtrl2 = new ImgController();
     static StylizeController styleCtrl = new StylizeController();
     public static void main(String[] args) throws IOException {
-        String fileName = "bus";
+        String fileName = "building";
         IMAGE px = new IMAGE(fileName + ".jpg");
 
         IMAGE grille;

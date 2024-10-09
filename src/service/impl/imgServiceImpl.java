@@ -1,5 +1,9 @@
 package service.impl;
 
+import algorithm.edgeTrace.entity.Node;
+import algorithm.edgeTrace.entity.Point;
+import algorithm.edgeTrace.main.EdgeTrace;
+import controller.EdgeController;
 import entity.IMAGE;
 import service.threadPool.thread.ConVCalc;
 import service.threadPool.core.ThreadPoolCore;
@@ -9,6 +13,7 @@ import test.ThreadPoolReflectCore;
 public class imgServiceImpl implements imgService {
     static private ThreadPoolCore conv;
     static private ThreadPoolReflectCore conv2;
+    static EdgeController edgeCtrl = new EdgeController();
 
     private int[][] doubleKernelCalc(IMAGE px, double[][] kernel1, double[][] kernel2) throws Exception {
         // 获取x方向的sobel
@@ -157,4 +162,52 @@ public class imgServiceImpl implements imgService {
         }
         return result;
     }
+
+    @Override
+    public int[][] traceImg(IMAGE px) throws Exception {
+        int width = px.getWidth();
+        int height = px.getHeight();
+        double[][][] hsv = px.RGB2HSV();
+        IMAGE edge = edgeCtrl.getImgEdge(px, EdgeController.SOBEL);
+        EdgeTrace edgeTrace = new EdgeTrace(edge);
+        edgeTrace.start(EdgeTrace.PATTERN_ONE);
+        for (Node node : edgeTrace.getPathList()) {
+            if (node.getNodeSize() > 8) {
+                trackAndDilate(node, width, height, hsv);
+            }
+        }
+        return px.HSV2RGB(hsv);
+    }
+
+    private void trackAndDilate(Node node, int width, int height, double[][][] hsv){
+        if (node.getNext() != null) {
+            trackAndDilate(node.getNext(), width, height, hsv);
+        }
+        if (node.getNodeType() == Node.LEAF_NODE && node.getPointSize() < 8) {
+            return;
+        }
+        for (Point p : node.getPointList()) {
+            for(int i = 0;i < 16;i ++){
+                int[] nextDir = EdgeTrace.getNextCoordinate(i, p.getPx(), p.getPy());
+                if(nextDir[0] > -1 && nextDir[0] < width && nextDir[1] > -1 && nextDir[1] < height){
+                    hsv[nextDir[0]][nextDir[1]] = hsv[p.getPx()][p.getPy()];
+//                    double hn = hsv[nextDir[0]][nextDir[1]][0];
+//                    double sn = hsv[nextDir[0]][nextDir[1]][1];
+//                    double vn = hsv[nextDir[0]][nextDir[1]][2];
+//                    double hp = hsv[p.getPx()][p.getPy()][0];
+//                    double sp = hsv[p.getPx()][p.getPy()][1];
+//                    double vp = hsv[p.getPx()][p.getPy()][2];
+//                    hsv[nextDir[0]][nextDir[1]][0] = Math.max(hn, hp); // hn > hp ? hn * 0.9 + hp * 0.1 : hn * 0.1 + hp * 0.9;
+//                    hsv[nextDir[0]][nextDir[1]][1] = Math.max(sn, sp); // sn > sp ? sn * 0.9 + sp * 0.1 : sn * 0.1 + sp * 0.9;
+//                    hsv[nextDir[0]][nextDir[1]][2] = Math.max(vn, vp); // vn > vp ? vn * 0.9 + vp * 0.1 : vn * 0.1 + vp * 0.9;
+//                    if(sn > sp){
+//                        hsv[nextDir[0]][nextDir[1]] = new double[]{hn, sn, vn};
+//                    }else{
+//                        hsv[nextDir[0]][nextDir[1]] = new double[]{hp, sp, vp};
+//                    }
+                }
+            }
+        }
+    }
 }
+

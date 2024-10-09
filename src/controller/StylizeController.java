@@ -1,7 +1,12 @@
 package controller;
 
+import algorithm.edgeTrace.entity.Node;
+import algorithm.edgeTrace.entity.Point;
+import algorithm.edgeTrace.main.EdgeTrace;
 import discard.ImgProcessingController;
 import entity.IMAGE;
+import service.imgService;
+import service.impl.imgServiceImpl;
 import service.threadPool.ThreadPoolPaper;
 import service.ICalculateService;
 import service.impl.ICalculateServiceImpl;
@@ -18,7 +23,9 @@ public class StylizeController {
     public static ICalculateService calcService = new ICalculateServiceImpl();
     static BlurController BlurCtrl = new BlurController();
     static AdjustController AdCtrl = new AdjustController();
+    static EdgeController edgeCtrl = new EdgeController();
     static ImgProcessingController imgCtrl = new ImgProcessingController();
+    static imgService imgServ = new imgServiceImpl();
     static ThreadPoolCore conV;
 
     public IMAGE transPaperStyle(IMAGE img, int maxTreadCount, int... kernelSize){
@@ -47,7 +54,9 @@ public class StylizeController {
             default:
                 radio = 0.5;
         }
+        System.out.println("adjust...");
         IMAGE ad = AdCtrl.adjustSatAndVal(img, 36, 24);
+        System.out.println("adjust over");
         if(multiple){
             IMAGE gas = transPaperStyle(ad, -1, kernelSize); // kernelSize
             List<IMAGE> imgList = imgCtrl.asyncSplit(gas, (int) (1 / radio), true);
@@ -62,5 +71,7 @@ public class StylizeController {
         }
     }
 
-
+    public IMAGE transOilPaintingStyle(IMAGE img) throws Exception {
+        return new IMAGE(imgServ.traceImg(img));
+    }
 }

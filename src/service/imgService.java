@@ -44,4 +44,6 @@ public interface imgService {
      * @return 处理图像
      */
     int[][] erosionImg(IMAGE px, int radius);
+
+    int[][] traceImg(IMAGE px) throws Exception;
 }
