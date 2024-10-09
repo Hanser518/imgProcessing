@@ -20,14 +20,14 @@ public class algorithmTraceTest {
         IMAGE px = new IMAGE(fileName + ".jpg");
 
         IMAGE edge = edgeCtrl.getImgEdge(px, EdgeController.SOBEL);
-        imgCtrl2.showImg(edge, "sobel");
+        // imgCtrl2.showImg(edge, "sobel");
 
         EdgeTrace et = new EdgeTrace(edge);
         et.start(EdgeTrace.PATTERN_ONE);
         IMAGE etImg = new IMAGE(et.getData());
         imgCtrl2.showImg(etImg, "et");
 
-        edge = new IMAGE(service.dilateImg(etImg, 1));
-        imgCtrl2.showImg(edge, "dilate");
+//        edge = new IMAGE(service.dilateImg(etImg, 1));
+//        imgCtrl2.showImg(edge, "dilate");
     }
 }
