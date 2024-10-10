@@ -1,4 +1,4 @@
-package main;
+package test;
 
 import controller.AdjustController;
 import controller.EdgeController;

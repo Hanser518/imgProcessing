@@ -1,4 +1,4 @@
-package main;
+package test;
 
 import controller.ImgController;
 import entity.IMAGE;
@@ -6,7 +6,7 @@ import service.threadPool.thread.ConVCalc;
 import service.threadPool.thread.ConVStrange;
 import service.threadPool.thread.ConfActive;
 import service.threadPool.thread.PaperBlur;
-import test.ThreadPoolReflectCore;
+import service.threadPool.core.ThreadPoolReflectCore;
 
 import static controller.StylizeController.calcService;
 

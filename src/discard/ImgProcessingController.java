@@ -314,5 +314,4 @@ public class ImgProcessingController {
     public IMAGE getEnhanceImage(IMAGE px, double theta) {
         return picServer.getEnhanceImage(px, theta);
     }
-
 }

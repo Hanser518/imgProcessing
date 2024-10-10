@@ -1,4 +1,4 @@
-package main;
+package test;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;

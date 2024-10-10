@@ -81,7 +81,7 @@ public class ImgController {
         if (rateW > rateH) {
             rate = rateH * 0.6;
         } else {
-            rate = rateW * 0.8;
+            rate = rateW * 0.6;
         }
         // 窗口大小
         int frameWidth = (int) (imgWidth * rate);

@@ -8,7 +8,7 @@ import entity.IMAGE;
 import service.threadPool.thread.ConVCalc;
 import service.threadPool.core.ThreadPoolCore;
 import service.imgService;
-import test.ThreadPoolReflectCore;
+import service.threadPool.core.ThreadPoolReflectCore;
 
 public class imgServiceImpl implements imgService {
     static private ThreadPoolCore conv;

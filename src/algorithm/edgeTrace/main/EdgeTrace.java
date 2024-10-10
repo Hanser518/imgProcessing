@@ -57,7 +57,7 @@ public class EdgeTrace {
     public void start(int pattern) {
         buildPattern = pattern;
         if (pattern == PATTERN_ONE) {
-            THRESHOLD = 8;
+            THRESHOLD = 16;
         }
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
