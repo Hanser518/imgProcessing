@@ -27,10 +27,9 @@ public class ThreadPoolReflectCore {
     protected List<Thread> threadPool = new ArrayList<>();  // 线程池
     protected Stack<Object> leisure = new Stack<>();        // 空闲线程
 
-    private final ICalculateService calcService = new ICalculateServiceImpl();
-
     public ThreadPoolReflectCore(int[][] requestData, double[][] ConVKernel, int MaxThreadCount, Object threadItem) throws Exception {
         // 对图像进行填充处理，此时数据矩阵长宽发生改变，原矩阵长宽存储于width和height中
+        ICalculateService calcService = new ICalculateServiceImpl();
         this.data = calcService.pixFill(requestData, ConVKernel);
         ;
         this.width = requestData.length;
@@ -152,6 +151,10 @@ public class ThreadPoolReflectCore {
     }
 
     protected int[][] combineData() {
+        return getCombines(width, blockSize, height, ePools);
+    }
+
+    public static int[][] getCombines(int width, int blockSize, int height, EventPool[] ePools) {
         int wCount = width % blockSize == 0 ? width / blockSize : width / blockSize + 1;
         int hCount = height % blockSize == 0 ? height / blockSize : height / blockSize + 1;
         int[][] result = new int[width][height];
@@ -159,9 +162,7 @@ public class ThreadPoolReflectCore {
             for (int j = 0; j < hCount; j++) {
                 int[][] ePool = ePools[i * hCount + j].result;
                 for (int x = 0; x < ePool.length; x++) {
-                    for (int y = 0; y < ePool[0].length; y++) {
-                        result[x + i * blockSize][y + j * blockSize] = ePool[x][y];
-                    }
+                    System.arraycopy(ePool[x], 0, result[x + i * blockSize], j * blockSize, ePool[0].length);
                 }
             }
         }

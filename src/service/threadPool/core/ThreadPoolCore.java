@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import static service.threadPool.core.ThreadPoolReflectCore.getCombines;
+
 public abstract class ThreadPoolCore {
     protected int[][] data;
     protected double[] kernel;
@@ -129,20 +131,7 @@ public abstract class ThreadPoolCore {
     protected abstract void leisurePush();
 
     protected int[][] combineData(){
-        int wCount = width % blockSize == 0 ? width / blockSize : width / blockSize + 1;
-        int hCount = height % blockSize == 0 ? height / blockSize : height / blockSize + 1;
-        int[][] result = new int[width][height];
-        for(int i = 0;i < wCount;i ++){
-            for(int j = 0;j < hCount;j ++){
-                int[][] ePool = ePools[i * hCount + j].result;
-                for(int x = 0;x < ePool.length;x ++){
-                    for(int y = 0;y < ePool[0].length;y ++){
-                        result[x + i * blockSize][y + j * blockSize] = ePool[x][y];
-                    }
-                }
-            }
-        }
-        return result;
+        return getCombines(width, blockSize, height, ePools);
     }
 
     protected abstract void initThread();

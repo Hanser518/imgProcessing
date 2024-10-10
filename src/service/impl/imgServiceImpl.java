@@ -57,7 +57,9 @@ public class imgServiceImpl implements imgService {
     @Override
     public int[][] getMarrEdge(IMAGE px) throws Exception {
         double[][] kernel = new double[][]{{ 0,-1, 0}, {-1, 4,-1}, { 0,-1, 0},};
+        kernel = new double[][]{{3, -1, 0}, {-1, -2, -1}, {0, -1, 3}};
         conv2 = new ThreadPoolReflectCore(px.getGrayMatrixInArgbModule(), kernel, 24, new ConVCalc());
+        // conv2 = new ThreadPoolReflectCore(px.getPixelMatrix(), kernel, 24, new ConVCalc());
         conv2.start();
         int width = px.getWidth();
         int height = px.getHeight();
@@ -66,8 +68,12 @@ public class imgServiceImpl implements imgService {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 int value = px.getArgbParams(data[i][j])[1];
-                value = value > 16 ? 180 : 0;
+                // value = value > 8 ? 180 : 0;
                 result[i][j] = px.getPixParams(new int[]{255, value, value, value});
+//                int r = (data[i][j] >> 16) * 0xFF;
+//                int g = (data[i][j] >> 8) * 0xFF;
+//                int b = data[i][j] * 0xFF;
+//                result[i][j] = px.getPixParams(new int[]{255, r * 2, g * 2, b * 2});
             }
         }
         return result;

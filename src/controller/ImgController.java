@@ -79,9 +79,9 @@ public class ImgController {
         double rateH = (double) screenHeight / imgHeight;
         double rate;
         if (rateW > rateH) {
-            rate = rateH * 0.6;
+            rate = rateH * 0.5;
         } else {
-            rate = rateW * 0.6;
+            rate = rateW * 0.4;
         }
         // 窗口大小
         int frameWidth = (int) (imgWidth * rate);

@@ -355,13 +355,12 @@ public class ICalculateServiceImpl implements ICalculateService {
             g = Math.abs(g / rate);
             b = Math.abs(b / rate);
         }else {
-            r /= rate;
-            g /= rate;
-            b /= rate;
+            r = Math.max(r / rate, 0);
+            g = Math.max(g / rate, 0);
+            b = Math.max(b / rate, 0);
         }
         // System.out.println(r + " " + g + " " + b);
-        int px = (255 << 24) | ((int) r << 16) | ((int) g << 8) | (int) b;
-        return px;
+        return (255 << 24) | ((int) r << 16) | ((int) g << 8) | (int) b;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package entity.test;
 
+import algorithm.edgeTrace.main.EdgeTrace;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -23,6 +25,7 @@ public class TestEntity implements Runnable {
      */
     private int[][] argbMatrix;
     private int[][] hsvMatrix;
+    private int[][] grayMatrix;
 
     /**
      * 图像宽高
@@ -33,25 +36,26 @@ public class TestEntity implements Runnable {
     /**
      * 图像块列表
      */
-    private List<imageBlock> imageBlockList = new ArrayList<>();
+    private final List<ImageBlock> imageBlockList = new ArrayList<>();
 
     /**
      * 文件初始化情况
      */
-    private volatile boolean initialized = false;
+    private volatile boolean hsvInitialization = false;
+    private volatile boolean blockInitialization = false;
 
 
     public TestEntity(String path) throws IOException {
         bufferFile = ImageIO.read(new File(path));
         width = bufferFile.getWidth();
         height = bufferFile.getHeight();
+        argbMatrix = new int[width][height];
         int[] argbList = bufferFile.getRGB(0, 0, width, height, null, 0, width);
         for (int i = 0; i < argbList.length; i++) {
             int x = i % width;
             int y = i / width;
             argbMatrix[x][y] = argbList[i];
         }
-        this.run();
     }
 
 
@@ -65,7 +69,33 @@ public class TestEntity implements Runnable {
             }
         }
         this.argbMatrix = argbMatrix;
-        this.run();
+        init();
+    }
+
+    private void init() {
+        Thread thread = new Thread(this);
+        thread.start();
+        while (thread.isAlive()) ;
+        System.out.println("ok");
+    }
+
+    public static int[][] transBlock2ArgbMatrix(List<ImageBlock> blockList) {
+        int[][] argbMatrix = new int[blockList.get(0).getRawWidth()][blockList.get(0).getRawHeight()];
+        for (ImageBlock block : blockList) {
+            int x = block.getX();
+            int y = block.getY();
+            int width = block.getWidth();
+            int height = block.getHeight();
+            for (int i = x; i < x + width; i++) {
+                for (int j = y; j < y + height; j++) {
+                    argbMatrix[i][j] = block.getArgbMatrix()[i - x][j - y];
+                    if (i - x == 0 || j - y == 0) {
+                        argbMatrix[i][j] = (255 << 24) | (255 << 16) | (255 << 8) | 255;
+                    }
+                }
+            }
+        }
+        return argbMatrix;
     }
 
     /**
@@ -169,6 +199,19 @@ public class TestEntity implements Runnable {
         return argbMatrix;
     }
 
+    public static int[][] transARGB2Gray(int[][] argbMatrix) {
+        int width = argbMatrix.length;
+        int height = argbMatrix[0].length;
+        int[][] gray = new int[width][height];
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                gray[i][j] = (int) (((argbMatrix[i][j] >> 16) * 0xFF) * 0.29 + ((argbMatrix[i][j] >> 8) * 0xFF) * 0.59 + ((argbMatrix[i][j]) * 0xFF) * 0.12);
+            }
+        }
+        return gray;
+
+    }
+
     /**
      * 文件图像载入后，会优先满足变量bufferFile和argbMatrix的生成
      * 其余的数据将会在额外线程中创建
@@ -176,20 +219,157 @@ public class TestEntity implements Runnable {
     @Override
     public void run() {
         this.hsvMatrix = transARGB2HSV(argbMatrix);
+        hsvInitialization = true;
         // 初始化文件块
-        int initBlockSize = 100;
-        imageBlock[][] blockMatrix = new imageBlock[width / initBlockSize + 1][height / initBlockSize + 1];
+        int initBlockSize = 200;
+        combineBlockBySize(buildBlockMatrix(initBlockSize), initBlockSize);
+        blockInitialization = true;
+    }
+
+    private ImageBlock[][] buildBlockMatrix(int initBlockSize) {
+        ImageBlock[][] blockMatrix = new ImageBlock[width / initBlockSize + 1][height / initBlockSize + 1];
         for (int i = 0; i < blockMatrix.length; i++) {
             for (int j = 0; j < blockMatrix[0].length; j++) {
-                int blockWidth = i * initBlockSize < width ? initBlockSize : width - (i - 1) * initBlockSize;
-                int blockHeight = j * initBlockSize < height ? initBlockSize : height - (j - 1) * initBlockSize;
+                int blockWidth = (i + 1) * initBlockSize > width ? width - (i) * initBlockSize : initBlockSize;
+                int blockHeight = (j + 1) * initBlockSize > height ? height - (j) * initBlockSize : initBlockSize;
                 if (blockHeight > 0 && blockWidth > 0) {
-                    blockMatrix[i][j] = new imageBlock(argbMatrix, i * initBlockSize, j * initBlockSize, blockWidth, blockHeight);
+                    blockMatrix[i][j] = new ImageBlock(argbMatrix, i * initBlockSize, j * initBlockSize, blockWidth, blockHeight);
                 }
             }
         }
-        System.out.println("ok");
-        initialized = true;
+        return blockMatrix;
+    }
+
+    private void combineBlockBySize(ImageBlock[][] blockMatrix, int initBlockSize) {
+        boolean[][] isVisited = new boolean[width / initBlockSize + 1][height / initBlockSize + 1];
+        int visitCount = 0;
+        while (visitCount != isVisited.length * isVisited[0].length) {
+            for (int i = 0; i < isVisited.length; i++) {
+                for (int j = 0; j < isVisited[0].length; j++) {
+                    if (blockMatrix[i][j].size() >= initBlockSize * initBlockSize) {
+                        isVisited[i][j] = true;
+                        imageBlockList.add(blockMatrix[i][j]);
+                    } else {
+                        if (!isVisited[i][j]) {
+                            int[] dirAndSteps = getCombineDirAndSteps(blockMatrix, isVisited, i, j);
+                            if (dirAndSteps[0] == -1) {
+                                imageBlockList.add(blockMatrix[i][j]);
+                            } else {
+                                int[] param = getBlockParam(blockMatrix, i, j, dirAndSteps, isVisited);
+                                imageBlockList.add(new ImageBlock(argbMatrix, blockMatrix[i][j].getX(), blockMatrix[i][j].getY(), param[0], param[1]));
+                            }
+                        }
+                    }
+                    visitCount += 1;
+                }
+            }
+        }
+    }
+
+    private void combineBlockByComplexity(ImageBlock[][] blockMatrix, int initBlockSize) {
+        boolean[][] isVisited = new boolean[width / initBlockSize + 1][height / initBlockSize + 1];
+        for (int i = 0; i < isVisited.length; i++) {
+            for (int j = 0; j < isVisited[0].length; j++) {
+                if (blockMatrix[i][j].getComplexity() >= 7) {
+                    isVisited[i][j] = true;
+                    imageBlockList.add(blockMatrix[i][j]);
+                } else {
+                    if (!isVisited[i][j]) {
+                        int[] dirAndSteps = getCombineDirAndSteps(blockMatrix, isVisited, i, j);
+                        if (dirAndSteps[0] == -1) {
+                            imageBlockList.add(blockMatrix[i][j]);
+                        } else {
+                            int[] param = getBlockParamByComplexity(blockMatrix, i, j, dirAndSteps, isVisited);
+                            imageBlockList.add(new ImageBlock(argbMatrix, blockMatrix[i][j].getX(), blockMatrix[i][j].getY(), param[0], param[1]));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private int[] getBlockParamByComplexity(ImageBlock[][] blockMatrix, int x, int y, int[] dirAndSteps, boolean[][] isVisited) {
+        int cp = blockMatrix[x][y].getComplexity();
+        int width = blockMatrix[x][y].getWidth();
+        int height = blockMatrix[x][y].getHeight();
+        int lx = x;
+        int ly = y;
+        isVisited[lx][ly] = true;
+        for (int i = 0; i < dirAndSteps[1] && cp < 7; i++) {
+            int[] nextCoordinate = EdgeTrace.getNextCoordinate(dirAndSteps[0], lx, ly);
+            lx = nextCoordinate[0];
+            ly = nextCoordinate[1];
+            switch (dirAndSteps[0]) {
+                case 2:
+                case 6:
+                    width += blockMatrix[lx][ly].getWidth();
+                    break;
+                case 0:
+                case 4:
+                    height += blockMatrix[lx][ly].getHeight();
+                    break;
+            }
+            cp += blockMatrix[lx][ly].getComplexity();
+            isVisited[lx][ly] = true;
+        }
+        return new int[]{width, height};
+    }
+
+    private int[] getBlockParam(ImageBlock[][] blockMatrix, int x, int y, int[] dirAndSteps, boolean[][] isVisited) {
+        int width = blockMatrix[x][y].getWidth();
+        int height = blockMatrix[x][y].getHeight();
+        int lx = x;
+        int ly = y;
+        isVisited[lx][ly] = true;
+        for (int i = 0; i < dirAndSteps[1] && width * height < 200 * 200; i++) {
+            int[] nextCoordinate = EdgeTrace.getNextCoordinate(dirAndSteps[0], lx, ly);
+            lx = nextCoordinate[0];
+            ly = nextCoordinate[1];
+            switch (dirAndSteps[0]) {
+                case 2:
+                case 6:
+                    width += blockMatrix[lx][ly].getWidth();
+                    break;
+                case 0:
+                case 4:
+                    height += blockMatrix[lx][ly].getHeight();
+                    break;
+            }
+            isVisited[lx][ly] = true;
+        }
+        return new int[]{width, height};
+    }
+
+    private int[] getCombineDirAndSteps(ImageBlock[][] blockMatrix, boolean[][] visited, int x, int y) {
+        int dir = -1;
+        int step = 0;
+        for (int i = 0; i < 8; i += 2) {
+            int len = getStepCount(blockMatrix, visited, i, x, y);
+            if (len > step) {
+                dir = i;
+                step = len;
+            }
+        }
+        return new int[]{dir, step};
+    }
+
+    private int getStepCount(ImageBlock[][] blockMatrix, boolean[][] isVisited, int dir, int lx, int ly) {
+        int[] nextPoint = EdgeTrace.getNextCoordinate(dir, lx, ly);
+        if (nextPoint[0] < 0 || nextPoint[1] < 0) {
+            return 0;
+        }
+        if (nextPoint[0] < isVisited.length && nextPoint[1] < isVisited[0].length) {
+            if (isVisited[nextPoint[0]][nextPoint[1]]) {
+                return 0;
+            }
+            if (blockMatrix[lx][ly].getWidth() != blockMatrix[nextPoint[0]][nextPoint[1]].getWidth() && blockMatrix[lx][ly].getHeight() != blockMatrix[nextPoint[0]][nextPoint[1]].getHeight()) {
+                return 0;
+            }
+            if (lx != nextPoint[0] || ly != nextPoint[1]) {
+                return getStepCount(blockMatrix, isVisited, dir, nextPoint[0], nextPoint[1]) + 1;
+            }
+        }
+        return 0;
     }
 
     public BufferedImage getImg() {
@@ -205,7 +385,10 @@ public class TestEntity implements Runnable {
     }
 
     public int[][] getHSVMatrix() {
-        while (!initialized) {
+        if (hsvMatrix == null) {
+            init();
+        }
+        while (!hsvInitialization) {
             Thread.onSpinWait();
         }
         return this.hsvMatrix;
@@ -215,7 +398,13 @@ public class TestEntity implements Runnable {
         return this.argbMatrix;
     }
 
-    public List<imageBlock> getImageBlockList() {
+    public List<ImageBlock> getImageBlockList() {
+        if (imageBlockList.isEmpty()) {
+            init();
+        }
+        while (!blockInitialization) {
+            Thread.onSpinWait();
+        }
         return imageBlockList;
     }
 }

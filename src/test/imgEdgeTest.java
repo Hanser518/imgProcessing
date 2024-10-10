@@ -17,12 +17,12 @@ public class imgEdgeTest {
     static imgService service = new imgServiceImpl();
 
     public static void main(String[] args) throws Exception {
-        String fileName = "otk";
+        String fileName = "bus";
         IMAGE px = new IMAGE(fileName + ".jpg");
 
         IMAGE edge = new IMAGE();
 
-        edge = edgeCtrl.getImgEdge(px, EdgeController.SOBEL);
+        edge = edgeCtrl.getImgEdge(px, EdgeController.MARR);
         imgCtrl2.showImg(edge, "sobel");
 
         edge = new IMAGE(service.dilateImg(edge, 1));

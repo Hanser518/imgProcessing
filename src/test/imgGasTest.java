@@ -16,9 +16,9 @@ public class imgGasTest {
     static BlurController blurCtrl = new BlurController();
 
     public static void main(String[] args) throws IOException {
-        String fileName = "Red";
+        String fileName = "bus";
         IMAGE px = new IMAGE(fileName + ".jpg");
-        IMAGE gas = blurCtrl.getGasBlur(px, 1, 32);
+        IMAGE gas = blurCtrl.getGasBlur(px, 32, 32);
         imgCtrl2.showImg(gas, "gas");
 
 
