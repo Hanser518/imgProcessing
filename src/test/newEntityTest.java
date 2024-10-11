@@ -2,7 +2,7 @@ package test;
 
 import controller.ImgController;
 import entity.IMAGE;
-import entity.test.TestEntity;
+import algorithm.cnn.entity.ImageC;
 
 import java.io.IOException;
 
@@ -18,7 +18,7 @@ public class newEntityTest {
         System.out.println("RAW: " + (System.currentTimeMillis() - set));
 
         set = System.currentTimeMillis();
-        TestEntity te = new TestEntity(px.getPixelMatrix());
+        ImageC te = new ImageC(px.getPixelMatrix());
         System.out.println("NEW: " + (System.currentTimeMillis() - set));
 
         set = System.currentTimeMillis();

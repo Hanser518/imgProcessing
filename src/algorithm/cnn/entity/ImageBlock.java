@@ -1,4 +1,4 @@
-package entity.test;
+package algorithm.cnn.entity;
 
 import service.ICalculateService;
 import service.impl.ICalculateServiceImpl;

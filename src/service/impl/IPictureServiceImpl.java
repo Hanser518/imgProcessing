@@ -106,25 +106,7 @@ public class IPictureServiceImpl implements IPictureService {
             threads[i].start();
         }
         System.out.println();
-        int countBefore = -1;
-        while (true) {
-            int count = 0;
-            for (Thread thread : threads) {
-                if (!thread.isAlive()) {
-                    count++;
-                }
-            }
-            if (count != countBefore) {
-                countBefore = count;
-                System.out.print("\rService.Extends.Thread: ");
-                for (int i = 0; i < threadCount; i++) {
-                    if (i < count) System.out.print("O ");
-                    else System.out.print("A ");
-                }
-            }
-            if (count == threads.length) break;
-        }
-        System.out.print("\n");
+        ICalculateServiceImpl.threadProcessing(threadCount, threads);
         for (int c = 0; c < threadCount; c++) {
             for (int i = step * c; i < step * (c + 1) && i < result.length; i++) {
                 for (int j = 0; j < result[0].length; j++) {

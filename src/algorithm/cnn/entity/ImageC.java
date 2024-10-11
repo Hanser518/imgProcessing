@@ -1,4 +1,4 @@
-package entity.test;
+package algorithm.cnn.entity;
 
 import algorithm.edgeTrace.main.EdgeTrace;
 
@@ -13,7 +13,7 @@ import java.util.List;
  * 载入时就对数据进行复杂度分析并切分
  * 即将EventPool和IMAGE类相结合，执行多线程任务时不需要再去进行数据切分
  */
-public class TestEntity implements Runnable {
+public class ImageC implements Runnable {
 
     /**
      * 图像源文件
@@ -44,8 +44,11 @@ public class TestEntity implements Runnable {
     private volatile boolean hsvInitialization = false;
     private volatile boolean blockInitialization = false;
 
-
-    public TestEntity(String path) throws IOException {
+    /**
+     * @param path
+     * @throws IOException
+     */
+    public ImageC(String path) throws IOException {
         bufferFile = ImageIO.read(new File(path));
         width = bufferFile.getWidth();
         height = bufferFile.getHeight();
@@ -59,7 +62,7 @@ public class TestEntity implements Runnable {
     }
 
 
-    public TestEntity(int[][] argbMatrix) {
+    public ImageC(int[][] argbMatrix) {
         width = argbMatrix.length;
         height = argbMatrix[0].length;
         bufferFile = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -70,6 +73,21 @@ public class TestEntity implements Runnable {
         }
         this.argbMatrix = argbMatrix;
         init();
+    }
+
+
+    /**
+     * 文件图像载入后，会优先满足变量bufferFile和argbMatrix的生成
+     * 其余的数据将会在额外线程中创建
+     */
+    @Override
+    public void run() {
+        this.hsvMatrix = transARGB2HSV(argbMatrix);
+        hsvInitialization = true;
+        // 初始化文件块
+        int initBlockSize = 200;
+        combineBlockBySize(buildBlockMatrix(initBlockSize), initBlockSize);
+        blockInitialization = true;
     }
 
     private void init() {
@@ -162,36 +180,42 @@ public class TestEntity implements Runnable {
                 double t = v * (1 - (1 - f) * s);
                 int r = 0, g = 0, b = 0;
                 switch (h1) {
-                    case 0:
+                    case 0 -> {
                         r = (int) (v * 255);
                         g = (int) (t * 255);
                         b = (int) (p * 255);
-                        break;
-                    case 1:
+                    }
+
+                    case 1 -> {
                         r = (int) (q * 255);
                         g = (int) (v * 255);
                         b = (int) (p * 255);
-                        break;
-                    case 2:
+                    }
+
+                    case 2 -> {
                         r = (int) (p * 255);
                         g = (int) (v * 255);
                         b = (int) (t * 255);
-                        break;
-                    case 3:
+                    }
+
+                    case 3 -> {
                         r = (int) (p * 255);
                         g = (int) (q * 255);
                         b = (int) (v * 255);
-                        break;
-                    case 4:
+                    }
+
+                    case 4 -> {
                         r = (int) (t * 255);
                         g = (int) (p * 255);
                         b = (int) (v * 255);
-                        break;
-                    case 5:
+                    }
+
+                    case 5 -> {
                         r = (int) (v * 255);
                         g = (int) (p * 255);
                         b = (int) (q * 255);
-                        break;
+                    }
+
                 }
                 argbMatrix[i][j] = (255 << 24) | ((r) << 16) | ((g) << 8) | (b);
             }
@@ -212,20 +236,6 @@ public class TestEntity implements Runnable {
 
     }
 
-    /**
-     * 文件图像载入后，会优先满足变量bufferFile和argbMatrix的生成
-     * 其余的数据将会在额外线程中创建
-     */
-    @Override
-    public void run() {
-        this.hsvMatrix = transARGB2HSV(argbMatrix);
-        hsvInitialization = true;
-        // 初始化文件块
-        int initBlockSize = 200;
-        combineBlockBySize(buildBlockMatrix(initBlockSize), initBlockSize);
-        blockInitialization = true;
-    }
-
     private ImageBlock[][] buildBlockMatrix(int initBlockSize) {
         ImageBlock[][] blockMatrix = new ImageBlock[width / initBlockSize + 1][height / initBlockSize + 1];
         for (int i = 0; i < blockMatrix.length; i++) {
@@ -238,6 +248,19 @@ public class TestEntity implements Runnable {
             }
         }
         return blockMatrix;
+    }
+
+    public void buildBlockList(int blockSize) {
+        ImageBlock[][] blockMatrix = new ImageBlock[width / blockSize + 1][height / blockSize + 1];
+        for (int i = 0; i < blockMatrix.length; i++) {
+            for (int j = 0; j < blockMatrix[0].length; j++) {
+                int x = i * blockSize;
+                int y = j * blockSize;
+                if (x > 0 && y > 0) {
+                    blockMatrix[i][j] = new ImageBlock(argbMatrix, x, y, blockSize, blockSize);
+                }
+            }
+        }
     }
 
     private void combineBlockBySize(ImageBlock[][] blockMatrix, int initBlockSize) {
@@ -300,14 +323,8 @@ public class TestEntity implements Runnable {
             lx = nextCoordinate[0];
             ly = nextCoordinate[1];
             switch (dirAndSteps[0]) {
-                case 2:
-                case 6:
-                    width += blockMatrix[lx][ly].getWidth();
-                    break;
-                case 0:
-                case 4:
-                    height += blockMatrix[lx][ly].getHeight();
-                    break;
+                case 2, 6 -> width += blockMatrix[lx][ly].getWidth();
+                case 0, 4 -> height += blockMatrix[lx][ly].getHeight();
             }
             cp += blockMatrix[lx][ly].getComplexity();
             isVisited[lx][ly] = true;
@@ -326,14 +343,8 @@ public class TestEntity implements Runnable {
             lx = nextCoordinate[0];
             ly = nextCoordinate[1];
             switch (dirAndSteps[0]) {
-                case 2:
-                case 6:
-                    width += blockMatrix[lx][ly].getWidth();
-                    break;
-                case 0:
-                case 4:
-                    height += blockMatrix[lx][ly].getHeight();
-                    break;
+                case 2, 6 -> width += blockMatrix[lx][ly].getWidth();
+                case 0, 4 -> height += blockMatrix[lx][ly].getHeight();
             }
             isVisited[lx][ly] = true;
         }
@@ -388,9 +399,6 @@ public class TestEntity implements Runnable {
         if (hsvMatrix == null) {
             init();
         }
-        while (!hsvInitialization) {
-            Thread.onSpinWait();
-        }
         return this.hsvMatrix;
     }
 
@@ -401,9 +409,6 @@ public class TestEntity implements Runnable {
     public List<ImageBlock> getImageBlockList() {
         if (imageBlockList.isEmpty()) {
             init();
-        }
-        while (!blockInitialization) {
-            Thread.onSpinWait();
         }
         return imageBlockList;
     }

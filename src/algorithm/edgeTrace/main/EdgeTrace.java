@@ -42,6 +42,9 @@ public class EdgeTrace {
 
     private final int[][] result;
 
+    int minX = 0, minY = 0;
+    int maxX = 9999, maxY = 9999;
+
     public EdgeTrace(IMAGE img) {
         imgData = img.getPixelMatrix();
         width = img.getWidth();
@@ -208,7 +211,7 @@ public class EdgeTrace {
         if (dirInfo[0] != -1) {
             int nx = px, ny = py;
             for (int i = 0; i < dirInfo[1]; i++) {
-                int[] nextPoint = getNextCoordinate16(dirInfo[0], nx, ny);
+                int[] nextPoint = getNextCoordinate(dirInfo[0], nx, ny);
                 nx = nextPoint[0];
                 ny = nextPoint[1];
                 result.add(new Point(nx, ny, imgData[nx][ny]));
@@ -249,7 +252,7 @@ public class EdgeTrace {
      * @return 步长
      */
     private int getStepCount(int dir, int lx, int ly) {
-        int[] nextPoint = getNextCoordinate16(dir, lx, ly);
+        int[] nextPoint = getNextCoordinate(dir, lx, ly);
         if (nextPoint[0] < 0 || nextPoint[1] < 0) {
             return 0;
         }
@@ -265,24 +268,17 @@ public class EdgeTrace {
         return 0;
     }
 
-    public static int[] getNextCoordinate(int dir, int lx, int ly){
+    public static int[] getNextCoordinate(int dir, int lx, int ly) {
         int nx = lx;
         int ny = ly;
         switch (dir) {
-            case 0:
-                ny -= 1;
-                break;
-            case 2:
-                nx += 1;
-                break;
-            case 4:
-                ny += 1;
-                break;
-            case 6:
-                nx -= 1;
-                break;
-            default:
+            case 0 -> ny -= 1;
+            case 1 -> nx += 1;
+            case 2 -> ny += 1;
+            case 3 -> nx -= 1;
+            default -> {
                 return getNextCoordinate8(dir, lx, ly);
+            }
         }
         return new int[]{nx, ny};
     }
@@ -300,42 +296,31 @@ public class EdgeTrace {
         int nx = lx;
         int ny = ly;
         switch (dir) {
-            case 0:
-                ny -= 1;
-                break;
-            case 1:
+            case 4 -> {
                 nx += 1;
                 ny -= 1;
-                break;
-            case 2:
-                nx += 1;
-                break;
-            case 3:
+            }
+            case 5 -> {
                 nx += 1;
                 ny += 1;
-                break;
-            case 4:
-                ny += 1;
-                break;
-            case 5:
+            }
+            case 6 -> {
                 nx -= 1;
                 ny += 1;
-                break;
-            case 6:
-                nx -= 1;
-                break;
-            case 7:
+            }
+            case 7 -> {
                 nx -= 1;
                 ny -= 1;
-                break;
-            default:
+            }
+            default -> {
                 return getNextCoordinate16(dir, lx, ly);
+            }
         }
         return new int[]{nx, ny};
     }
 
     /**
-     * 获取对应方向下一步坐标，共4个方向
+     * 获取对应方向下一步坐标，共16个方向
      *
      * @param dir 方向
      * @param lx  起始坐标
@@ -346,66 +331,38 @@ public class EdgeTrace {
         int nx = lx;
         int ny = ly;
         switch (dir) {
-            case 0:
-                ny -= 1;
-                break;
-            case 1:
-                nx += 1;
-                ny -= 1;
-                break;
-            case 2:
-                nx += 1;
-                break;
-            case 3:
-                nx += 1;
-                ny += 1;
-                break;
-            case 4:
-                ny += 1;
-                break;
-            case 5:
-                nx -= 1;
-                ny += 1;
-                break;
-            case 6:
-                nx -= 1;
-                break;
-            case 7:
-                nx -= 1;
-                ny -= 1;
-                break;
-            case 8:
+            case 8 -> {
                 nx += 1;
                 ny -= 2;
-                break;
-            case 9:
+            }
+            case 9 -> {
                 nx += 2;
                 ny -= 1;
-                break;
-            case 10:
+            }
+            case 10 -> {
                 nx += 2;
                 ny += 1;
-                break;
-            case 11:
+            }
+            case 11 -> {
                 nx += 1;
                 ny += 2;
-                break;
-            case 12:
+            }
+            case 12 -> {
                 nx -= 1;
                 ny += 2;
-                break;
-            case 13:
+            }
+            case 13 -> {
                 nx -= 2;
                 ny += 1;
-                break;
-            case 14:
+            }
+            case 14 -> {
                 nx -= 2;
                 ny -= 1;
-                break;
-            case 15:
+            }
+            case 15 -> {
                 nx -= 1;
                 ny -= 2;
-                break;
+            }
         }
         return new int[]{nx, ny};
     }
@@ -430,7 +387,7 @@ public class EdgeTrace {
             if (dir == -1) {
                 stack.pop();
             } else {
-                int[] nextCoordinate = getNextCoordinate16(dir, p.getPx(), p.getPy());
+                int[] nextCoordinate = getNextCoordinate(dir, p.getPx(), p.getPy());
                 stack.push(new Point(nextCoordinate[0], nextCoordinate[1], imgData[nextCoordinate[0]][nextCoordinate[1]]));
                 result.add(new Point(nextCoordinate[0], nextCoordinate[1], imgData[nextCoordinate[0]][nextCoordinate[1]]));
                 isVisited[nextCoordinate[0]][nextCoordinate[1]] = true;
@@ -450,7 +407,7 @@ public class EdgeTrace {
     private int getNextDir(int lx, int ly, int prev) {
         List<Integer> dirBackup = new ArrayList<>();
         for (int i = 0; i < 16; i++) {
-            int[] nc = getNextCoordinate16(i, lx, ly);
+            int[] nc = getNextCoordinate(i, lx, ly);
             if (nc[0] < width && nc[1] < height && nc[0] > -1 && nc[1] > -1) {
                 if (!isVisited[nc[0]][nc[1]]) {
                     int value = (imgData[nc[0]][nc[1]] >> 16) & 0xFF;
@@ -463,7 +420,7 @@ public class EdgeTrace {
         if (dirBackup.isEmpty()) {
             return -1;
         } else {
-            if(dirBackup.contains(prev)){
+            if (dirBackup.contains(prev)) {
                 return prev;
             }
             return dirBackup.get((int) (Math.random() * dirBackup.size()));
@@ -483,9 +440,10 @@ public class EdgeTrace {
 
     /**
      * 跟随填充
-     * @param node  节点
+     *
+     * @param node 节点
      */
-    private void trackAndDilate(Node node){
+    private void trackAndDilate(Node node) {
         if (node.getNext() != null) {
             trackAndDilate(node.getNext());
         }
@@ -496,9 +454,9 @@ public class EdgeTrace {
             return;
         }
         for (Point p : node.getPointList()) {
-            for(int i = 0;i < 16;i ++){
-                int[] nextDir = getNextCoordinate8(i, p.getPx(), p.getPy());
-                if(nextDir[0] > -1 && nextDir[0] < width && nextDir[1] > -1 && nextDir[1] < height){
+            for (int i = 0; i < 16; i++) {
+                int[] nextDir = getNextCoordinate(i, p.getPx(), p.getPy());
+                if (nextDir[0] > -1 && nextDir[0] < width && nextDir[1] > -1 && nextDir[1] < height) {
                     result[nextDir[0]][nextDir[1]] = result[p.getPx()][p.getPy()];
                 }
             }
@@ -507,9 +465,10 @@ public class EdgeTrace {
 
     /**
      * 获取节点列表
-     * @return  节点列表
+     *
+     * @return 节点列表
      */
-    public List<Node> getPathList(){
+    public List<Node> getPathList() {
         return pathList;
     }
 }

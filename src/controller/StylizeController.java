@@ -28,7 +28,7 @@ public class StylizeController {
     static imgService imgServ = new imgServiceImpl();
     static ThreadPoolCore conV;
 
-    public IMAGE transPaperStyle(IMAGE img, int maxTreadCount, int... kernelSize){
+    public IMAGE transPaperStyle(IMAGE img, int maxTreadCount, int... kernelSize) {
         int size = kernelSize.length > 0 ? kernelSize[0] : 131;
         conV = new ThreadPoolPaper(img.getPixelMatrix(), calcService.getGasKernel(size), maxTreadCount);
         conV.start();
@@ -38,33 +38,30 @@ public class StylizeController {
     public IMAGE transGrilleStyle(IMAGE img, int grilleType, boolean multiple) {
         double radio = 1;
         int kernelSize = 117;
-        switch (grilleType){
-            case 0:
+        switch (grilleType) {
+            case 0 -> {
                 radio = 0.01024;
                 System.out.println(1 / radio);
                 kernelSize = 81;
-                break;
-            case 1:
+            }
+            case 1 -> {
                 radio = 0.0425;
                 kernelSize = 153;
-                break;
-            case 2:
-                radio = 0.04125;
-                break;
-            default:
-                radio = 0.5;
+            }
+            case 2 -> radio = 0.04125;
+            default -> radio = 0.5;
         }
         System.out.println("adjust...");
         IMAGE ad = AdCtrl.adjustSatAndVal(img, 36, 24);
         System.out.println("adjust over");
-        if(multiple){
+        if (multiple) {
             IMAGE gas = transPaperStyle(ad, -1, kernelSize); // kernelSize
             List<IMAGE> imgList = imgCtrl.asyncSplit(gas, (int) (1 / radio), true);
             IMAGE ver = imgCtrl.combineImages(imgList, grilleType, true);
             imgList = imgCtrl.asyncSplit(ver, (int) (1 / (radio * 1.73)), false);
             IMAGE res = imgCtrl.combineImages(imgList, grilleType, false);
             return res;
-        }else{
+        } else {
             IMAGE gas = transPaperStyle(ad, -1, kernelSize); // kernelSize
             List<IMAGE> imgList = imgCtrl.asyncSplit(gas, (int) (1 / radio), true);
             return imgCtrl.combineImages(imgList, grilleType, true);

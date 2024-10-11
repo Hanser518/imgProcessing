@@ -350,11 +350,11 @@ public class ICalculateServiceImpl implements ICalculateService {
             }
         }
         rate = rate < 10e-2 ? 1.0 : rate;
-        if(negativeFix) {
+        if (negativeFix) {
             r = Math.abs(r / rate);
             g = Math.abs(g / rate);
             b = Math.abs(b / rate);
-        }else {
+        } else {
             r = Math.max(r / rate, 0);
             g = Math.max(g / rate, 0);
             b = Math.max(b / rate, 0);
@@ -404,17 +404,35 @@ public class ICalculateServiceImpl implements ICalculateService {
         System.out.println(threadCount);
         TGMServiceImpl[] tgm = new TGMServiceImpl[threadCount];
         Thread[] threads = new Thread[threadCount];
-        for(int i = 0;i < (width / baseSize + 1);i ++){
-            for(int j = 0;j < (height / baseSize + 1);j ++){
+        for (int i = 0; i < (width / baseSize + 1); i++) {
+            for (int j = 0; j < (height / baseSize + 1); j++) {
                 int w = (i + 1) * baseSize < width ? baseSize : width - i * baseSize;
                 int h = (j + 1) * baseSize < height ? baseSize : height - j * baseSize;
                 // System.out.println(i + " " + j + " " + w + " " + h);
-                tgm[i * (height / baseSize + 1) + j] = new TGMServiceImpl(w, h, base, top);
-                threads[i * (height / baseSize + 1) + j] = new Thread(tgm[i * (height / baseSize + 1) + j]);
-                threads[i * (height / baseSize + 1) + j].start();
+                int i1 = i * (height / baseSize + 1) + j;
+                tgm[i1] = new TGMServiceImpl(w, h, base, top);
+                threads[i1] = new Thread(tgm[i1]);
+                threads[i1].start();
                 // System.out.println(i + " " + j + " " + (i * (height / baseSize + 1) + j));
             }
         }
+        threadProcessing(threadCount, threads);
+        for (int i = 0; i < (width / baseSize + 1); i++) {
+            for (int j = 0; j < (height / baseSize + 1); j++) {
+                int w = (i + 1) * baseSize < width ? baseSize : width - i * baseSize;
+                int h = (j + 1) * baseSize < height ? baseSize : height - j * baseSize;
+                // System.out.printf("%3d,%3d,W=%3d,H=%3d\n", i, j, tgm[(i * (height / baseSize + 1) + j)].map.length, tgm[(i * (height / baseSize + 1) + j)].map[0].length);
+                for (int k = 0; k < w; k++) {
+                    for (int l = 0; l < h; l++) {
+                        gasMap[k + i * baseSize][l + j * baseSize] = tgm[(i * (height / baseSize + 1) + j)].map[k][l];
+                    }
+                }
+            }
+        }
+        return gasMap;
+    }
+
+    static void threadProcessing(int threadCount, Thread[] threads) {
         int countBefore = -1;
         while (true) {
             int count = 0;
@@ -434,27 +452,14 @@ public class ICalculateServiceImpl implements ICalculateService {
             if (count == threads.length) break;
         }
         System.out.print("\n");
-        for(int i = 0;i < (width / baseSize + 1);i ++){
-            for(int j = 0;j < (height / baseSize + 1);j ++){
-                int w = (i + 1) * baseSize < width ? baseSize : width - i * baseSize;
-                int h = (j + 1) * baseSize < height ? baseSize : height - j * baseSize;
-                // System.out.printf("%3d,%3d,W=%3d,H=%3d\n", i, j, tgm[(i * (height / baseSize + 1) + j)].map.length, tgm[(i * (height / baseSize + 1) + j)].map[0].length);
-                for(int k = 0;k < w;k ++){
-                    for(int l = 0;l < h;l ++){
-                        gasMap[k + i * baseSize][l + j * baseSize] = tgm[(i * (height / baseSize + 1) + j)].map[k][l];
-                    }
-                }
-            }
-        }
-        return gasMap;
     }
 
     @Override
     public int getDirection(int[][] map, int x, int y) {
         List<Integer> backDir = new ArrayList<>();
         int u = 0, r = 0;
-        for(int i = -1;i <= 1;i ++){
-            for(int j = -1;j <= 1;j ++){
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
                 try {
                     if (map[x + i][y + j] == 0) {
                         backDir.add((i + 1) * 3 + (j + 1));
@@ -475,16 +480,8 @@ public class ICalculateServiceImpl implements ICalculateService {
 
     @Override
     public int[][] getHistogram(IMAGE img) {
-        double[][] kernelX = new double[][]{
-                { -1, 0, 1},
-                { -2, 0, 2},
-                { -1, 0, 1}
-        };
-        double[][] kernelY = new double[][]{
-                { 1, 2, 1},
-                { 0, 0, 0},
-                {-1,-2,-1}
-        };
+        double[][] kernelX = new double[][]{{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
+        double[][] kernelY = new double[][]{{1, 2, 1}, {0, 0, 0}, {-1, -2, -1}};
         int w = img.getWidth();
         int h = img.getHeight();
         IMAGE gray = picService.getGrayImage(img);
@@ -492,16 +489,16 @@ public class ICalculateServiceImpl implements ICalculateService {
         int[][] sobelY = convolution(gray, kernelY, true, true, true).getPixelMatrix();
         double[][] angle = new double[w][h];    // 角度
         int[][] gradient = new int[w][h];       // 梯度值
-        for(int i = 0;i < w;i ++){
-            for(int j = 0;j < h;j ++){
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
                 int[] sx = img.getArgbParams(sobelX[i][j]);
                 int[] sy = img.getArgbParams(sobelY[i][j]);
                 int[] gd = new int[4];
-                for(int c = 0;c < 4;c ++){
+                for (int c = 0; c < 4; c++) {
                     gd[c] = (int) Math.sqrt(Math.pow(sx[c], 2) + Math.pow(sy[c], 2));
                 }
                 gradient[i][j] = img.getPixParams(gd);
-                if(sx[1] != 0)
+                if (sx[1] != 0)
                     angle[i][j] = Math.atan((double) sy[1] / sx[1]);
                 else
                     angle[i][j] = Math.atan((double) sy[1] / 1.01);
@@ -510,10 +507,10 @@ public class ICalculateServiceImpl implements ICalculateService {
         int[][] thetaMap = new int[w][h];
         int[][] result = new int[w][h];
         int dirCount = 4;
-        for(int i = 0;i < w;i ++){
-            for(int j = 0;j < h;j ++){
-                int theta = (int)(angle[i][j] / Math.PI * 2 * dirCount);
-                if(img.getArgbParams(gradient[i][j])[1] <= 32)
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+                int theta = (int) (angle[i][j] / Math.PI * 2 * dirCount);
+                if (img.getArgbParams(gradient[i][j])[1] <= 32)
                     theta = -1;
                 thetaMap[i][j] = theta;
             }
@@ -521,15 +518,15 @@ public class ICalculateServiceImpl implements ICalculateService {
         int[][] tm1 = new int[w / 4][h / 4];
         int blockSize = 8;
         int step = blockSize / 2;
-        for(int i = 0;i < w - blockSize;i += step){
-            for(int j = 0;j < h - blockSize;j += step){
+        for (int i = 0; i < w - blockSize; i += step) {
+            for (int j = 0; j < h - blockSize; j += step) {
                 Map<Integer, Integer> thetaCount = new HashMap<>();
                 int maxCount = 0;
                 int maxTheta = -1;
-                for(int x = i;x < i + blockSize;x ++){
-                    for(int y = j;y < j + blockSize;y ++){
+                for (int x = i; x < i + blockSize; x++) {
+                    for (int y = j; y < j + blockSize; y++) {
                         int counts = thetaCount.computeIfAbsent(thetaMap[x][y], value -> 0) + 1;
-                        if(counts > maxCount){
+                        if (counts > maxCount) {
                             maxCount = counts;
                             maxTheta = thetaMap[i][j];
                         }
@@ -539,39 +536,30 @@ public class ICalculateServiceImpl implements ICalculateService {
                 tm1[i / 4][j / 4] = maxTheta;
             }
         }
-        for(int i = 0;i < tm1.length;i ++){
-            for(int j = 0;j < tm1[0].length;j ++){
+        for (int i = 0; i < tm1.length; i++) {
+            for (int j = 0; j < tm1[0].length; j++) {
                 int theta = tm1[i][j];
                 combineMatrix(result, theta, i * 4, j * 4);
-                switch (theta){
-                    case 0:
-                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 101, 101, 101}); break;
-                    case 1:
-                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 101, 101, 188}); break;
-                    case 2:
-                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 101, 188, 188}); break;
-                    case 3:
-                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 101, 188, 101}); break;
-                    case 4:
-                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 188, 188, 101}); break;
-                    case 5:
-                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 188, 101, 101}); break;
-                    case 6:
-                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 188, 101, 188}); break;
-                    case 7:
-                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 188, 188, 188}); break;
-                    default:
-                        result[i * 4][j * 4] = img.getPixParams(new int[]{255, 0, 0, 0}); break;
+                switch (theta) {
+                    case 0 -> result[i * 4][j * 4] = img.getPixParams(new int[]{255, 101, 101, 101});
+                    case 1 -> result[i * 4][j * 4] = img.getPixParams(new int[]{255, 101, 101, 188});
+                    case 2 -> result[i * 4][j * 4] = img.getPixParams(new int[]{255, 101, 188, 188});
+                    case 3 -> result[i * 4][j * 4] = img.getPixParams(new int[]{255, 101, 188, 101});
+                    case 4 -> result[i * 4][j * 4] = img.getPixParams(new int[]{255, 188, 188, 101});
+                    case 5 -> result[i * 4][j * 4] = img.getPixParams(new int[]{255, 188, 101, 101});
+                    case 6 -> result[i * 4][j * 4] = img.getPixParams(new int[]{255, 188, 101, 188});
+                    case 7 -> result[i * 4][j * 4] = img.getPixParams(new int[]{255, 188, 188, 188});
+                    default -> result[i * 4][j * 4] = img.getPixParams(new int[]{255, 0, 0, 0});
                 }
             }
         }
         return result;
     }
 
-    public int[][] getSubMatrix(int[][] matrix, int sx, int sy, int width, int height){
+    public int[][] getSubMatrix(int[][] matrix, int sx, int sy, int width, int height) {
         int[][] result = new int[width][height];
-        for(int i = sx;i < sx + width;i ++){
-            for(int j = sy;j < sy + height;j ++){
+        for (int i = sx; i < sx + width; i++) {
+            for (int j = sy; j < sy + height; j++) {
                 result[i - sx][j - sy] = matrix[i][j];
             }
         }
@@ -579,49 +567,49 @@ public class ICalculateServiceImpl implements ICalculateService {
     }
 
 
-    public int[][] DBScanFilter(int[][] matrix, int radius){
+    public int[][] DBScanFilter(int[][] matrix, int radius) {
         return null;
     }
 
-    public void combineMatrix(int[][] matrix, int theta, int x, int y){
+    public void combineMatrix(int[][] matrix, int theta, int x, int y) {
         int[][][] basic = new int[4][4][4];
         basic[0] = new int[][]{
-                {-10132123,-10132123,-10132123,-10132123},
-                {-10132123,-10132123,-10132123,-16777216},
-                {-10132123,-10132123,-16777216,-16777216},
-                {-10132123,-16777216,-16777216,-10132123}
+                {-10132123, -10132123, -10132123, -10132123},
+                {-10132123, -10132123, -10132123, -16777216},
+                {-10132123, -10132123, -16777216, -16777216},
+                {-10132123, -16777216, -16777216, -10132123}
         };
         basic[1] = new int[][]{
-                {-10132036,-10132036,-10132036,-10132036},
-                {-16777216,-10132036,-10132036,-10132036},
-                {-16777216,-16777216,-10132036,-10132036},
-                {-10132036,-16777216,-16777216,-10132036}
+                {-10132036, -10132036, -10132036, -10132036},
+                {-16777216, -10132036, -10132036, -10132036},
+                {-16777216, -16777216, -10132036, -10132036},
+                {-10132036, -16777216, -16777216, -10132036}
         };
         basic[2] = new int[][]{
-                {-10109764,-16777216,-16777216,-10109764},
-                {-16777216,-16777216,-10109764,-10109764},
-                {-16777216,-10109764,-10109764,-10109764},
-                {-10109764,-10109764,-10109764,-10109764}
+                {-10109764, -16777216, -16777216, -10109764},
+                {-16777216, -16777216, -10109764, -10109764},
+                {-16777216, -10109764, -10109764, -10109764},
+                {-10109764, -10109764, -10109764, -10109764}
         };
         // red, 竖向
         basic[3] = new int[][]{
-                {-4430491,-16777216,-16777216, -4430491},
-                {-4430491, -4430491,-16777216,-16777216},
-                {-4430491, -4430491, -4430491,-16777216},
+                {-4430491, -16777216, -16777216, -4430491},
+                {-4430491, -4430491, -16777216, -16777216},
+                {-4430491, -4430491, -4430491, -16777216},
                 {-4430491, -4430491, -4430491, -4430491}
         };
-        if(theta == -1){
-            for(int i = 0;i < basic[0].length;i ++){
-                for(int j = 0;j < basic[0][0].length;j ++){
+        if (theta == -1) {
+            for (int i = 0; i < basic[0].length; i++) {
+                for (int j = 0; j < basic[0][0].length; j++) {
                     matrix[i + x][j + y] = -16777216;
                 }
             }
-        }else{
-            for(int i = 0;i < basic[0].length;i ++){
-                for(int j = 0;j < basic[0][0].length;j ++){
-                    try{
+        } else {
+            for (int i = 0; i < basic[0].length; i++) {
+                for (int j = 0; j < basic[0][0].length; j++) {
+                    try {
                         matrix[i + x][j + y] = basic[theta][i][j];
-                    }catch (Exception ignored){
+                    } catch (Exception ignored) {
 
                     }
                 }

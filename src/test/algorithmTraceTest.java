@@ -5,7 +5,9 @@ import controller.ImgController;
 import controller.ProcessingController;
 import controller.StylizeController;
 import entity.IMAGE;
+import service.ICalculateService;
 import service.imgService;
+import service.impl.ICalculateServiceImpl;
 import service.impl.imgServiceImpl;
 
 public class algorithmTraceTest {
@@ -14,14 +16,18 @@ public class algorithmTraceTest {
     static StylizeController styleCtrl = new StylizeController();
     static ProcessingController proCtrl = new ProcessingController();
     static imgService service = new imgServiceImpl();
+    static ICalculateService calcServ = new ICalculateServiceImpl();
 
     public static void main(String[] args) throws Exception {
 
-        String fileName = "rx78";
+        String fileName = "7820";
         IMAGE px = new IMAGE(fileName + ".jpg");
 
-        IMAGE oil = styleCtrl.transOilPaintingStyle(px);
-        imgCtrl2.showImg(oil, "oil");
+        IMAGE his = new IMAGE(calcServ.getHistogram(px));
+        imgCtrl2.showImg(his, "his");
+
+//        IMAGE oil = styleCtrl.transOilPaintingStyle(px);
+//        imgCtrl2.showImg(oil, "oil");
 
 //        EdgeTrace edgeTrace = new EdgeTrace(edgeCtrl.getImgEdge(px));
 //        edgeTrace.start(0);
