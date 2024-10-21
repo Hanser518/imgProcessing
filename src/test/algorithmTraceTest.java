@@ -1,5 +1,6 @@
 package test;
 
+import algorithm.edgeTrace.main.EdgeTrace;
 import controller.EdgeController;
 import controller.ImgController;
 import controller.ProcessingController;
@@ -9,6 +10,9 @@ import service.ICalculateService;
 import service.imgService;
 import service.impl.ICalculateServiceImpl;
 import service.impl.imgServiceImpl;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class algorithmTraceTest {
     static ImgController imgCtrl2 = new ImgController();
@@ -20,28 +24,28 @@ public class algorithmTraceTest {
 
     public static void main(String[] args) throws Exception {
 
-        String fileName = "7820";
+        String fileName = "paste";
         IMAGE px = new IMAGE(fileName + ".jpg");
 
         IMAGE his = new IMAGE(calcServ.getHistogram(px));
         imgCtrl2.showImg(his, "his");
 
-//        IMAGE oil = styleCtrl.transOilPaintingStyle(px);
-//        imgCtrl2.showImg(oil, "oil");
+        IMAGE eg = new IMAGE(service.getSobelEdge(px));
+        imgCtrl2.showImg(eg, "eg");
 
-//        EdgeTrace edgeTrace = new EdgeTrace(edgeCtrl.getImgEdge(px));
-//        edgeTrace.start(0);
-//        IMAGE et = new IMAGE(edgeTrace.getData());
-//        imgCtrl2.showImg(et, "et");
+        IMAGE oil = styleCtrl.transOilPaintingStyle(px);
+        imgCtrl2.showImg(oil, "oil");
 
-//        List<IMAGE> imgList = new ArrayList<>();
-//        imgList.add(px);
-//        imgList.add(oil);
-//        imgList.add(et);
-//        IMAGE combine = proCtrl.combineImageList(imgList);
-//        imgCtrl2.showImg(combine, "combine");
+        EdgeTrace edgeTrace = new EdgeTrace(edgeCtrl.getImgEdge(px));
+        edgeTrace.start(0);
+        IMAGE et = new IMAGE(edgeTrace.getData());
+        imgCtrl2.showImg(et, "et");
 
-//        edge = new IMAGE(service.dilateImg(etImg, 1));
-//        imgCtrl2.showImg(edge, "dilate");
+        List<IMAGE> imgList = new ArrayList<>();
+        imgList.add(eg);
+        imgList.add(oil);
+        imgList.add(et);
+        IMAGE combine = proCtrl.combineImageList(imgList);
+        imgCtrl2.showImg(combine, "combine");
     }
 }
