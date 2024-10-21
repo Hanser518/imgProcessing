@@ -8,6 +8,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -58,8 +60,8 @@ public class FrameBase {
                 frameHeight + 100);
         baseFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         baseFrame.setLayout(new BorderLayout());
-        imgLabel = new JLabel(new ImageIcon(pcsCtrl.resizeImage(image, rate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
 
+        initImageLabel();
         baseFrame.add(imgLabel, BorderLayout.CENTER);
         baseFrame.add(headPanel(), BorderLayout.NORTH);
         baseFrame.add(sidePanel, BorderLayout.WEST);
@@ -72,6 +74,28 @@ public class FrameBase {
         for(int i = 0;i < 10;i ++){
             fileList.add(new SideItem(("test" + Math.random()), null));
         }
+    }
+
+    private void initImageLabel(){
+        imgLabel = new JLabel(new ImageIcon(pcsCtrl.resizeImage(image, rate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
+        imgLabel.addMouseListener(new MouseAdapter(){
+            boolean press = false;
+            @Override
+            public void mousePressed(MouseEvent e) {
+                press = true;
+                System.out.println(press);
+                int x = e.getX();
+                int y = e.getY();
+                System.out.println(x + " " + y);
+            }
+            @Override
+            public void mouseMoved(MouseEvent e){
+                int x = e.getX();
+                int y = e.getY();
+                System.out.println(x + " " + y);
+            }
+        });
+
     }
 
     public void updateLabelImage(IMAGE newImage) {
@@ -109,27 +133,19 @@ public class FrameBase {
         headPanel.setBackground(new Color(177, 123, 89));
         headPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-        JButton readButton = new JButton("Load");
-        readButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String fileName = "bus";
-                try {
-                    updateLabelImage(new IMAGE(fileName + ".jpg"));
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
+        JButton reLoadBtn = new JButton("ReLoad");
+        reLoadBtn.addActionListener(e -> {
+            String fileName = "bus";
+            try {
+                updateLabelImage(new IMAGE(fileName + ".jpg"));
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
         });
-        headPanel.add(readButton);
+        headPanel.add(reLoadBtn);
 
         JButton closeButton = new JButton("Close");
-        closeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                updateLabelImage(new IMAGE());
-            }
-        });
+        closeButton.addActionListener(e -> updateLabelImage(new IMAGE()));
         headPanel.add(closeButton);
 
         JButton blurBtn = new JButton("Blur");
@@ -142,14 +158,7 @@ public class FrameBase {
 
         headPanel.add(edgeBox());
         headPanel.add(grilleBox());
-
-        JButton PaperBtn = new JButton("Paper");
-        PaperBtn.addActionListener(action -> {
-            IMAGE grille;
-            grille = styleCtrl.transPaperStyle(image, 24, 118);
-            updateLabelImage(grille);
-        });
-        headPanel.add(PaperBtn);
+        headPanel.add(StyleBox());
 
         JButton sideButton = new JButton("SIDE");
         sideButton.addActionListener(action -> {
@@ -249,6 +258,38 @@ public class FrameBase {
                     } catch (Exception e) {
                     }
                     updateLabelImage(edge);
+                }
+            }
+        });
+        panel.add(comboBox);
+        return panel;
+    }
+
+    public JPanel StyleBox(){
+        JPanel panel = new JPanel();
+        panel.setBackground(new Color(177, 123, 89));
+        JLabel messageLabel = new JLabel("Stylize:");
+        panel.add(messageLabel);
+
+        String[] constellations = {
+                "Paper", "Oil"
+        };
+        JComboBox comboBox = new JComboBox(constellations);
+        comboBox.addActionListener(action -> {
+            String select = (String) comboBox.getSelectedItem();
+            switch(select) {
+                case "Paper" -> {
+                    IMAGE reStyle = styleCtrl.transPaperStyle(image, 24, 118);
+                    updateLabelImage(reStyle);
+                }
+                case "Oil" -> {
+                    IMAGE reStyle = new IMAGE();
+                    try {
+                        reStyle = styleCtrl.transOilPaintingStyle(image);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    updateLabelImage(reStyle);
                 }
             }
         });
