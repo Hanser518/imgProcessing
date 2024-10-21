@@ -139,25 +139,9 @@ public class FrameBase {
         });
         headPanel.add(blurBtn);
 
-        JButton edgeBtn = new JButton("Edge");
-        edgeBtn.addActionListener(action -> {
-            IMAGE edge = null;
-            try {
-                edge = edgeCtrl.getImgEdge(image, EdgeController.SOBEL);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            updateLabelImage(edge);
-        });
-        headPanel.add(edgeBtn);
 
-        JButton GrilleBtn = new JButton("Grille");
-        GrilleBtn.addActionListener(action -> {
-            IMAGE grille;
-            grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_MEDIUM, false);
-            updateLabelImage(grille);
-        });
-        headPanel.add(GrilleBtn);
+        headPanel.add(edgeBox());
+        headPanel.add(grilleBox());
 
         JButton PaperBtn = new JButton("Paper");
         PaperBtn.addActionListener(action -> {
@@ -196,5 +180,79 @@ public class FrameBase {
         southPanel.add(retryBtn);
 
         return southPanel;
+    }
+
+    public JPanel grilleBox(){
+        JPanel panel = new JPanel();
+        panel.setBackground(new Color(177, 123, 89));
+        JLabel messageLabel = new JLabel("Grille:");
+        panel.add(messageLabel);
+
+        String[] constellations = {
+                "Regular", "Medium", "Bold"
+        };
+        JComboBox comboBox = new JComboBox(constellations);
+        comboBox.addActionListener(action -> {
+            String select = (String) comboBox.getSelectedItem();
+            switch(select) {
+                case "Regular" -> {
+                    IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_REGULAR, false);
+                    updateLabelImage(grille);
+                }
+                case "Medium" -> {
+                    IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_MEDIUM, false);
+                    updateLabelImage(grille);
+                }
+                case "Bold" -> {
+                    IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_BOLD, false);
+                    updateLabelImage(grille);
+                }
+            }
+        });
+        panel.add(comboBox);
+        return panel;
+    }
+
+    public JPanel edgeBox(){
+        JPanel panel = new JPanel();
+        panel.setBackground(new Color(177, 123, 89));
+        JLabel messageLabel = new JLabel("Edge:");
+        panel.add(messageLabel);
+
+        String[] constellations = {
+                "Sobel", "Prewitt", "Mar"
+        };
+        JComboBox comboBox = new JComboBox(constellations);
+        comboBox.addActionListener(action -> {
+            String select = (String) comboBox.getSelectedItem();
+            switch(select) {
+                case "Sobel" -> {
+                    IMAGE edge = new IMAGE();
+                    try {
+                        edge = edgeCtrl.getImgEdge(image, EdgeController.SOBEL);
+                    } catch (Exception e) {
+                    }
+                    updateLabelImage(edge);
+                }
+                case "Prewitt" -> {
+                    IMAGE edge = new IMAGE();
+                    try {
+                        edge = edgeCtrl.getImgEdge(image, EdgeController.PREWITT);
+                    } catch (Exception e) {
+                    }
+                    updateLabelImage(edge);
+                }
+                case "Mar" -> {
+                    IMAGE edge = new IMAGE();
+                    try {
+                        edge = edgeCtrl.getImgEdge(image, EdgeController.MARR);
+                    } catch (Exception e) {
+                    }
+                    updateLabelImage(edge);
+                }
+            }
+        });
+        panel.add(comboBox);
+        return panel;
     }
 }
