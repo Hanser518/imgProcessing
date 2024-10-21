@@ -35,6 +35,13 @@ public class IMAGE {
         pixelList = rawFile.getRGB(0, 0, width, height, null, 0, width);
     }
 
+    public IMAGE(String path, int num) throws IOException {
+        rawFile = ImageIO.read(new File(path));
+        width = rawFile.getWidth();
+        height = rawFile.getHeight();
+        pixelList = rawFile.getRGB(0, 0, width, height, null, 0, width);
+    }
+
     public IMAGE(int[][] px) {
         width = px.length;
         height = px[0].length;

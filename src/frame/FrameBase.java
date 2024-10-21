@@ -2,18 +2,18 @@ package frame;
 
 import controller.*;
 import entity.IMAGE;
-import frame.entity.SideItem;
+import frame.service.IFileService;
+import frame.service.impl.IFileServiceImpl;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Vector;
+import java.util.stream.Collectors;
 
 public class FrameBase {
     public static int screenWidth;
@@ -26,16 +26,22 @@ public class FrameBase {
     private static JLabel imgLabel;
     private static JPanel sidePanel = new JPanel();
 
-    private ArrayList<SideItem> fileList = new ArrayList<>();
+    private ArrayList<File> fileList = new ArrayList<>();
+    private ArrayList<String> path = new ArrayList<>();
+    private String path_head = "./";
+    private String pathNow = null;
 
     private static IMAGE image = new IMAGE();
 
-    private static final ProcessingController pcsCtrl = new ProcessingController();
+    private static IFileService fileService = new IFileServiceImpl();
+
+    private static ProcessingController pcsCtrl = new ProcessingController();
+    private static StylizeController styleCtrl = new StylizeController();
     private static AdjustController adCtrl = new AdjustController();
+    private static EdgeController edgeCtrl = new EdgeController();
     private static BlurController blurCtrl = new BlurController();
     private static ImgController imgCtrl2 = new ImgController();
-    private static EdgeController edgeCtrl = new EdgeController();
-    private static StylizeController styleCtrl = new StylizeController();
+
 
     public static void main(String[] args) {
         System.out.println("Hello image");
@@ -44,7 +50,8 @@ public class FrameBase {
     }
 
     public FrameBase() {
-        updateSizePanel();
+        sidePanel.setBackground(new Color(220, 161, 128));
+        initFileList();
         // 屏幕宽高
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         Dimension screenSize = toolkit.getScreenSize();
@@ -69,17 +76,11 @@ public class FrameBase {
         baseFrame.setVisible(true);
     }
 
-    private void initList(){
-        fileList.clear();
-        for(int i = 0;i < 10;i ++){
-            fileList.add(new SideItem(("test" + Math.random()), null));
-        }
-    }
-
-    private void initImageLabel(){
+    private void initImageLabel() {
         imgLabel = new JLabel(new ImageIcon(pcsCtrl.resizeImage(image, rate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
-        imgLabel.addMouseListener(new MouseAdapter(){
+        imgLabel.addMouseListener(new MouseAdapter() {
             boolean press = false;
+
             @Override
             public void mousePressed(MouseEvent e) {
                 press = true;
@@ -88,8 +89,9 @@ public class FrameBase {
                 int y = e.getY();
                 System.out.println(x + " " + y);
             }
+
             @Override
-            public void mouseMoved(MouseEvent e){
+            public void mouseMoved(MouseEvent e) {
                 int x = e.getX();
                 int y = e.getY();
                 System.out.println(x + " " + y);
@@ -109,20 +111,56 @@ public class FrameBase {
         baseFrame.repaint(); // 重新绘制组件
     }
 
-    public void updateSizePanel(){
+    /**
+     * 初始化文件列表
+     */
+    private void initFileList() {
+        fileList.clear();
+        String path_head = "./";
+        fileList = fileService.getFileList(path_head);
+        updateSidePanel();
+    }
+
+    private void updateFileList() {
+        fileList.clear();
+        String filePath = "";
+        if(path.isEmpty()){
+            filePath = path_head;
+        }else{
+            filePath = path.get(path.size()-1);
+        }
+        fileList = fileService.getFileList(filePath);
+        updateSidePanel();
+    }
+
+    public void updateSidePanel() {
         sidePanel.removeAll();
         sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
-        initList();
-        for(SideItem file : fileList){
-            JButton fileButton = new JButton(file.getItemName());
-            fileButton.addActionListener(action -> {
-                Method method = file.getMethod();
-                try {
-                    method.invoke(image);
-                } catch (Exception e) {
+        JButton backBtn = new JButton("...");
+        backBtn.addActionListener(action -> {
+            if(!path.isEmpty()){
+                path.remove(path.size()-1);
+            }else{
+                path_head = path_head.length() <= 2 ? '.' + path_head : path_head;
+            }
+            updateFileList();
+        });
+        sidePanel.add(backBtn);
+        for (File file : fileList) {
+            JButton fileBtn = new JButton((file.isDirectory() ? "D----" : "-D---") + file.getName());
+            fileBtn.addActionListener(action -> {
+                if (file.isDirectory()) {
+                    path.add(file.getAbsolutePath());
+                    updateFileList();
+                } else if (file.isFile()) {
+                    try {
+                        pathNow = file.getAbsolutePath();
+                        updateLabelImage(new IMAGE(file.getAbsolutePath(), 0));
+                    } catch (IOException e) {
+                    }
                 }
             });
-            sidePanel.add(fileButton);
+            sidePanel.add(fileBtn);
         }
         baseFrame.revalidate(); // 重新验证布局
         baseFrame.repaint(); // 重新绘制组件
@@ -135,9 +173,10 @@ public class FrameBase {
 
         JButton reLoadBtn = new JButton("ReLoad");
         reLoadBtn.addActionListener(e -> {
-            String fileName = "bus";
+            String fileName = "building";
             try {
-                updateLabelImage(new IMAGE(fileName + ".jpg"));
+                System.out.println(pathNow);
+                updateLabelImage(new IMAGE(pathNow, 0));
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
@@ -162,7 +201,7 @@ public class FrameBase {
 
         JButton sideButton = new JButton("SIDE");
         sideButton.addActionListener(action -> {
-            updateSizePanel();
+            updateSidePanel();
         });
         headPanel.add(sideButton);
 
@@ -172,12 +211,12 @@ public class FrameBase {
             baseFrame.dispose();
         });
         headPanel.add(exitButton);
-        
-        
+
+
         return headPanel;
     }
 
-    public JPanel bottomPanel(){
+    public JPanel bottomPanel() {
         JPanel southPanel = new JPanel();
         southPanel.setBackground(new Color(177, 123, 89));
         southPanel.setLayout(new FlowLayout(FlowLayout.TRAILING));
@@ -191,7 +230,7 @@ public class FrameBase {
         return southPanel;
     }
 
-    public JPanel grilleBox(){
+    public JPanel grilleBox() {
         JPanel panel = new JPanel();
         panel.setBackground(new Color(177, 123, 89));
         JLabel messageLabel = new JLabel("Grille:");
@@ -203,7 +242,7 @@ public class FrameBase {
         JComboBox comboBox = new JComboBox(constellations);
         comboBox.addActionListener(action -> {
             String select = (String) comboBox.getSelectedItem();
-            switch(select) {
+            switch (select) {
                 case "Regular" -> {
                     IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_REGULAR, false);
                     updateLabelImage(grille);
@@ -222,7 +261,7 @@ public class FrameBase {
         return panel;
     }
 
-    public JPanel edgeBox(){
+    public JPanel edgeBox() {
         JPanel panel = new JPanel();
         panel.setBackground(new Color(177, 123, 89));
         JLabel messageLabel = new JLabel("Edge:");
@@ -234,7 +273,7 @@ public class FrameBase {
         JComboBox comboBox = new JComboBox(constellations);
         comboBox.addActionListener(action -> {
             String select = (String) comboBox.getSelectedItem();
-            switch(select) {
+            switch (select) {
                 case "Sobel" -> {
                     IMAGE edge = new IMAGE();
                     try {
@@ -265,7 +304,7 @@ public class FrameBase {
         return panel;
     }
 
-    public JPanel StyleBox(){
+    public JPanel StyleBox() {
         JPanel panel = new JPanel();
         panel.setBackground(new Color(177, 123, 89));
         JLabel messageLabel = new JLabel("Stylize:");
@@ -277,7 +316,7 @@ public class FrameBase {
         JComboBox comboBox = new JComboBox(constellations);
         comboBox.addActionListener(action -> {
             String select = (String) comboBox.getSelectedItem();
-            switch(select) {
+            switch (select) {
                 case "Paper" -> {
                     IMAGE reStyle = styleCtrl.transPaperStyle(image, 24, 118);
                     updateLabelImage(reStyle);

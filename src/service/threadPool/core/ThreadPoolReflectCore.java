@@ -31,7 +31,6 @@ public class ThreadPoolReflectCore {
         // 对图像进行填充处理，此时数据矩阵长宽发生改变，原矩阵长宽存储于width和height中
         ICalculateService calcService = new ICalculateServiceImpl();
         this.data = calcService.pixFill(requestData, ConVKernel);
-        ;
         this.width = requestData.length;
         this.height = requestData[0].length;
         this.kernel = ConVKernel;
