@@ -9,11 +9,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Vector;
-import java.util.stream.Collectors;
 
 public class FrameBase {
     public static int screenWidth;
@@ -23,7 +23,7 @@ public class FrameBase {
     public static double rate = 0.6;
 
     private static JFrame baseFrame = new JFrame("processingWindow");
-    private static JLabel imgLabel;
+    private static JLabel centerLabel;
     private static JPanel sidePanel = new JPanel();
 
     private ArrayList<File> fileList = new ArrayList<>();
@@ -68,17 +68,19 @@ public class FrameBase {
         baseFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         baseFrame.setLayout(new BorderLayout());
 
-        initImageLabel();
-        baseFrame.add(imgLabel, BorderLayout.CENTER);
-        baseFrame.add(headPanel(), BorderLayout.NORTH);
+        initCenterLabel();
         baseFrame.add(sidePanel, BorderLayout.WEST);
+        JScrollPane scrollPane = new JScrollPane(centerLabel);
+        baseFrame.add(scrollPane, BorderLayout.CENTER);
+        baseFrame.add(headPanel(), BorderLayout.NORTH);
         baseFrame.add(bottomPanel(), BorderLayout.SOUTH);
         baseFrame.setVisible(true);
     }
 
-    private void initImageLabel() {
-        imgLabel = new JLabel(new ImageIcon(pcsCtrl.resizeImage(image, rate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
-        imgLabel.addMouseListener(new MouseAdapter() {
+    private void initCenterLabel() {
+        centerLabel = new JLabel(new ImageIcon(pcsCtrl.resizeImage(image, rate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
+        centerLabel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        centerLabel.addMouseListener(new MouseAdapter() {
             boolean press = false;
 
             @Override
@@ -100,13 +102,36 @@ public class FrameBase {
 
     }
 
-    public void updateLabelImage(IMAGE newImage) {
+    public void updateCenterLabel(IMAGE newImage) {
+        centerLabel.removeAll();
         // 获取图像宽高，计算比例
         int imgWidth = newImage.getWidth();
         int imgHeight = newImage.getHeight();
         double imgRate = Math.min((double) frameWidth / imgWidth, (double) frameHeight / imgHeight);
         image = newImage;
-        imgLabel.setIcon(new ImageIcon(pcsCtrl.resizeImage(newImage, imgRate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
+        centerLabel.setIcon(new ImageIcon(pcsCtrl.resizeImage(newImage, imgRate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
+        baseFrame.revalidate(); // 重新验证布局
+        baseFrame.repaint(); // 重新绘制组件
+    }
+
+    public void updateCenterLabel(String path) {
+        centerLabel.removeAll();
+        try {
+            File f = new File(path);
+            BufferedReader reader = new BufferedReader(new FileReader(f));
+            StringBuilder content = new StringBuilder("<html>");
+            while(true){
+                String line = reader.readLine();
+                if(line != null){
+                    content.append(line).append("<br>");
+                }else{
+                    break;
+                }
+            }
+            content.append("</html>");
+            centerLabel.setText(content.toString());
+        } catch (Exception ignore) {
+        }
         baseFrame.revalidate(); // 重新验证布局
         baseFrame.repaint(); // 重新绘制组件
     }
@@ -124,13 +149,29 @@ public class FrameBase {
     private void updateFileList() {
         fileList.clear();
         String filePath = "";
-        if(path.isEmpty()){
+        if (path.isEmpty()) {
             filePath = path_head;
-        }else{
-            filePath = path.get(path.size()-1);
+        } else {
+            filePath = path.get(path.size() - 1);
         }
         fileList = fileService.getFileList(filePath);
         updateSidePanel();
+    }
+
+    private void fileChooser(File file) {
+        String filePath = file.getName();
+        String suffix = filePath.substring(filePath.lastIndexOf(".") + 1);
+        System.out.println(suffix);
+        centerLabel.removeAll();
+        switch(suffix) {
+            case "jpg", "png" -> {
+                try {
+                    updateCenterLabel(new IMAGE(file.getAbsolutePath(), 0));
+                } catch (IOException e) {
+                }
+            }
+            default -> updateCenterLabel(file.getAbsolutePath());
+        }
     }
 
     public void updateSidePanel() {
@@ -138,26 +179,22 @@ public class FrameBase {
         sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
         JButton backBtn = new JButton("...");
         backBtn.addActionListener(action -> {
-            if(!path.isEmpty()){
-                path.remove(path.size()-1);
-            }else{
+            if (!path.isEmpty()) {
+                path.remove(path.size() - 1);
+            } else {
                 path_head = path_head.length() <= 2 ? '.' + path_head : path_head;
             }
             updateFileList();
         });
         sidePanel.add(backBtn);
         for (File file : fileList) {
-            JButton fileBtn = new JButton((file.isDirectory() ? "D----" : "-D---") + file.getName());
+            JButton fileBtn = new JButton((file.isDirectory() ? "D----" : "--F--") + file.getName());
             fileBtn.addActionListener(action -> {
                 if (file.isDirectory()) {
                     path.add(file.getAbsolutePath());
                     updateFileList();
                 } else if (file.isFile()) {
-                    try {
-                        pathNow = file.getAbsolutePath();
-                        updateLabelImage(new IMAGE(file.getAbsolutePath(), 0));
-                    } catch (IOException e) {
-                    }
+                    fileChooser(file);
                 }
             });
             sidePanel.add(fileBtn);
@@ -176,7 +213,7 @@ public class FrameBase {
             String fileName = "building";
             try {
                 System.out.println(pathNow);
-                updateLabelImage(new IMAGE(pathNow, 0));
+                updateCenterLabel(new IMAGE(pathNow, 0));
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
@@ -184,13 +221,13 @@ public class FrameBase {
         headPanel.add(reLoadBtn);
 
         JButton closeButton = new JButton("Close");
-        closeButton.addActionListener(e -> updateLabelImage(new IMAGE()));
+        closeButton.addActionListener(e -> updateCenterLabel(new IMAGE()));
         headPanel.add(closeButton);
 
         JButton blurBtn = new JButton("Blur");
         blurBtn.addActionListener(action -> {
             IMAGE gas = blurCtrl.getGasBlur(image, 11, 32);
-            updateLabelImage(gas);
+            updateCenterLabel(gas);
         });
         headPanel.add(blurBtn);
 
@@ -245,15 +282,15 @@ public class FrameBase {
             switch (select) {
                 case "Regular" -> {
                     IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_REGULAR, false);
-                    updateLabelImage(grille);
+                    updateCenterLabel(grille);
                 }
                 case "Medium" -> {
                     IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_MEDIUM, false);
-                    updateLabelImage(grille);
+                    updateCenterLabel(grille);
                 }
                 case "Bold" -> {
                     IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_BOLD, false);
-                    updateLabelImage(grille);
+                    updateCenterLabel(grille);
                 }
             }
         });
@@ -280,7 +317,7 @@ public class FrameBase {
                         edge = edgeCtrl.getImgEdge(image, EdgeController.SOBEL);
                     } catch (Exception e) {
                     }
-                    updateLabelImage(edge);
+                    updateCenterLabel(edge);
                 }
                 case "Prewitt" -> {
                     IMAGE edge = new IMAGE();
@@ -288,7 +325,7 @@ public class FrameBase {
                         edge = edgeCtrl.getImgEdge(image, EdgeController.PREWITT);
                     } catch (Exception e) {
                     }
-                    updateLabelImage(edge);
+                    updateCenterLabel(edge);
                 }
                 case "Mar" -> {
                     IMAGE edge = new IMAGE();
@@ -296,7 +333,7 @@ public class FrameBase {
                         edge = edgeCtrl.getImgEdge(image, EdgeController.MARR);
                     } catch (Exception e) {
                     }
-                    updateLabelImage(edge);
+                    updateCenterLabel(edge);
                 }
             }
         });
@@ -319,7 +356,7 @@ public class FrameBase {
             switch (select) {
                 case "Paper" -> {
                     IMAGE reStyle = styleCtrl.transPaperStyle(image, 24, 118);
-                    updateLabelImage(reStyle);
+                    updateCenterLabel(reStyle);
                 }
                 case "Oil" -> {
                     IMAGE reStyle = new IMAGE();
@@ -328,7 +365,7 @@ public class FrameBase {
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                    updateLabelImage(reStyle);
+                    updateCenterLabel(reStyle);
                 }
             }
         });
