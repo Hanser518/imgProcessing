@@ -22,6 +22,8 @@ public class Param {
     public static int frameHeight;
 
     public static int blurSize = 10;
+    public static int saturation = 0;
+    public static int value = 0;
 
     /**
      * 文件指定、目录参数

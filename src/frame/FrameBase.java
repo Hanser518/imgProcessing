@@ -25,6 +25,7 @@ public class FrameBase {
     private static JLabel centerLabel;
     private static JLabel previewLabel;
     private static JPanel fileChoosePanel = new JPanel();
+    private static JScrollPane sideBar = new JScrollPane();
 
     private static final IFileService fileService = new IFileServiceImpl();
     private static final InitializeService initServ = new InitializeServiceImpl();
@@ -51,7 +52,7 @@ public class FrameBase {
         fileChoosePanel.setBackground(new Color(220, 161, 128));
         initServ.initializeFileList();
 
-        baseFrame.add(sidePanel(), BorderLayout.WEST);
+        baseFrame.add(sideBar, BorderLayout.WEST);
         JScrollPane scrollPane = new JScrollPane(centerLabel);
         baseFrame.add(scrollPane, BorderLayout.CENTER);
         baseFrame.add(headPanel(), BorderLayout.NORTH);
@@ -105,22 +106,6 @@ public class FrameBase {
         updateSidePanel();
     }
 
-    private static void fileChooser(File file) {
-        String suffix = fileService.getFileType(file);
-        Param.pathNow = file.getAbsolutePath();
-        switch (suffix) {
-            case "JPG", "PNG" -> {
-                try {
-                    updateCenterLabel(new IMAGE(file.getAbsolutePath(), 0));
-                } catch (IOException ignored) {
-                }
-            }
-            default -> {
-                updateCenterLabel(file.getAbsolutePath());
-            }
-        }
-    }
-
     public static void updateSidePanel() {
         fileChoosePanel.removeAll();
         fileChoosePanel.setLayout(new BoxLayout(fileChoosePanel, BoxLayout.Y_AXIS));
@@ -150,28 +135,52 @@ public class FrameBase {
         baseFrame.repaint(); // 重新绘制组件
     }
 
+    public static void updateSideBar(Component component) {
+        baseFrame.remove(sideBar);
+        sideBar = new JScrollPane(component);
+        baseFrame.add(sideBar, BorderLayout.WEST);
+        baseFrame.revalidate(); // 重新验证布局
+        baseFrame.repaint(); // 重新绘制组件
+    }
+
+    private static void fileChooser(File file) {
+        String suffix = fileService.getFileType(file);
+        Param.pathNow = file.getAbsolutePath();
+        switch (suffix) {
+            case "JPG", "PNG" -> {
+                try {
+                    updateCenterLabel(new IMAGE(file.getAbsolutePath(), 0));
+                } catch (IOException ignored) {
+                }
+            }
+            default -> {
+                updateCenterLabel(file.getAbsolutePath());
+            }
+        }
+    }
+
     public JPanel headPanel() {
         JPanel headPanel = new JPanel();
         headPanel.setBackground(new Color(177, 123, 89));
         headPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-        JButton reLoadBtn = new JButton("ReLoad");
-        reLoadBtn.addActionListener(e -> {
-            System.out.println(Param.pathNow);
-            fileChooser(new File(Param.pathNow));
+        JButton fileBtn = new JButton("File");
+        fileBtn.addActionListener(e -> {
+            updateSideBar(fileChoosePanel);
         });
-        headPanel.add(reLoadBtn);
+        headPanel.add(fileBtn);
 
-        JButton closeButton = new JButton("Close");
-        closeButton.addActionListener(e -> updateCenterLabel(new IMAGE()));
-        headPanel.add(closeButton);
+        JButton hideBtn = new JButton("CloseSideBar");
+        hideBtn.addActionListener(e -> {
+            updateSideBar(null);
+        });
+        headPanel.add(hideBtn);
 
-        headPanel.add(blurPanel());
-
-
-        headPanel.add(edgeBox());
-        headPanel.add(grilleBox());
-        headPanel.add(StyleBox());
+        JButton operation = new JButton("Operation");
+        operation.addActionListener(e -> {
+            updateSideBar(OperationBar());
+        });
+        headPanel.add(operation);
 
         JButton sideButton = new JButton("SIDE");
         sideButton.addActionListener(action -> {
@@ -190,16 +199,38 @@ public class FrameBase {
         return headPanel;
     }
 
-    public JScrollPane sidePanel() {
-        JScrollPane scrollPane = new JScrollPane(fileChoosePanel);
-        scrollPane.setMaximumSize(new Dimension(20, 20));
-        return scrollPane;
+    public JPanel OperationBar() {
+        JPanel operationPanel = new JPanel();
+        operationPanel.setLayout(new BoxLayout(operationPanel, BoxLayout.Y_AXIS));
+
+        JPanel base = new JPanel();
+
+        JButton reLoadBtn = new JButton("ReLoad");
+        reLoadBtn.addActionListener(e -> {
+            System.out.println(Param.pathNow);
+            fileChooser(new File(Param.pathNow));
+        });
+        base.add(reLoadBtn);
+
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> updateCenterLabel(new IMAGE()));
+        base.add(closeButton);
+
+
+        operationPanel.add(base);
+        operationPanel.add(blurPanel());
+        operationPanel.add(edgeBox());
+        operationPanel.add(grilleBox());
+        operationPanel.add(StyleBox());
+        operationPanel.add(adJustPanel());
+
+        return operationPanel;
     }
 
-    public JPanel blurPanel(){
+    public JPanel blurPanel() {
         JPanel panel = new JPanel();
         panel.setBackground(new Color(204, 134, 111));
-
+        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
         JLabel title = new JLabel("Blur");
         JLabel count = new JLabel(String.valueOf(Param.blurSize));
@@ -304,6 +335,8 @@ public class FrameBase {
     public JPanel grilleBox() {
         JPanel panel = new JPanel();
         panel.setBackground(new Color(177, 123, 89));
+        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
+
         JLabel messageLabel = new JLabel("Grille:");
         panel.add(messageLabel);
 
@@ -335,6 +368,8 @@ public class FrameBase {
     public JPanel edgeBox() {
         JPanel panel = new JPanel();
         panel.setBackground(new Color(177, 123, 89));
+        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
+
         JLabel messageLabel = new JLabel("Edge:");
         panel.add(messageLabel);
 
@@ -378,6 +413,8 @@ public class FrameBase {
     public JPanel StyleBox() {
         JPanel panel = new JPanel();
         panel.setBackground(new Color(177, 123, 89));
+        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
+
         JLabel messageLabel = new JLabel("Stylize:");
         panel.add(messageLabel);
 
@@ -404,6 +441,56 @@ public class FrameBase {
             }
         });
         panel.add(comboBox);
+        return panel;
+    }
+
+    public JPanel adJustPanel() {
+        JPanel panel = new JPanel();
+        panel.setBackground(new Color(89, 127, 177));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        JButton cdrBtn = new JButton("CDR");
+        cdrBtn.addActionListener(e -> {
+            IMAGE cdr = adCtrl.CDR(Param.image);
+            updateCenterLabel(cdr);
+        });
+        panel.add(cdrBtn);
+
+        JPanel saturationPanel = new JPanel();
+        JLabel saturationLabel = new JLabel();
+        saturationLabel.setText(String.valueOf(Param.saturation));
+        JSlider saturationSlider = new JSlider(-100, 100, Param.saturation);
+        saturationSlider.setBackground(new Color(89, 127, 177));
+        saturationSlider.addChangeListener(c -> {
+            Param.saturation = saturationSlider.getValue();
+            saturationLabel.setText(String.valueOf(Param.saturation));
+        });
+        saturationPanel.add(new JLabel("Saturation:"));
+        saturationPanel.add(saturationLabel);
+        panel.add(saturationPanel);
+        panel.add(saturationSlider);
+
+        JPanel valuePanel = new JPanel();
+        JLabel valueLabel = new JLabel();
+        valueLabel.setText(String.valueOf(Param.value));
+        JSlider valueSlider = new JSlider(-100, 100, Param.value);
+        valueSlider.setBackground(new Color(89, 127, 177));
+        valueSlider.addChangeListener(c -> {
+            Param.value = valueSlider.getValue();
+            valueLabel.setText(String.valueOf(Param.value));
+        });
+        valuePanel.add(new JLabel("Value"));
+        valuePanel.add(valueLabel);
+        panel.add(valuePanel);
+        panel.add(valueSlider);
+
+        JButton apply = new JButton("Apply");
+        apply.addActionListener(ac -> {
+            IMAGE asv = adCtrl.adjustSatAndVal(Param.image, Param.saturation, Param.value);
+            updateCenterLabel(asv);
+        });
+        panel.add(apply);
+
         return panel;
     }
 
