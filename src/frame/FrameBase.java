@@ -456,33 +456,57 @@ public class FrameBase {
         });
         panel.add(cdrBtn);
 
-        JPanel saturationPanel = new JPanel();
         JLabel saturationLabel = new JLabel();
-        saturationLabel.setText(String.valueOf(Param.saturation));
+        saturationLabel.setText(String.format("%3d", Param.saturation));
+        saturationLabel.setForeground(new Color(224, 74, 10));
         JSlider saturationSlider = new JSlider(-100, 100, Param.saturation);
         saturationSlider.setBackground(new Color(89, 127, 177));
+        saturationSlider.setMajorTickSpacing(20);
+        saturationSlider.setMinorTickSpacing(5);
+        saturationSlider.setPaintLabels(true);
+        saturationSlider.setPaintTicks(true);
         saturationSlider.addChangeListener(c -> {
             Param.saturation = saturationSlider.getValue();
-            saturationLabel.setText(String.valueOf(Param.saturation));
+            saturationLabel.setText(String.format("%3d", Param.saturation));
         });
-        saturationPanel.add(new JLabel("Saturation:"));
+        JPanel sPanel = new JPanel();
+        JPanel saturationPanel = new JPanel();
+        saturationPanel.setLayout(new BoxLayout(saturationPanel, BoxLayout.Y_AXIS));
+        saturationPanel.setBackground(new Color(141, 182, 239));
+        sPanel.setBackground(new Color(89, 127, 177));
+        JLabel sTitle = new JLabel("Value");
+        sTitle.setForeground(Color.WHITE);
+        saturationPanel.add(sTitle);
         saturationPanel.add(saturationLabel);
-        panel.add(saturationPanel);
-        panel.add(saturationSlider);
+        sPanel.add(saturationPanel);
+        sPanel.add(saturationSlider);
+        panel.add(sPanel);
 
-        JPanel valuePanel = new JPanel();
         JLabel valueLabel = new JLabel();
-        valueLabel.setText(String.valueOf(Param.value));
+        valueLabel.setText(String.format("%3d", Param.value));
+        valueLabel.setForeground(new Color(224, 74, 10));
         JSlider valueSlider = new JSlider(-100, 100, Param.value);
         valueSlider.setBackground(new Color(89, 127, 177));
+        valueSlider.setMajorTickSpacing(20);
+        valueSlider.setMinorTickSpacing(5);
+        valueSlider.setPaintLabels(true);
+        valueSlider.setPaintTicks(true);
         valueSlider.addChangeListener(c -> {
             Param.value = valueSlider.getValue();
-            valueLabel.setText(String.valueOf(Param.value));
+            valueLabel.setText(String.format("%3d", Param.value));
         });
-        valuePanel.add(new JLabel("Value"));
+        JPanel vPanel = new JPanel();
+        JPanel valuePanel = new JPanel();
+        valuePanel.setLayout(new BoxLayout(valuePanel, BoxLayout.Y_AXIS));
+        valuePanel.setBackground(new Color(146, 187, 241));
+        vPanel.setBackground(new Color(89, 127, 177));
+        JLabel vTitle = new JLabel("Value");
+        vTitle.setForeground(Color.WHITE);
+        valuePanel.add(vTitle);
         valuePanel.add(valueLabel);
-        panel.add(valuePanel);
-        panel.add(valueSlider);
+        vPanel.add(valuePanel);
+        vPanel.add(valueSlider);
+        panel.add(vPanel);
 
         JButton apply = new JButton("Apply");
         apply.addActionListener(ac -> {
