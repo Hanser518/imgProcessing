@@ -2,8 +2,11 @@ package frame;
 
 import controller.*;
 import entity.IMAGE;
+import frame.entity.Param;
 import frame.service.IFileService;
+import frame.service.InitializeService;
 import frame.service.impl.IFileServiceImpl;
+import frame.service.impl.InitializeServiceImpl;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,64 +16,41 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class FrameBase {
-    public static int screenWidth;
-    public static int screenHeight;
-    public static int frameWidth;
-    public static int frameHeight;
-    public static double rate = 0.6;
-    public static double zoom = 1;
 
-    private static JFrame baseFrame = new JFrame("processingWindow");
+    private static JFrame baseFrame;
     private static JLabel centerLabel;
     private static JLabel previewLabel;
     private static JPanel fileChoosePanel = new JPanel();
 
-    private ArrayList<File> fileList = new ArrayList<>();
-    private ArrayList<String> path = new ArrayList<>();
-    private String path_head = "./";
-    private String pathNow = null;
+    private static final IFileService fileService = new IFileServiceImpl();
+    private static final InitializeService initServ = new InitializeServiceImpl();
 
-    private static IMAGE image = new IMAGE();
-
-    private static IFileService fileService = new IFileServiceImpl();
-
-    private static ProcessingController pcsCtrl = new ProcessingController();
-    private static StylizeController styleCtrl = new StylizeController();
-    private static AdjustController adCtrl = new AdjustController();
-    private static EdgeController edgeCtrl = new EdgeController();
-    private static BlurController blurCtrl = new BlurController();
-    private static ImgController imgCtrl2 = new ImgController();
+    private static final ProcessingController pcsCtrl = new ProcessingController();
+    private static final StylizeController styleCtrl = new StylizeController();
+    private static final AdjustController adCtrl = new AdjustController();
+    private static final EdgeController edgeCtrl = new EdgeController();
+    private static final BlurController blurCtrl = new BlurController();
+    private static final ImgController imgCtrl2 = new ImgController();
 
 
     public static void main(String[] args) {
         System.out.println("Hello image");
-        SwingUtilities.invokeLater(() -> new FrameBase());
+        SwingUtilities.invokeLater(FrameBase::new);
 
     }
 
     public FrameBase() {
-        fileChoosePanel.setBackground(new Color(220, 161, 128));
-        initFileList();
-        // 屏幕宽高
-        Toolkit toolkit = Toolkit.getDefaultToolkit();
-        Dimension screenSize = toolkit.getScreenSize();
-        screenWidth = screenSize.width;
-        screenHeight = screenSize.height;
-        frameWidth = (int) (screenWidth * rate);
-        frameHeight = (int) (screenHeight * rate);
-        // 窗口宽高
-        baseFrame.setBounds(
-                (int) (screenWidth * (1 - rate) / 2),
-                (int) (screenHeight * (1 - rate) / 2),
-                frameWidth,
-                frameHeight + 100);
-        baseFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        baseFrame.setLayout(new BorderLayout());
+        baseFrame = initServ.initializeMainFrame();
+        centerLabel = initServ.initializeCenterLabel();
+        previewLabel = new JLabel();
 
-        initCenterLabel();
+        fileChoosePanel.setBackground(new Color(220, 161, 128));
+        initServ.initializeFileList();
+
         baseFrame.add(sidePanel(), BorderLayout.WEST);
         JScrollPane scrollPane = new JScrollPane(centerLabel);
         baseFrame.add(scrollPane, BorderLayout.CENTER);
@@ -79,45 +59,19 @@ public class FrameBase {
         baseFrame.setVisible(true);
     }
 
-    private void initCenterLabel() {
-        centerLabel = new JLabel(new ImageIcon(pcsCtrl.resizeImage(image, rate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
-        previewLabel = new JLabel();
-        centerLabel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        centerLabel.addMouseListener(new MouseAdapter() {
-            boolean press = false;
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                press = true;
-                System.out.println(press);
-                int x = e.getX();
-                int y = e.getY();
-                System.out.println(x + " " + y);
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                int x = e.getX();
-                int y = e.getY();
-                System.out.println(x + " " + y);
-            }
-        });
-
-    }
-
-    public void updateCenterLabel(IMAGE newImage) {
+    public static void updateCenterLabel(IMAGE newImage) {
         centerLabel.setText(null);
         // 获取图像宽高，计算比例
         int imgWidth = newImage.getWidth();
         int imgHeight = newImage.getHeight();
-        double imgRate = Math.min((double) frameWidth / imgWidth, (double) frameHeight / imgHeight) * zoom;
-        image = newImage;
+        double imgRate = Math.min((double) Param.frameWidth / imgWidth, (double) Param.frameHeight / imgHeight) * Param.zoom;
+        Param.image = newImage;
         centerLabel.setIcon(new ImageIcon(pcsCtrl.resizeImage(newImage, imgRate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
         baseFrame.revalidate(); // 重新验证布局
         baseFrame.repaint(); // 重新绘制组件
     }
 
-    public void updateCenterLabel(String path) {
+    public static void updateCenterLabel(String path) {
         centerLabel.setIcon(null);
         try {
             File f = new File(path);
@@ -139,33 +93,26 @@ public class FrameBase {
         baseFrame.repaint(); // 重新绘制组件
     }
 
-    private void initFileList() {
-        fileList.clear();
-        String path_head = "./";
-        fileList = fileService.getFileList(path_head);
-        updateSidePanel();
-    }
-
-    private void updateFileList() {
-        fileList.clear();
+    private static void updateFileList() {
+        Param.fileList.clear();
         String filePath = "";
-        if (path.isEmpty()) {
-            filePath = path_head;
+        if (Param.path.isEmpty()) {
+            filePath = Param.path_head;
         } else {
-            filePath = path.get(path.size() - 1);
+            filePath = Param.path.get(Param.path.size() - 1);
         }
-        fileList = fileService.getFileList(filePath);
+        Param.fileList = fileService.getFileList(filePath);
         updateSidePanel();
     }
 
-    private void fileChooser(File file) {
+    private static void fileChooser(File file) {
         String suffix = fileService.getFileType(file);
-        pathNow = file.getAbsolutePath();
+        Param.pathNow = file.getAbsolutePath();
         switch (suffix) {
             case "JPG", "PNG" -> {
                 try {
                     updateCenterLabel(new IMAGE(file.getAbsolutePath(), 0));
-                } catch (IOException e) {
+                } catch (IOException ignored) {
                 }
             }
             default -> {
@@ -174,24 +121,24 @@ public class FrameBase {
         }
     }
 
-    public void updateSidePanel() {
+    public static void updateSidePanel() {
         fileChoosePanel.removeAll();
         fileChoosePanel.setLayout(new BoxLayout(fileChoosePanel, BoxLayout.Y_AXIS));
         JButton backBtn = new JButton("...");
         backBtn.addActionListener(action -> {
-            if (!path.isEmpty()) {
-                path.remove(path.size() - 1);
+            if (!Param.path.isEmpty()) {
+                Param.path.remove(Param.path.size() - 1);
             } else {
-                path_head = path_head.length() <= 2 ? '.' + path_head : path_head;
+                Param.path_head = Param.path_head.length() <= 2 ? '.' + Param.path_head : Param.path_head;
             }
             updateFileList();
         });
         fileChoosePanel.add(backBtn);
-        for (File file : fileList) {
+        for (File file : Param.fileList) {
             JButton fileBtn = new JButton((file.isDirectory() ? ">>>D--" : "<<<A--") + file.getName());
             fileBtn.addActionListener(action -> {
                 if (file.isDirectory()) {
-                    path.add(file.getAbsolutePath());
+                    Param.path.add(file.getAbsolutePath());
                     updateFileList();
                 } else if (file.isFile()) {
                     fileChooser(file);
@@ -210,8 +157,8 @@ public class FrameBase {
 
         JButton reLoadBtn = new JButton("ReLoad");
         reLoadBtn.addActionListener(e -> {
-            System.out.println(pathNow);
-            fileChooser(new File(pathNow));
+            System.out.println(Param.pathNow);
+            fileChooser(new File(Param.pathNow));
         });
         headPanel.add(reLoadBtn);
 
@@ -219,12 +166,7 @@ public class FrameBase {
         closeButton.addActionListener(e -> updateCenterLabel(new IMAGE()));
         headPanel.add(closeButton);
 
-        JButton blurBtn = new JButton("Blur");
-        blurBtn.addActionListener(action -> {
-            IMAGE gas = blurCtrl.getGasBlur(image, 11, 32);
-            updateCenterLabel(gas);
-        });
-        headPanel.add(blurBtn);
+        headPanel.add(blurPanel());
 
 
         headPanel.add(edgeBox());
@@ -254,10 +196,57 @@ public class FrameBase {
         return scrollPane;
     }
 
+    public JPanel blurPanel(){
+        JPanel panel = new JPanel();
+        panel.setBackground(new Color(204, 134, 111));
+
+
+        JLabel title = new JLabel("Blur");
+        JLabel count = new JLabel(String.valueOf(Param.blurSize));
+
+        JSlider slider = new JSlider(1, 100, Param.blurSize);
+        slider.addChangeListener(change -> {
+            Param.blurSize = slider.getValue();
+            count.setText(String.valueOf(Param.blurSize));
+        });
+        slider.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                IMAGE gas = blurCtrl.getGasBlur(Param.image, Param.blurSize, 32);
+                updateCenterLabel(gas);
+            }
+        });
+        slider.setMajorTickSpacing(12);
+        slider.setMinorTickSpacing(6);
+        slider.setPaintLabels(true);
+        slider.setPaintTicks(true);
+
+        panel.add(title);
+        panel.add(slider);
+        panel.add(count);
+        return panel;
+    }
+
     public JPanel bottomPanel() {
         JPanel southPanel = new JPanel();
         southPanel.setBackground(new Color(177, 123, 89));
         southPanel.setLayout(new FlowLayout(FlowLayout.TRAILING));
+
+        JButton save = new JButton("Save");
+        save.addActionListener(ac -> {
+            LocalDateTime date = LocalDateTime.now();
+            String time = date.format(DateTimeFormatter.ofPattern("yyyyMMdd_hhmmss")) + "_" + (int) (Math.random() * 1000);
+            File file = new File(Param.pathNow);
+            String name = file.getName();
+            name = name.substring(0, name.lastIndexOf("."));
+            try {
+                imgCtrl2.saveByName2(Param.image, "Visible", name + time);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        southPanel.add(save);
+
 
         southPanel.add(zoomPanel());
 
@@ -279,29 +268,29 @@ public class FrameBase {
         JButton down = new JButton("-");
         JLabel zoomX = new JLabel();
 
-        zoomX.setText(String.format("%2.2f", zoom));
+        zoomX.setText(String.format("%2.2f", Param.zoom));
         plus.addActionListener(ac -> {
-            zoom += 0.1;
-            zoomX.setText(String.format("%2.2f", zoom));
-            updateCenterLabel(image);
+            Param.zoom += 0.1;
+            zoomX.setText(String.format("%2.2f", Param.zoom));
+            updateCenterLabel(Param.image);
             // fileChooser(new File(pathNow));
         });
         down.addActionListener(ac -> {
-            zoom -= 0.1;
-            zoomX.setText(String.format("%2.2f", zoom));
-            updateCenterLabel(image);
+            Param.zoom -= 0.1;
+            zoomX.setText(String.format("%2.2f", Param.zoom));
+            updateCenterLabel(Param.image);
             // fileChooser(new File(pathNow));
         });
-        JSlider slider = new JSlider(50, 250, (int) (zoom * 100));
+        JSlider slider = new JSlider(50, 250, (int) (Param.zoom * 100));
         slider.addChangeListener(change -> {
             int value = slider.getValue();
-            zoom = value / 100.0;
-            zoomX.setText(String.format("%2.2f", zoom));
+            Param.zoom = value / 100.0;
+            zoomX.setText(String.format("%2.2f", Param.zoom));
         });
-        slider.addMouseListener(new MouseAdapter(){
+        slider.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseReleased(MouseEvent e){
-                updateCenterLabel(image);
+            public void mouseReleased(MouseEvent e) {
+                updateCenterLabel(Param.image);
             }
         });
 
@@ -326,15 +315,15 @@ public class FrameBase {
             String select = (String) comboBox.getSelectedItem();
             switch (select) {
                 case "Regular" -> {
-                    IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_REGULAR, false);
+                    IMAGE grille = styleCtrl.transGrilleStyle(Param.image, styleCtrl.GRILLE_REGULAR, false);
                     updateCenterLabel(grille);
                 }
                 case "Medium" -> {
-                    IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_MEDIUM, false);
+                    IMAGE grille = styleCtrl.transGrilleStyle(Param.image, styleCtrl.GRILLE_MEDIUM, false);
                     updateCenterLabel(grille);
                 }
                 case "Bold" -> {
-                    IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_BOLD, false);
+                    IMAGE grille = styleCtrl.transGrilleStyle(Param.image, styleCtrl.GRILLE_BOLD, false);
                     updateCenterLabel(grille);
                 }
             }
@@ -359,7 +348,7 @@ public class FrameBase {
                 case "Sobel" -> {
                     IMAGE edge = new IMAGE();
                     try {
-                        edge = edgeCtrl.getImgEdge(image, EdgeController.SOBEL);
+                        edge = edgeCtrl.getImgEdge(Param.image, EdgeController.SOBEL);
                     } catch (Exception e) {
                     }
                     updateCenterLabel(edge);
@@ -367,7 +356,7 @@ public class FrameBase {
                 case "Prewitt" -> {
                     IMAGE edge = new IMAGE();
                     try {
-                        edge = edgeCtrl.getImgEdge(image, EdgeController.PREWITT);
+                        edge = edgeCtrl.getImgEdge(Param.image, EdgeController.PREWITT);
                     } catch (Exception e) {
                     }
                     updateCenterLabel(edge);
@@ -375,7 +364,7 @@ public class FrameBase {
                 case "Mar" -> {
                     IMAGE edge = new IMAGE();
                     try {
-                        edge = edgeCtrl.getImgEdge(image, EdgeController.MARR);
+                        edge = edgeCtrl.getImgEdge(Param.image, EdgeController.MARR);
                     } catch (Exception e) {
                     }
                     updateCenterLabel(edge);
@@ -400,13 +389,13 @@ public class FrameBase {
             String select = (String) comboBox.getSelectedItem();
             switch (select) {
                 case "Paper" -> {
-                    IMAGE reStyle = styleCtrl.transPaperStyle(image, 24, 118);
+                    IMAGE reStyle = styleCtrl.transPaperStyle(Param.image, 24, 118);
                     updateCenterLabel(reStyle);
                 }
                 case "Oil" -> {
                     IMAGE reStyle = new IMAGE();
                     try {
-                        reStyle = styleCtrl.transOilPaintingStyle(image);
+                        reStyle = styleCtrl.transOilPaintingStyle(Param.image);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -417,4 +406,5 @@ public class FrameBase {
         panel.add(comboBox);
         return panel;
     }
+
 }
