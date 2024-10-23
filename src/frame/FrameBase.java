@@ -21,10 +21,12 @@ public class FrameBase {
     public static int frameWidth;
     public static int frameHeight;
     public static double rate = 0.6;
+    public static double zoom = 1;
 
     private static JFrame baseFrame = new JFrame("processingWindow");
     private static JLabel centerLabel;
-    private static JPanel sidePanel = new JPanel();
+    private static JLabel previewLabel;
+    private static JPanel fileChoosePanel = new JPanel();
 
     private ArrayList<File> fileList = new ArrayList<>();
     private ArrayList<String> path = new ArrayList<>();
@@ -50,7 +52,7 @@ public class FrameBase {
     }
 
     public FrameBase() {
-        sidePanel.setBackground(new Color(220, 161, 128));
+        fileChoosePanel.setBackground(new Color(220, 161, 128));
         initFileList();
         // 屏幕宽高
         Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -69,7 +71,7 @@ public class FrameBase {
         baseFrame.setLayout(new BorderLayout());
 
         initCenterLabel();
-        baseFrame.add(sidePanel, BorderLayout.WEST);
+        baseFrame.add(sidePanel(), BorderLayout.WEST);
         JScrollPane scrollPane = new JScrollPane(centerLabel);
         baseFrame.add(scrollPane, BorderLayout.CENTER);
         baseFrame.add(headPanel(), BorderLayout.NORTH);
@@ -79,6 +81,7 @@ public class FrameBase {
 
     private void initCenterLabel() {
         centerLabel = new JLabel(new ImageIcon(pcsCtrl.resizeImage(image, rate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
+        previewLabel = new JLabel();
         centerLabel.setLayout(new FlowLayout(FlowLayout.LEFT));
         centerLabel.addMouseListener(new MouseAdapter() {
             boolean press = false;
@@ -103,11 +106,11 @@ public class FrameBase {
     }
 
     public void updateCenterLabel(IMAGE newImage) {
-        centerLabel.removeAll();
+        centerLabel.setText(null);
         // 获取图像宽高，计算比例
         int imgWidth = newImage.getWidth();
         int imgHeight = newImage.getHeight();
-        double imgRate = Math.min((double) frameWidth / imgWidth, (double) frameHeight / imgHeight);
+        double imgRate = Math.min((double) frameWidth / imgWidth, (double) frameHeight / imgHeight) * zoom;
         image = newImage;
         centerLabel.setIcon(new ImageIcon(pcsCtrl.resizeImage(newImage, imgRate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
         baseFrame.revalidate(); // 重新验证布局
@@ -115,16 +118,16 @@ public class FrameBase {
     }
 
     public void updateCenterLabel(String path) {
-        centerLabel.removeAll();
+        centerLabel.setIcon(null);
         try {
             File f = new File(path);
             BufferedReader reader = new BufferedReader(new FileReader(f));
             StringBuilder content = new StringBuilder("<html>");
-            while(true){
+            while (true) {
                 String line = reader.readLine();
-                if(line != null){
+                if (line != null) {
                     content.append(line).append("<br>");
-                }else{
+                } else {
                     break;
                 }
             }
@@ -136,9 +139,6 @@ public class FrameBase {
         baseFrame.repaint(); // 重新绘制组件
     }
 
-    /**
-     * 初始化文件列表
-     */
     private void initFileList() {
         fileList.clear();
         String path_head = "./";
@@ -159,24 +159,24 @@ public class FrameBase {
     }
 
     private void fileChooser(File file) {
-        String filePath = file.getName();
-        String suffix = filePath.substring(filePath.lastIndexOf(".") + 1);
-        System.out.println(suffix);
-        centerLabel.removeAll();
-        switch(suffix) {
-            case "jpg", "png" -> {
+        String suffix = fileService.getFileType(file);
+        pathNow = file.getAbsolutePath();
+        switch (suffix) {
+            case "JPG", "PNG" -> {
                 try {
                     updateCenterLabel(new IMAGE(file.getAbsolutePath(), 0));
                 } catch (IOException e) {
                 }
             }
-            default -> updateCenterLabel(file.getAbsolutePath());
+            default -> {
+                updateCenterLabel(file.getAbsolutePath());
+            }
         }
     }
 
     public void updateSidePanel() {
-        sidePanel.removeAll();
-        sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
+        fileChoosePanel.removeAll();
+        fileChoosePanel.setLayout(new BoxLayout(fileChoosePanel, BoxLayout.Y_AXIS));
         JButton backBtn = new JButton("...");
         backBtn.addActionListener(action -> {
             if (!path.isEmpty()) {
@@ -186,9 +186,9 @@ public class FrameBase {
             }
             updateFileList();
         });
-        sidePanel.add(backBtn);
+        fileChoosePanel.add(backBtn);
         for (File file : fileList) {
-            JButton fileBtn = new JButton((file.isDirectory() ? "D----" : "--F--") + file.getName());
+            JButton fileBtn = new JButton((file.isDirectory() ? ">>>D--" : "<<<A--") + file.getName());
             fileBtn.addActionListener(action -> {
                 if (file.isDirectory()) {
                     path.add(file.getAbsolutePath());
@@ -197,7 +197,7 @@ public class FrameBase {
                     fileChooser(file);
                 }
             });
-            sidePanel.add(fileBtn);
+            fileChoosePanel.add(fileBtn);
         }
         baseFrame.revalidate(); // 重新验证布局
         baseFrame.repaint(); // 重新绘制组件
@@ -210,13 +210,8 @@ public class FrameBase {
 
         JButton reLoadBtn = new JButton("ReLoad");
         reLoadBtn.addActionListener(e -> {
-            String fileName = "building";
-            try {
-                System.out.println(pathNow);
-                updateCenterLabel(new IMAGE(pathNow, 0));
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
+            System.out.println(pathNow);
+            fileChooser(new File(pathNow));
         });
         headPanel.add(reLoadBtn);
 
@@ -253,10 +248,18 @@ public class FrameBase {
         return headPanel;
     }
 
+    public JScrollPane sidePanel() {
+        JScrollPane scrollPane = new JScrollPane(fileChoosePanel);
+        scrollPane.setMaximumSize(new Dimension(20, 20));
+        return scrollPane;
+    }
+
     public JPanel bottomPanel() {
         JPanel southPanel = new JPanel();
         southPanel.setBackground(new Color(177, 123, 89));
         southPanel.setLayout(new FlowLayout(FlowLayout.TRAILING));
+
+        southPanel.add(zoomPanel());
 
         JButton cancelBtn = new JButton("Cancel");
         southPanel.add(cancelBtn);
@@ -265,6 +268,48 @@ public class FrameBase {
         southPanel.add(retryBtn);
 
         return southPanel;
+    }
+
+    public JPanel zoomPanel() {
+        JPanel panel = new JPanel();
+
+        panel.setBackground(new Color(204, 134, 111));
+
+        JButton plus = new JButton("+");
+        JButton down = new JButton("-");
+        JLabel zoomX = new JLabel();
+
+        zoomX.setText(String.format("%2.2f", zoom));
+        plus.addActionListener(ac -> {
+            zoom += 0.1;
+            zoomX.setText(String.format("%2.2f", zoom));
+            updateCenterLabel(image);
+            // fileChooser(new File(pathNow));
+        });
+        down.addActionListener(ac -> {
+            zoom -= 0.1;
+            zoomX.setText(String.format("%2.2f", zoom));
+            updateCenterLabel(image);
+            // fileChooser(new File(pathNow));
+        });
+        JSlider slider = new JSlider(50, 250, (int) (zoom * 100));
+        slider.addChangeListener(change -> {
+            int value = slider.getValue();
+            zoom = value / 100.0;
+            zoomX.setText(String.format("%2.2f", zoom));
+        });
+        slider.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseReleased(MouseEvent e){
+                updateCenterLabel(image);
+            }
+        });
+
+        panel.add(slider);
+        panel.add(plus);
+        panel.add(zoomX);
+        panel.add(down);
+        return panel;
     }
 
     public JPanel grilleBox() {

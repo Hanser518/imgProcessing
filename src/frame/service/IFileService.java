@@ -18,4 +18,11 @@ public interface IFileService {
      * @return
      */
     ArrayList<File> getFileList(String path);
+
+    /**
+     * 获取当前文件类型
+     * @param file
+     * @return
+     */
+    String getFileType(File file);
 }

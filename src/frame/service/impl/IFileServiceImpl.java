@@ -33,4 +33,11 @@ public class IFileServiceImpl implements IFileService {
         File[] tempList = file.listFiles();
         return new ArrayList<>(List.of(tempList));
     }
+
+    @Override
+    public String getFileType(File file) {
+        String filePath = file.getName();
+        String suffix = filePath.substring(filePath.lastIndexOf(".") + 1).toUpperCase();
+        return suffix;
+    }
 }
