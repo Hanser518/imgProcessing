@@ -19,6 +19,8 @@ public class InitializeServiceImpl implements InitializeService {
 
     @Override
     public JFrame initializeMainFrame() {
+        System.setProperty("awt.useSystemAAFontSettings", "on");
+        System.setProperty("swing.aatext", "true");
         JFrame frame = new JFrame("Visible");
 
         Toolkit toolkit = Toolkit.getDefaultToolkit();

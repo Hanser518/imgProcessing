@@ -2,6 +2,7 @@ package frame.entity;
 
 import entity.IMAGE;
 
+import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -38,4 +39,20 @@ public class Param {
      * 当前操作图像参数
      */
     public static IMAGE image = new IMAGE();
+    public static ImageNode node = new ImageNode(image);
+
+    /**
+     * 节点操作参数
+     */
+    public static final int ADD_NODE = 1;
+    public static final int CANCEL_NODE = 0;
+    public static final int RETRY_NODE = 2;
+
+
+    public static final Font countFont = new Font("Microsoft YaHei", Font.PLAIN, 16);
+    public static final Font applyBtnFont = new Font("MV Boli", Font.BOLD, 16);
+    public static final Font fileBtnFont = new Font("Inter Semi Bold", Font.BOLD, 14);
+
+
+
 }

@@ -2,6 +2,7 @@ package frame;
 
 import controller.*;
 import entity.IMAGE;
+import frame.entity.ImageNode;
 import frame.entity.Param;
 import frame.service.IFileService;
 import frame.service.InitializeService;
@@ -24,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 public class FrameBase {
 
     private static JFrame baseFrame;
+    private static JLabel fileNameLabel = new JLabel();
     private static JLabel centerLabel;
     private static JLabel previewLabel;
     private static JPanel fileChoosePanel = new JPanel();
@@ -47,11 +49,15 @@ public class FrameBase {
     }
 
     public FrameBase() {
+        // 全局字体抗锯齿，在初始化 JFrame 之前调用
+        System.setProperty("awt.useSystemAAFontSettings", "on");
+        System.setProperty("swing.aatext", "true");
+
         baseFrame = initServ.initializeMainFrame();
         centerLabel = initServ.initializeCenterLabel();
         previewLabel = new JLabel();
 
-        fileChoosePanel.setBackground(new Color(220, 161, 128));
+        fileChoosePanel.setBackground(new Color(255, 255, 255));
         initServ.initializeFileList();
 
         baseFrame.add(sideBar, BorderLayout.WEST);
@@ -62,8 +68,33 @@ public class FrameBase {
         baseFrame.setVisible(true);
     }
 
+    public static IMAGE updateNode(IMAGE newImage, int operation) {
+        switch(operation) {
+            case Param.ADD_NODE -> {
+                ImageNode next = new ImageNode(newImage);
+                Param.node.next = next;
+                next.prev = Param.node;
+                Param.node = next;
+                Param.node.nodeName = new File(Param.pathNow).getName();
+            }
+            case Param.CANCEL_NODE -> {
+                if (Param.node.prev != null){
+                    Param.node = Param.node.prev;
+                }
+            }
+            case Param.RETRY_NODE -> {
+                if (Param.node.next != null){
+                    Param.node = Param.node.next;
+                }
+            }
+        }
+        fileNameLabel.setText(Param.node.nodeName);
+        return Param.node.image;
+    }
+
     public static void updateCenterLabel(IMAGE newImage) {
         centerLabel.setText(null);
+
         // 获取图像宽高，计算比例
         int imgWidth = newImage.getWidth();
         int imgHeight = newImage.getHeight();
@@ -96,7 +127,7 @@ public class FrameBase {
         baseFrame.repaint(); // 重新绘制组件
     }
 
-    private static void updateFileList() {
+    public static void updateFileList() {
         Param.fileList.clear();
         String filePath = "";
         if (Param.path.isEmpty()) {
@@ -122,7 +153,8 @@ public class FrameBase {
         });
         fileChoosePanel.add(backBtn);
         for (File file : Param.fileList) {
-            JButton fileBtn = new JButton((file.isDirectory() ? ">>>D--" : "<<<A--") + file.getName());
+            String fileName = (file.isDirectory() ? ">>>D--" : "---A--") + file.getName();
+            JButton fileBtn = new JButton(fileName);
             fileBtn.addActionListener(action -> {
                 if (file.isDirectory()) {
                     Param.path.add(file.getAbsolutePath());
@@ -131,6 +163,9 @@ public class FrameBase {
                     fileChooser(file);
                 }
             });
+            fileBtn.setBorderPainted(false);
+            fileBtn.setContentAreaFilled(false);
+            fileBtn.setFont(Param.fileBtnFont);
             fileChoosePanel.add(fileBtn);
         }
         baseFrame.revalidate(); // 重新验证布局
@@ -145,13 +180,13 @@ public class FrameBase {
         baseFrame.repaint(); // 重新绘制组件
     }
 
-    private static void fileChooser(File file) {
+    public static void fileChooser(File file) {
         String suffix = fileService.getFileType(file);
         Param.pathNow = file.getAbsolutePath();
         switch (suffix) {
             case "JPG", "PNG" -> {
                 try {
-                    updateCenterLabel(new IMAGE(file.getAbsolutePath(), 0));
+                    updateCenterLabel(updateNode(new IMAGE(file.getAbsolutePath(), 0), Param.ADD_NODE));
                 } catch (IOException ignored) {
                 }
             }
@@ -215,7 +250,7 @@ public class FrameBase {
         base.add(reLoadBtn);
 
         JButton closeButton = new JButton("Close");
-        closeButton.addActionListener(e -> updateCenterLabel(new IMAGE()));
+        closeButton.addActionListener(e -> updateCenterLabel(updateNode(new IMAGE(), Param.ADD_NODE)));
         base.add(closeButton);
 
 
@@ -231,64 +266,89 @@ public class FrameBase {
 
     public JPanel blurPanel() {
         JPanel panel = new JPanel();
-        panel.setBackground(new Color(204, 134, 111));
+        panel.setBackground(new Color(248, 118, 80, 124));
         panel.setBorder(new TitledBorder(new EtchedBorder(), "Blur"));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        JLabel gasCount = new JLabel(String.valueOf(Param.blurSize));
+        panel.add(gasPanel());
+        panel.add(strangePanel());
+        return panel;
+    }
+
+    public JPanel gasPanel(){
+        JLabel gasCount = new JLabel("BlurSize: " + Param.blurSize);
+        gasCount.setFont(Param.countFont);
         JPanel gasBlurPanel = new JPanel();
-        gasBlurPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        gasBlurPanel.setLayout(new GridLayout(2, 1));
         gasBlurPanel.setBorder(new TitledBorder(new EtchedBorder(), "GasBlur"));
         JSlider gasSlider = new JSlider(1, 100, Param.blurSize);
         gasSlider.addChangeListener(change -> {
             Param.blurSize = gasSlider.getValue();
-            gasCount.setText(String.valueOf(Param.blurSize));
+            gasCount.setText("BlurSize: " + Param.blurSize);
         });
-        gasSlider.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                IMAGE gas = blurCtrl.getGasBlur(Param.image, Param.blurSize, 32);
-                updateCenterLabel(gas);
-            }
+        JButton gasBtn = new JButton("Apply");
+        gasBtn.setBorderPainted(false);
+        gasBtn.setFont(Param.applyBtnFont);
+        gasBtn.setContentAreaFilled(false);
+        gasBtn.addActionListener(ac -> {
+            IMAGE gas = blurCtrl.getGasBlur(Param.image, Param.blurSize, 32);
+            updateCenterLabel(updateNode(gas, Param.ADD_NODE));
         });
         gasSlider.setMajorTickSpacing(12);
         gasSlider.setMinorTickSpacing(6);
         gasSlider.setPaintLabels(true);
         gasSlider.setPaintTicks(true);
         gasBlurPanel.add(gasSlider);
-        gasBlurPanel.add(gasCount);
-        panel.add(gasBlurPanel);
 
-        JLabel strangeCount = new JLabel(String.valueOf(Param.strangeBlurSize));
+        JPanel gasPanel = new JPanel();
+        gasPanel.setLayout(new GridLayout(1, 2));
+        gasPanel.add(gasCount);
+        gasPanel.add(gasBtn);
+        gasBlurPanel.add(gasPanel);
+
+        return gasBlurPanel;
+    }
+
+    public JPanel strangePanel(){
+        JLabel strangeCount = new JLabel("BlurSize: " + Param.strangeBlurSize);
+        strangeCount.setFont(Param.countFont);
         JPanel strangeBlurPanel = new JPanel();
-        strangeBlurPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        strangeBlurPanel.setLayout(new GridLayout(2, 1));
         strangeBlurPanel.setBorder(new TitledBorder(new EtchedBorder(), "StrangeBlur"));
         JSlider strangeSlider = new JSlider(1, 100, Param.strangeBlurSize);
         strangeSlider.addChangeListener(change -> {
             Param.strangeBlurSize = strangeSlider.getValue();
-            strangeCount.setText(String.valueOf(Param.strangeBlurSize));
+            strangeCount.setText("BlurSize: " + Param.strangeBlurSize);
         });
-        strangeSlider.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                IMAGE strange = blurCtrl.getStrangeBlur(Param.image, Param.strangeBlurSize);
-                updateCenterLabel(strange);
-            }
+        JButton stgBtn = new JButton("Apply");
+        stgBtn.setBorderPainted(false);
+        stgBtn.setFont(Param.applyBtnFont);
+        stgBtn.setContentAreaFilled(false);
+        stgBtn.addActionListener(ac -> {
+            IMAGE strange = blurCtrl.getStrangeBlur(Param.image, Param.strangeBlurSize);
+            updateCenterLabel(updateNode(strange, Param.ADD_NODE));
         });
         strangeSlider.setMajorTickSpacing(12);
         strangeSlider.setMinorTickSpacing(6);
         strangeSlider.setPaintLabels(true);
         strangeSlider.setPaintTicks(true);
         strangeBlurPanel.add(strangeSlider);
-        strangeBlurPanel.add(strangeCount);
-        panel.add(strangeBlurPanel);
-        return panel;
+
+        JPanel stgPanel = new JPanel();
+        stgPanel.setLayout(new GridLayout(1, 2));
+        stgPanel.add(strangeCount);
+        stgPanel.add(stgBtn);
+        strangeBlurPanel.add(stgPanel);
+
+        return strangeBlurPanel;
     }
 
     public JPanel bottomPanel() {
         JPanel southPanel = new JPanel();
         southPanel.setBackground(new Color(177, 123, 89));
         southPanel.setLayout(new FlowLayout(FlowLayout.TRAILING));
+
+        southPanel.add(fileNameLabel);
 
         JButton save = new JButton("Save");
         save.addActionListener(ac -> {
@@ -305,13 +365,18 @@ public class FrameBase {
         });
         southPanel.add(save);
 
-
         southPanel.add(zoomPanel());
 
         JButton cancelBtn = new JButton("Cancel");
+        cancelBtn.addActionListener(ac -> {
+           updateCenterLabel(updateNode(null, Param.CANCEL_NODE));
+        });
         southPanel.add(cancelBtn);
 
         JButton retryBtn = new JButton("Retry");
+        retryBtn.addActionListener(ac -> {
+            updateCenterLabel(updateNode(null, Param.RETRY_NODE));
+        });
         southPanel.add(retryBtn);
 
         return southPanel;
@@ -376,15 +441,15 @@ public class FrameBase {
             switch (select) {
                 case "Regular" -> {
                     IMAGE grille = styleCtrl.transGrilleStyle(Param.image, styleCtrl.GRILLE_REGULAR, false);
-                    updateCenterLabel(grille);
+                    updateCenterLabel(updateNode(grille, Param.ADD_NODE));
                 }
                 case "Medium" -> {
                     IMAGE grille = styleCtrl.transGrilleStyle(Param.image, styleCtrl.GRILLE_MEDIUM, false);
-                    updateCenterLabel(grille);
+                    updateCenterLabel(updateNode(grille, Param.ADD_NODE));
                 }
                 case "Bold" -> {
                     IMAGE grille = styleCtrl.transGrilleStyle(Param.image, styleCtrl.GRILLE_BOLD, false);
-                    updateCenterLabel(grille);
+                    updateCenterLabel(updateNode(grille, Param.ADD_NODE));
                 }
             }
         });
@@ -413,7 +478,7 @@ public class FrameBase {
                         edge = edgeCtrl.getImgEdge(Param.image, EdgeController.SOBEL);
                     } catch (Exception e) {
                     }
-                    updateCenterLabel(edge);
+                    updateCenterLabel(updateNode(edge, Param.ADD_NODE));
                 }
                 case "Prewitt" -> {
                     IMAGE edge = new IMAGE();
@@ -421,7 +486,7 @@ public class FrameBase {
                         edge = edgeCtrl.getImgEdge(Param.image, EdgeController.PREWITT);
                     } catch (Exception e) {
                     }
-                    updateCenterLabel(edge);
+                    updateCenterLabel(updateNode(edge, Param.ADD_NODE));
                 }
                 case "Mar" -> {
                     IMAGE edge = new IMAGE();
@@ -429,7 +494,7 @@ public class FrameBase {
                         edge = edgeCtrl.getImgEdge(Param.image, EdgeController.MARR);
                     } catch (Exception e) {
                     }
-                    updateCenterLabel(edge);
+                    updateCenterLabel(updateNode(edge, Param.ADD_NODE));
                 }
             }
         });
@@ -454,7 +519,7 @@ public class FrameBase {
             switch (select) {
                 case "Paper" -> {
                     IMAGE reStyle = styleCtrl.transPaperStyle(Param.image, 24, 118);
-                    updateCenterLabel(reStyle);
+                    updateCenterLabel(updateNode(reStyle, Param.ADD_NODE));
                 }
                 case "Oil" -> {
                     IMAGE reStyle = new IMAGE();
@@ -463,7 +528,7 @@ public class FrameBase {
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                    updateCenterLabel(reStyle);
+                    updateCenterLabel(updateNode(reStyle, Param.ADD_NODE));
                 }
             }
         });
@@ -485,13 +550,13 @@ public class FrameBase {
         JButton cdrBtn = new JButton("CDR");
         cdrBtn.addActionListener(e -> {
             IMAGE cdr = adCtrl.CDR(Param.image);
-            updateCenterLabel(cdr);
+            updateCenterLabel(updateNode(cdr, Param.ADD_NODE));
         });
 
         JButton apply = new JButton("Apply");
         apply.addActionListener(ac -> {
             IMAGE asv = adCtrl.adjustSatAndVal(Param.image, Param.saturation, Param.value);
-            updateCenterLabel(asv);
+            updateCenterLabel(updateNode(asv, Param.ADD_NODE));
         });
 
         btnPanel.add(cdrBtn);
