@@ -21,7 +21,8 @@ public class Param {
     public static int frameWidth;
     public static int frameHeight;
 
-    public static int blurSize = 10;
+    public static int blurSize = 1;
+    public static int strangeBlurSize = 1;
     public static int saturation = 0;
     public static int value = 0;
 

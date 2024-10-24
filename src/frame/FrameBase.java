@@ -9,6 +9,8 @@ import frame.service.impl.IFileServiceImpl;
 import frame.service.impl.InitializeServiceImpl;
 
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -221,8 +223,8 @@ public class FrameBase {
         operationPanel.add(blurPanel());
         operationPanel.add(edgeBox());
         operationPanel.add(grilleBox());
-        operationPanel.add(StyleBox());
-        operationPanel.add(adJustPanel());
+        operationPanel.add(styleBox());
+        operationPanel.add(adjustPanel());
 
         return operationPanel;
     }
@@ -230,31 +232,56 @@ public class FrameBase {
     public JPanel blurPanel() {
         JPanel panel = new JPanel();
         panel.setBackground(new Color(204, 134, 111));
-        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        panel.setBorder(new TitledBorder(new EtchedBorder(), "Blur"));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
-        JLabel title = new JLabel("Blur");
-        JLabel count = new JLabel(String.valueOf(Param.blurSize));
-
-        JSlider slider = new JSlider(1, 100, Param.blurSize);
-        slider.addChangeListener(change -> {
-            Param.blurSize = slider.getValue();
-            count.setText(String.valueOf(Param.blurSize));
+        JLabel gasCount = new JLabel(String.valueOf(Param.blurSize));
+        JPanel gasBlurPanel = new JPanel();
+        gasBlurPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        gasBlurPanel.setBorder(new TitledBorder(new EtchedBorder(), "GasBlur"));
+        JSlider gasSlider = new JSlider(1, 100, Param.blurSize);
+        gasSlider.addChangeListener(change -> {
+            Param.blurSize = gasSlider.getValue();
+            gasCount.setText(String.valueOf(Param.blurSize));
         });
-        slider.addMouseListener(new MouseAdapter() {
+        gasSlider.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
                 IMAGE gas = blurCtrl.getGasBlur(Param.image, Param.blurSize, 32);
                 updateCenterLabel(gas);
             }
         });
-        slider.setMajorTickSpacing(12);
-        slider.setMinorTickSpacing(6);
-        slider.setPaintLabels(true);
-        slider.setPaintTicks(true);
+        gasSlider.setMajorTickSpacing(12);
+        gasSlider.setMinorTickSpacing(6);
+        gasSlider.setPaintLabels(true);
+        gasSlider.setPaintTicks(true);
+        gasBlurPanel.add(gasSlider);
+        gasBlurPanel.add(gasCount);
+        panel.add(gasBlurPanel);
 
-        panel.add(title);
-        panel.add(slider);
-        panel.add(count);
+        JLabel strangeCount = new JLabel(String.valueOf(Param.strangeBlurSize));
+        JPanel strangeBlurPanel = new JPanel();
+        strangeBlurPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        strangeBlurPanel.setBorder(new TitledBorder(new EtchedBorder(), "StrangeBlur"));
+        JSlider strangeSlider = new JSlider(1, 100, Param.strangeBlurSize);
+        strangeSlider.addChangeListener(change -> {
+            Param.strangeBlurSize = strangeSlider.getValue();
+            strangeCount.setText(String.valueOf(Param.strangeBlurSize));
+        });
+        strangeSlider.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                IMAGE strange = blurCtrl.getStrangeBlur(Param.image, Param.strangeBlurSize);
+                updateCenterLabel(strange);
+            }
+        });
+        strangeSlider.setMajorTickSpacing(12);
+        strangeSlider.setMinorTickSpacing(6);
+        strangeSlider.setPaintLabels(true);
+        strangeSlider.setPaintTicks(true);
+        strangeBlurPanel.add(strangeSlider);
+        strangeBlurPanel.add(strangeCount);
+        panel.add(strangeBlurPanel);
         return panel;
     }
 
@@ -410,7 +437,7 @@ public class FrameBase {
         return panel;
     }
 
-    public JPanel StyleBox() {
+    public JPanel styleBox() {
         JPanel panel = new JPanel();
         panel.setBackground(new Color(177, 123, 89));
         panel.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -444,23 +471,38 @@ public class FrameBase {
         return panel;
     }
 
-    public JPanel adJustPanel() {
+    public JPanel adjustPanel() {
+        Color subBackColor = new Color(197, 203, 222);
+        Color fontColor = new Color(199, 91, 28);
         JPanel panel = new JPanel();
-        panel.setBackground(new Color(89, 127, 177));
+        panel.setBackground(new Color(153, 156, 164));
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(new TitledBorder(new EtchedBorder(), "饱和度/亮度"));
 
+        JPanel btnPanel = new JPanel();
+        btnPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        btnPanel.setBackground(subBackColor);
         JButton cdrBtn = new JButton("CDR");
         cdrBtn.addActionListener(e -> {
             IMAGE cdr = adCtrl.CDR(Param.image);
             updateCenterLabel(cdr);
         });
-        panel.add(cdrBtn);
+
+        JButton apply = new JButton("Apply");
+        apply.addActionListener(ac -> {
+            IMAGE asv = adCtrl.adjustSatAndVal(Param.image, Param.saturation, Param.value);
+            updateCenterLabel(asv);
+        });
+
+        btnPanel.add(cdrBtn);
+        btnPanel.add(apply);
+        panel.add(btnPanel);
 
         JLabel saturationLabel = new JLabel();
         saturationLabel.setText(String.format("%3d", Param.saturation));
-        saturationLabel.setForeground(new Color(224, 74, 10));
-        JSlider saturationSlider = new JSlider(-100, 100, Param.saturation);
-        saturationSlider.setBackground(new Color(89, 127, 177));
+        saturationLabel.setForeground(fontColor);
+        JSlider saturationSlider = new JSlider(-99, 99, Param.saturation);
+        saturationSlider.setBackground(subBackColor);
         saturationSlider.setMajorTickSpacing(20);
         saturationSlider.setMinorTickSpacing(5);
         saturationSlider.setPaintLabels(true);
@@ -470,23 +512,18 @@ public class FrameBase {
             saturationLabel.setText(String.format("%3d", Param.saturation));
         });
         JPanel sPanel = new JPanel();
-        JPanel saturationPanel = new JPanel();
-        saturationPanel.setLayout(new BoxLayout(saturationPanel, BoxLayout.Y_AXIS));
-        saturationPanel.setBackground(new Color(141, 182, 239));
-        sPanel.setBackground(new Color(89, 127, 177));
-        JLabel sTitle = new JLabel("Value");
-        sTitle.setForeground(Color.WHITE);
-        saturationPanel.add(sTitle);
-        saturationPanel.add(saturationLabel);
-        sPanel.add(saturationPanel);
+        sPanel.setBackground(subBackColor);
+        sPanel.setBorder(new TitledBorder(new EtchedBorder(), "Saturation"));
+        sPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         sPanel.add(saturationSlider);
+        sPanel.add(saturationLabel);
         panel.add(sPanel);
 
         JLabel valueLabel = new JLabel();
         valueLabel.setText(String.format("%3d", Param.value));
-        valueLabel.setForeground(new Color(224, 74, 10));
-        JSlider valueSlider = new JSlider(-100, 100, Param.value);
-        valueSlider.setBackground(new Color(89, 127, 177));
+        valueLabel.setForeground(fontColor);
+        JSlider valueSlider = new JSlider(-99, 99, Param.value);
+        valueSlider.setBackground(subBackColor);
         valueSlider.setMajorTickSpacing(20);
         valueSlider.setMinorTickSpacing(5);
         valueSlider.setPaintLabels(true);
@@ -496,26 +533,16 @@ public class FrameBase {
             valueLabel.setText(String.format("%3d", Param.value));
         });
         JPanel vPanel = new JPanel();
-        JPanel valuePanel = new JPanel();
-        valuePanel.setLayout(new BoxLayout(valuePanel, BoxLayout.Y_AXIS));
-        valuePanel.setBackground(new Color(146, 187, 241));
-        vPanel.setBackground(new Color(89, 127, 177));
-        JLabel vTitle = new JLabel("Value");
-        vTitle.setForeground(Color.WHITE);
-        valuePanel.add(vTitle);
-        valuePanel.add(valueLabel);
-        vPanel.add(valuePanel);
+        vPanel.setBackground(subBackColor);
+        vPanel.setBorder(new TitledBorder(new EtchedBorder(), "Value"));
+        vPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         vPanel.add(valueSlider);
+        vPanel.add(valueLabel);
         panel.add(vPanel);
-
-        JButton apply = new JButton("Apply");
-        apply.addActionListener(ac -> {
-            IMAGE asv = adCtrl.adjustSatAndVal(Param.image, Param.saturation, Param.value);
-            updateCenterLabel(asv);
-        });
-        panel.add(apply);
 
         return panel;
     }
+
+
 
 }
