@@ -25,6 +25,8 @@ import java.time.format.DateTimeFormatter;
 import static frame.entity.Param.*;
 
 public class FrameBase {
+    private boolean fileBarOpen = true;
+    private boolean operateBarOpen = false;
 
     private static JFrame baseFrame;
     private static JLabel fileNameLabel = new JLabel();
@@ -57,7 +59,7 @@ public class FrameBase {
         baseFrame = initServ.initializeMainFrame();
         centerLabel = initServ.initializeCenterLabel();
         previewLabel = new JLabel();
-
+        updateSideBar(fileChoosePanel);
         fileChoosePanel.setBackground(new Color(255, 255, 255));
         initServ.initializeFileList();
 
@@ -200,28 +202,26 @@ public class FrameBase {
 
         JButton fileBtn = new JButton("File");
         fileBtn.addActionListener(e -> {
-            updateSideBar(fileChoosePanel);
+            fileBarOpen = !fileBarOpen;
+            operateBarOpen = false;
+            updateSideBar(fileBarOpen ? fileChoosePanel : null);
         });
         headPanel.add(fileBtn);
 
-        JButton hideBtn = new JButton("CloseSideBar");
-        hideBtn.addActionListener(e -> {
-            updateSideBar(null);
-        });
-        headPanel.add(hideBtn);
-
         JButton operation = new JButton("Operation");
         operation.addActionListener(e -> {
-            updateSideBar(OperationBar());
+            operateBarOpen = !operateBarOpen;
+            fileBarOpen = false;
+            updateSideBar(operateBarOpen ? OperationBar() : null);
         });
         headPanel.add(operation);
 
-        JButton sideButton = new JButton("SIDE");
-        sideButton.addActionListener(action -> {
-            updateSidePanel();
-        });
-        headPanel.add(sideButton);
 
+        fileNameLabel.setFont(titalFont);
+        fileNameLabel.setForeground(Color.white);
+
+        headPanel.add(Param.processLabel);
+        headPanel.add(fileNameLabel);
 
         JButton exitButton = new JButton("Exit");
         exitButton.addActionListener(action -> {
@@ -339,11 +339,6 @@ public class FrameBase {
         southPanel.setBackground(bkC1);
         southPanel.setLayout(new FlowLayout(FlowLayout.TRAILING));
 
-        fileNameLabel.setFont(titalFont);
-        fileNameLabel.setForeground(Color.white);
-
-        southPanel.add(Param.processLabel);
-        southPanel.add(fileNameLabel);
         southPanel.add(saveButton());
         southPanel.add(zoomPanel());
         JButton cancelBtn = new JButton("Cancel");
