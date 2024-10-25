@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static frame.entity.Param.*;
+
 public class FrameBase {
 
     private static JFrame baseFrame;
@@ -45,7 +47,6 @@ public class FrameBase {
     public static void main(String[] args) {
         System.out.println("Hello image");
         SwingUtilities.invokeLater(FrameBase::new);
-
     }
 
     public FrameBase() {
@@ -69,7 +70,7 @@ public class FrameBase {
     }
 
     public static IMAGE updateNode(IMAGE newImage, int operation) {
-        switch(operation) {
+        switch (operation) {
             case Param.ADD_NODE -> {
                 ImageNode next = new ImageNode(newImage);
                 Param.node.next = next;
@@ -78,12 +79,12 @@ public class FrameBase {
                 Param.node.nodeName = new File(Param.pathNow).getName();
             }
             case Param.CANCEL_NODE -> {
-                if (Param.node.prev != null){
+                if (Param.node.prev != null) {
                     Param.node = Param.node.prev;
                 }
             }
             case Param.RETRY_NODE -> {
-                if (Param.node.next != null){
+                if (Param.node.next != null) {
                     Param.node = Param.node.next;
                 }
             }
@@ -92,9 +93,17 @@ public class FrameBase {
         return Param.node.image;
     }
 
+    public static void updateCenterLabel(boolean finish) {
+        centerLabel.setIcon(null);
+        // 获取图像宽高，计算比例
+        centerLabel.setText(finish ? "ok" : "wait");
+        centerLabel.setFont(Param.titalFont);
+        baseFrame.revalidate(); // 重新验证布局
+        baseFrame.repaint(); // 重新绘制组件
+    }
+
     public static void updateCenterLabel(IMAGE newImage) {
         centerLabel.setText(null);
-
         // 获取图像宽高，计算比例
         int imgWidth = newImage.getWidth();
         int imgHeight = newImage.getHeight();
@@ -142,7 +151,7 @@ public class FrameBase {
     public static void updateSidePanel() {
         fileChoosePanel.removeAll();
         fileChoosePanel.setLayout(new BoxLayout(fileChoosePanel, BoxLayout.Y_AXIS));
-        JButton backBtn = new JButton("...");
+        JButton backBtn = buildBackButton();
         backBtn.addActionListener(action -> {
             if (!Param.path.isEmpty()) {
                 Param.path.remove(Param.path.size() - 1);
@@ -153,19 +162,7 @@ public class FrameBase {
         });
         fileChoosePanel.add(backBtn);
         for (File file : Param.fileList) {
-            String fileName = (file.isDirectory() ? ">>>D--" : "---A--") + file.getName();
-            JButton fileBtn = new JButton(fileName);
-            fileBtn.addActionListener(action -> {
-                if (file.isDirectory()) {
-                    Param.path.add(file.getAbsolutePath());
-                    updateFileList();
-                } else if (file.isFile()) {
-                    fileChooser(file);
-                }
-            });
-            fileBtn.setBorderPainted(false);
-            fileBtn.setContentAreaFilled(false);
-            fileBtn.setFont(Param.fileBtnFont);
+            JButton fileBtn = fileButton(file);
             fileChoosePanel.add(fileBtn);
         }
         baseFrame.revalidate(); // 重新验证布局
@@ -275,7 +272,7 @@ public class FrameBase {
         return panel;
     }
 
-    public JPanel gasPanel(){
+    public JPanel gasPanel() {
         JLabel gasCount = new JLabel("BlurSize: " + Param.blurSize);
         gasCount.setFont(Param.countFont);
         JPanel gasBlurPanel = new JPanel();
@@ -286,12 +283,9 @@ public class FrameBase {
             Param.blurSize = gasSlider.getValue();
             gasCount.setText("BlurSize: " + Param.blurSize);
         });
-        JButton gasBtn = new JButton("Apply");
-        gasBtn.setBorderPainted(false);
-        gasBtn.setFont(Param.applyBtnFont);
-        gasBtn.setContentAreaFilled(false);
+        JButton gasBtn = Param.buildApplyButton();
         gasBtn.addActionListener(ac -> {
-            IMAGE gas = blurCtrl.getGasBlur(Param.image, Param.blurSize, 32);
+            IMAGE gas = blurCtrl.getQuickGasBlur(Param.image, Param.blurSize, 32);
             updateCenterLabel(updateNode(gas, Param.ADD_NODE));
         });
         gasSlider.setMajorTickSpacing(12);
@@ -309,7 +303,7 @@ public class FrameBase {
         return gasBlurPanel;
     }
 
-    public JPanel strangePanel(){
+    public JPanel strangePanel() {
         JLabel strangeCount = new JLabel("BlurSize: " + Param.strangeBlurSize);
         strangeCount.setFont(Param.countFont);
         JPanel strangeBlurPanel = new JPanel();
@@ -320,10 +314,7 @@ public class FrameBase {
             Param.strangeBlurSize = strangeSlider.getValue();
             strangeCount.setText("BlurSize: " + Param.strangeBlurSize);
         });
-        JButton stgBtn = new JButton("Apply");
-        stgBtn.setBorderPainted(false);
-        stgBtn.setFont(Param.applyBtnFont);
-        stgBtn.setContentAreaFilled(false);
+        JButton stgBtn = Param.buildApplyButton();
         stgBtn.addActionListener(ac -> {
             IMAGE strange = blurCtrl.getStrangeBlur(Param.image, Param.strangeBlurSize);
             updateCenterLabel(updateNode(strange, Param.ADD_NODE));
@@ -345,31 +336,19 @@ public class FrameBase {
 
     public JPanel bottomPanel() {
         JPanel southPanel = new JPanel();
-        southPanel.setBackground(new Color(177, 123, 89));
+        southPanel.setBackground(bkC1);
         southPanel.setLayout(new FlowLayout(FlowLayout.TRAILING));
 
+        fileNameLabel.setFont(titalFont);
+        fileNameLabel.setForeground(Color.white);
+
+        southPanel.add(Param.processLabel);
         southPanel.add(fileNameLabel);
-
-        JButton save = new JButton("Save");
-        save.addActionListener(ac -> {
-            LocalDateTime date = LocalDateTime.now();
-            String time = date.format(DateTimeFormatter.ofPattern("yyyyMMdd_hhmmss")) + "_" + (int) (Math.random() * 1000);
-            File file = new File(Param.pathNow);
-            String name = file.getName();
-            name = name.substring(0, name.lastIndexOf("."));
-            try {
-                imgCtrl2.saveByName2(Param.image, "Visible", name + time);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        southPanel.add(save);
-
+        southPanel.add(saveButton());
         southPanel.add(zoomPanel());
-
         JButton cancelBtn = new JButton("Cancel");
         cancelBtn.addActionListener(ac -> {
-           updateCenterLabel(updateNode(null, Param.CANCEL_NODE));
+            updateCenterLabel(updateNode(null, Param.CANCEL_NODE));
         });
         southPanel.add(cancelBtn);
 
@@ -382,28 +361,33 @@ public class FrameBase {
         return southPanel;
     }
 
+    private static JButton saveButton() {
+        JButton save = new JButton("SAVE");
+        save.addActionListener(ac -> {
+            LocalDateTime date = LocalDateTime.now();
+            String time = date.format(DateTimeFormatter.ofPattern("yyyyMMdd_hhmmss")) + "_" + (int) (Math.random() * 1000);
+            File file = new File(Param.pathNow);
+            String name = file.getName();
+            name = name.substring(0, name.lastIndexOf("."));
+            try {
+                imgCtrl2.saveByName2(Param.image, "Visible", name + time);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        return save;
+    }
+
     public JPanel zoomPanel() {
         JPanel panel = new JPanel();
-
-        panel.setBackground(new Color(204, 134, 111));
+        panel.setOpaque(false);
 
         JButton plus = new JButton("+");
         JButton down = new JButton("-");
         JLabel zoomX = new JLabel();
 
         zoomX.setText(String.format("%2.2f", Param.zoom));
-        plus.addActionListener(ac -> {
-            Param.zoom += 0.1;
-            zoomX.setText(String.format("%2.2f", Param.zoom));
-            updateCenterLabel(Param.image);
-            // fileChooser(new File(pathNow));
-        });
-        down.addActionListener(ac -> {
-            Param.zoom -= 0.1;
-            zoomX.setText(String.format("%2.2f", Param.zoom));
-            updateCenterLabel(Param.image);
-            // fileChooser(new File(pathNow));
-        });
+        zoomX.setForeground(Color.white);
         JSlider slider = new JSlider(50, 250, (int) (Param.zoom * 100));
         slider.addChangeListener(change -> {
             int value = slider.getValue();
@@ -415,6 +399,21 @@ public class FrameBase {
             public void mouseReleased(MouseEvent e) {
                 updateCenterLabel(Param.image);
             }
+        });
+        slider.setMajorTickSpacing(25);
+        slider.setMinorTickSpacing(5);
+        slider.setPaintTicks(true);
+        plus.addActionListener(ac -> {
+            Param.zoom += 0.1;
+            zoomX.setText(String.format("%2.2f", Param.zoom));
+            slider.setValue((int) (zoom * 100));
+            updateCenterLabel(Param.image);
+        });
+        down.addActionListener(ac -> {
+            Param.zoom -= 0.1;
+            zoomX.setText(String.format("%2.2f", Param.zoom));
+            slider.setValue((int) (zoom * 100));
+            updateCenterLabel(Param.image);
         });
 
         panel.add(slider);
@@ -553,7 +552,7 @@ public class FrameBase {
             updateCenterLabel(updateNode(cdr, Param.ADD_NODE));
         });
 
-        JButton apply = new JButton("Apply");
+        JButton apply = Param.buildApplyButton();
         apply.addActionListener(ac -> {
             IMAGE asv = adCtrl.adjustSatAndVal(Param.image, Param.saturation, Param.value);
             updateCenterLabel(updateNode(asv, Param.ADD_NODE));
@@ -607,7 +606,6 @@ public class FrameBase {
 
         return panel;
     }
-
 
 
 }

@@ -2,9 +2,13 @@ package frame.entity;
 
 import entity.IMAGE;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
+
+import static frame.FrameBase.fileChooser;
+import static frame.FrameBase.updateFileList;
 
 public class Param {
 
@@ -48,10 +52,51 @@ public class Param {
     public static final int CANCEL_NODE = 0;
     public static final int RETRY_NODE = 2;
 
-
+    /**
+     * 封装后的字体
+     */
     public static final Font countFont = new Font("Microsoft YaHei", Font.PLAIN, 16);
     public static final Font applyBtnFont = new Font("MV Boli", Font.BOLD, 16);
     public static final Font fileBtnFont = new Font("Inter Semi Bold", Font.BOLD, 14);
+    public static final Font titalFont = new Font("OPPO Sans Medium", Font.PLAIN, 15);
+
+    public static final Color bkC1 = new Color(73, 82, 103);
+
+
+    public static JButton buildApplyButton(){
+        JButton apply = new JButton("Apply");
+        apply.setFont(Param.applyBtnFont);
+        apply.setContentAreaFilled(false);
+        apply.setBorderPainted(false);
+        return apply;
+    }
+
+    public static JButton buildBackButton(){
+        JButton back = new JButton("<<<Back");
+        back.setFont(Param.fileBtnFont);
+        back.setContentAreaFilled(false);
+        back.setBorderPainted(false);
+        return back;
+    }
+
+    public static JButton fileButton(File file) {
+        String fileName = (file.isDirectory() ? ">>>" : "-----") + file.getName();
+        JButton fileBtn = new JButton(fileName);
+        fileBtn.addActionListener(action -> {
+            if (file.isDirectory()) {
+                Param.path.add(file.getAbsolutePath());
+                updateFileList();
+            } else if (file.isFile()) {
+                fileChooser(file);
+            }
+        });
+        fileBtn.setBorderPainted(false);
+        fileBtn.setContentAreaFilled(false);
+        fileBtn.setFont(Param.fileBtnFont);
+        return fileBtn;
+    }
+
+    public static JLabel processLabel = new JLabel("");
 
 
 

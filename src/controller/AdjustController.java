@@ -1,6 +1,7 @@
 package controller;
 
 import entity.IMAGE;
+import frame.entity.Param;
 import service.IAdjustService;
 import service.ICalculateService;
 import service.impl.AdjustServiceImpl;
