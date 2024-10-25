@@ -29,7 +29,7 @@ public class FrameBase {
     private boolean operateBarOpen = false;
 
     private static JFrame baseFrame;
-    private static JLabel fileNameLabel = new JLabel();
+    private static final JLabel fileNameLabel = new JLabel();
     private static JLabel centerLabel;
     private static JLabel previewLabel;
     private static JPanel fileChoosePanel = new JPanel();

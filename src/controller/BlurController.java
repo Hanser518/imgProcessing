@@ -49,13 +49,14 @@ public class BlurController {
     }
 
     public IMAGE getQuickGasBlur(IMAGE img, int size, int maxThreadCount) {
+        size = (int) (size * 1.33);
         double[][] kernel = calcService.getGasKernel(size);
         try {
             if (size > 10) {
                 double[][] kernel1 = calcService.getGasKernel((int) (size * 0.7));
                 refConv = new ThreadPoolReflectCore(img.getPixelMatrix(), kernel1, maxThreadCount, new ConVCalc2());
                 refConv.start();
-                double[][] kernel2 = calcService.getGasKernel(size - (int) (size * 0.7));
+                double[][] kernel2 = calcService.getGasKernel(size - (int) (size * 0.6));
                 refConv = new ThreadPoolReflectCore(refConv.getData(), kernel2, maxThreadCount, new ConVCalc2());
                 refConv.start();
             } else {

@@ -53,7 +53,7 @@ public class ThreadPoolReflectCore {
         try {
             Method set = classOfThread.getMethod("setThreshold", int.class);
             if (set.isDefault())
-                System.out.println("Thread not contain method: setThreshold");
+                System.out.println("Thread do not contain method: setThreshold");
             else
                 set.invoke(thread, threshold);
         } catch (Exception ignored) {
