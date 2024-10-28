@@ -87,7 +87,7 @@ public class Param {
         JButton btn = new JButton(name);
         btn.setFont(Param.funcFont);
         btn.setContentAreaFilled(false);
-        btn.setBorderPainted(false);
+        // btn.setBorderPainted(false);
         return btn;
     }
 

@@ -1,30 +1,31 @@
-package threadPool;
+package threadPool.pool;
 
 
-import threadPool.thread.ConVCalc;
 import threadPool.core.ThreadPoolCore;
+import threadPool.thread.ConVStrange;
 
 import java.util.Stack;
 
-public class ThreadPoolConV extends ThreadPoolCore {
-    Stack<ConVCalc> leisureThreads = new Stack<>();
+public class ThreadPoolStrange extends ThreadPoolCore {
+    Stack<ConVStrange> leisureThreads = new Stack<>();
 
-    public ThreadPoolConV(int[][] requestData, double[][] ConVKernel, int MaxThreadCount) {
+    public ThreadPoolStrange(int[][] requestData, double[][] ConVKernel, int MaxThreadCount) {
         super(requestData, ConVKernel, MaxThreadCount);
         initLeisureThread();
-        ConVCalc.setData(data);
-        ConVCalc.setKernel(fillKernel);
+        ConVStrange.setData(data);
+        ConVStrange.setKernel(fillKernel);
+        ConVStrange.setK();
     }
 
     @Override
     protected void leisurePush() {
-        leisureThreads.push(new ConVCalc());
+        leisureThreads.push(new ConVStrange());
     }
 
     // 压入未激活的处理线程
     protected void initLeisureThread() {
         for (int i = 0; i < threadCount; i++) {
-            leisureThreads.add(new ConVCalc());
+            leisureThreads.add(new ConVStrange());
         }
     }
 
@@ -32,10 +33,10 @@ public class ThreadPoolConV extends ThreadPoolCore {
     protected void initThread() {
         while (!leisureThreads.isEmpty()) {
             if (!eventIndex.isEmpty()) {
-                ConVCalc cc = leisureThreads.pop();
+                ConVStrange cS = leisureThreads.pop();
                 int index = eventIndex.pop();
-                cc = new ConVCalc(ePools[index]);
-                Thread t = new Thread(cc);
+                cS = new ConVStrange(ePools[index]);
+                Thread t = new Thread(cS);
                 threadPool.add(t);
                 t.start();
                 // System.out.print(ePools[index].index + "#");

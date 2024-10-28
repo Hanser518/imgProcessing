@@ -1,4 +1,4 @@
-package threadPool;
+package threadPool.pool;
 
 import threadPool.core.ThreadPoolCore;
 import threadPool.thread.ConfActive;

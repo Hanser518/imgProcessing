@@ -59,4 +59,7 @@ public interface IPictureService {
     public IMAGE getEnhanceImage2(IMAGE img);
 
     public IMAGE getGammaFix(IMAGE img, double param);
+
+    void imgData(IMAGE img);
+    IMAGE getSubImage(int width, int height, int startX, int startY);
 }

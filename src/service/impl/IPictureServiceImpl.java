@@ -13,6 +13,7 @@ import java.util.List;
 
 public class IPictureServiceImpl implements IPictureService {
     static ICalculateService calculateServer = new ICalculateServiceImpl();
+    static int[][] imgData = null;
     @Override
     public IMAGE getSubImage(IMAGE img, int width, int height, int startX, int startY) {
         int W = width + startX > img.getWidth() ? img.getWidth() - startX : width;
@@ -273,6 +274,27 @@ public class IPictureServiceImpl implements IPictureService {
                 //System.out.println("plus: " + p[1] + " " + p[2] + " " + p[3]);
                 // g[i][j] = img.getPixParams(p);
                 px[i][j] = img.getPixParams(p);
+            }
+        }
+        return new IMAGE(px);
+    }
+
+    public void imgData(IMAGE p) {
+        imgData = p.getPixelMatrix();
+    }
+
+    public IMAGE getSubImage(int width, int height, int startX, int startY) {
+        if(imgData == null) return null;
+        int W = width + startX > imgData.length ? imgData.length - startX : width;
+        int H = height + startY > imgData[0].length ? imgData[0].length - startY : height;
+        int[][] px = new int[W][H];
+        if(W == 0 || H == 0){
+            System.out.println(width + " " + height + " " + startX + " " + startY);
+            System.out.println(W + " " + H);
+        }
+        for(int i = 0;i < W;i ++){
+            for(int j = 0;j < H;j ++){
+                px[i][j] = imgData[i + startX][j + startY];
             }
         }
         return new IMAGE(px);

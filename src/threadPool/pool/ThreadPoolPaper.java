@@ -1,4 +1,4 @@
-package threadPool;
+package threadPool.pool;
 
 
 import threadPool.thread.PaperBlur;

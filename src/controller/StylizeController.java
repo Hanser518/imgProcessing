@@ -5,7 +5,7 @@ import entity.IMAGE;
 import frame.entity.Param;
 import service.imgService;
 import service.impl.imgServiceImpl;
-import threadPool.ThreadPoolPaper;
+import threadPool.pool.ThreadPoolPaper;
 import service.ICalculateService;
 import service.impl.ICalculateServiceImpl;
 import threadPool.core.ThreadPoolCore;
@@ -25,6 +25,7 @@ public class StylizeController {
     static AdjustController AdCtrl = new AdjustController();
     static EdgeController edgeCtrl = new EdgeController();
     static ImgProcessingController imgCtrl = new ImgProcessingController();
+    static ImgController imgCtrl2 = new ImgController();
     static imgService imgServ = new imgServiceImpl();
     static ThreadPoolCore conV;
 
@@ -62,14 +63,14 @@ public class StylizeController {
         System.out.println("adjust over");
         if (multiple) {
             IMAGE gas = BlurCtrl.getQuickGasBlur(ad, kernelSize, 16); // kernelSize
-            List<IMAGE> imgList = imgCtrl.asyncSplit(gas, (int) (1 / radio), true);
+            List<IMAGE> imgList = imgCtrl2.asyncSplit(gas, (int) (1 / radio), true);
             IMAGE ver = imgCtrl.combineImages(imgList, grilleType, true);
-            imgList = imgCtrl.asyncSplit(ver, (int) (1 / (radio * 1.73)), false);
+            imgList = imgCtrl2.asyncSplit(ver, (int) (1 / (radio * 1.73)), false);
             IMAGE res = imgCtrl.combineImages(imgList, grilleType, false);
             return res;
         } else {
             IMAGE gas = BlurCtrl.getQuickGasBlur(ad, kernelSize, 16); // kernelSize
-            List<IMAGE> imgList = imgCtrl.asyncSplit(gas, (int) (1 / radio), true);
+            List<IMAGE> imgList = imgCtrl2.asyncSplit(gas, (int) (1 / radio), true);
             return imgCtrl.combineImages(imgList, grilleType, true);
         }
     }
@@ -79,18 +80,18 @@ public class StylizeController {
         IMAGE res = new IMAGE();
         switch (grilleType){
             case Param.GRILLE_MULTIPLE -> {
-                List<IMAGE> imgList = imgCtrl.asyncSplit(img, (int) (1 / rate), true);
+                List<IMAGE> imgList = imgCtrl2.asyncSplit(img, (int) (1 / rate), true);
                 IMAGE ver = imgCtrl.combineImages(imgList, grilleType, true);
-                imgList = imgCtrl.asyncSplit(ver, (int) (1 / (rate * 1.73)), false);
+                imgList = imgCtrl2.asyncSplit(ver, (int) (1 / (rate * 1.73)), false);
                 res = imgCtrl.combineImages(imgList, grilleType, false);
             }
             case Param.GRILLE_VERTICAL -> {
-                List<IMAGE> imgList = imgCtrl.asyncSplit(img, (int) (1 / (rate * 1.73)), true);
+                List<IMAGE> imgList = imgCtrl2.asyncSplit(img, (int) (1 / (rate * 1.73)), true);
                 res = imgCtrl.combineImages(imgList, grilleType, true);
             }
             case Param.GRILLE_HORIZONTAL -> {
-                List<IMAGE> imgList = imgCtrl.asyncSplit(img, (int) (1 / rate), false);
-                res = imgCtrl.combineImages(imgList, grilleType, false);
+                List<IMAGE> imgList = imgCtrl2.asyncSplit(img, (int) (1 / rate), false);
+                res = imgCtrl.combineImages(imgList, 1, false);
             }
         }
         return res;

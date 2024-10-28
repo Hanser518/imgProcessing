@@ -1,7 +1,7 @@
 package controller;
 
 import entity.IMAGE;
-import threadPool.ThreadPoolConV;
+import threadPool.pool.ThreadPoolConV;
 import threadPool.core.ThreadPoolCore;
 import threadPool.core.ThreadPoolReflectCore;
 import threadPool.thread.ConVCalc;

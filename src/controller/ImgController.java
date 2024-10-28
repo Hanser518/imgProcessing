@@ -1,6 +1,8 @@
 package controller;
 
 import entity.IMAGE;
+import service.IPictureService;
+import service.impl.IPictureServiceImpl;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -10,10 +12,13 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ImgController {
     private static final ProcessingController pcsCtrl = new ProcessingController();
-
+    private static final IPictureService picServer = new IPictureServiceImpl();
+    private static final int[][] imgData = null;
     /**
      * 保存图像，格式为jpg，不支持透明图像
      * jpg格式存储占用小，但清晰度不如png格式
@@ -134,5 +139,24 @@ public class ImgController {
 
         frame.add(panel);
         frame.setVisible(true);
+    }
+
+    public List<IMAGE> asyncSplit(IMAGE img, int count, boolean horizontal) {
+        long set = System.currentTimeMillis();
+        List<IMAGE> result = new ArrayList<>();
+        int width = horizontal ? img.getWidth() / (count + 1) : img.getWidth();
+        int height = horizontal ? img.getHeight() : img.getHeight() / (count + 1) + 1;
+        picServer.imgData(img);
+        for (int i = 0; i < count; i++) {
+            int x = horizontal ? width * i : 0;
+            int y = horizontal ? 0 : height * i;
+            if (horizontal) {
+                result.add(picServer.getSubImage(width * 2, height, x, y));
+            } else {
+                result.add(picServer.getSubImage(width, height * 2, x, y));
+            }
+        }
+        System.out.println(System.currentTimeMillis() - set);
+        return result;
     }
 }

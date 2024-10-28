@@ -47,6 +47,8 @@ public class FrameBase {
     private static final BlurController blurCtrl = new BlurController();
     private static final ImgController imgCtrl2 = new ImgController();
 
+    private boolean init = false;
+    private int sx, sy;
 
     public static void main(String[] args) {
         System.out.println("Hello image");
@@ -60,18 +62,37 @@ public class FrameBase {
 
         baseFrame = initServ.initializeMainFrame();
         centerLabel = initServ.initializeCenterLabel();
+
+        JScrollPane scrollPane = new JScrollPane(centerLabel);
         centerLabel.addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent e) {
-
+                if(!init){
+                    init = true;
+                    sx = e.getX();
+                    sy = e.getY();
+                }else{
+                    int moveX = (-e.getX() + sx) * 10;
+                    int moveY = (-e.getY() + sy) * 10;
+                    Rectangle rect = new Rectangle(sx - moveX, sy - moveY, 1, 1);
+                    System.out.println(sx + " " + sy);
+                    System.out.println((sx - moveX) + " " + (sy - moveY) + " " + moveX + " " + moveY);
+                    scrollPane.getViewport().scrollRectToVisible(rect);
+                }
             }
-
             @Override
             public void mouseMoved(MouseEvent e) {
                 int x = e.getX();
                 int y = e.getY();
                 processLabel.setText("Location:" + x + ":" + y);
             }
+        });
+        centerLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                init = false;
+            }
+
         });
         previewLabel = new JLabel();
         processLabel.setFont(funcFont);
@@ -81,7 +102,6 @@ public class FrameBase {
         initServ.initializeFileList();
 
         baseFrame.add(sideBar, BorderLayout.WEST);
-        JScrollPane scrollPane = new JScrollPane(centerLabel);
         baseFrame.add(scrollPane, BorderLayout.CENTER);
         baseFrame.add(headPanel(), BorderLayout.NORTH);
         baseFrame.add(bottomPanel(), BorderLayout.SOUTH);
@@ -274,17 +294,30 @@ public class FrameBase {
         operationPanel.setLayout(new BoxLayout(operationPanel, BoxLayout.Y_AXIS));
 
         JPanel base = new JPanel();
+        base.setLayout(new GridLayout(2, 2));
 
-        JButton reLoadBtn = new JButton("ReLoad");
+        JButton reLoadBtn = Param.functionButton("ReLoad");
         reLoadBtn.addActionListener(e -> {
             System.out.println(Param.pathNow);
             fileChooser(new File(Param.pathNow));
         });
         base.add(reLoadBtn);
 
-        JButton closeButton = new JButton("Close");
+        JButton closeButton = Param.functionButton("Close");
         closeButton.addActionListener(e -> updateCenterLabel(updateNode(new IMAGE(), CLEAR_NODE)));
         base.add(closeButton);
+
+        JButton cancelBtn = Param.functionButton("Cancel");
+        cancelBtn.addActionListener(ac -> {
+            updateCenterLabel(updateNode(null, Param.CANCEL_NODE));
+        });
+        base.add(cancelBtn);
+
+        JButton retryBtn = Param.functionButton("Retry");
+        retryBtn.addActionListener(ac -> {
+            updateCenterLabel(updateNode(null, Param.RETRY_NODE));
+        });
+        base.add(retryBtn);
 
 
         operationPanel.add(base);
@@ -379,17 +412,6 @@ public class FrameBase {
         southPanel.add(processLabel);
         southPanel.add(saveButton());
         southPanel.add(zoomPanel());
-        JButton cancelBtn = new JButton("Cancel");
-        cancelBtn.addActionListener(ac -> {
-            updateCenterLabel(updateNode(null, Param.CANCEL_NODE));
-        });
-        southPanel.add(cancelBtn);
-
-        JButton retryBtn = new JButton("Retry");
-        retryBtn.addActionListener(ac -> {
-            updateCenterLabel(updateNode(null, Param.RETRY_NODE));
-        });
-        southPanel.add(retryBtn);
 
         return southPanel;
     }
@@ -459,34 +481,36 @@ public class FrameBase {
 
     public JPanel grilleBox() {
         JPanel panel = new JPanel();
-        panel.setBackground(new Color(177, 123, 89));
-        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        panel.setBorder(new TitledBorder(new EtchedBorder(), "Grille"));
+        panel.setLayout(new GridLayout(2, 2, 1, 1));
 
-        JLabel messageLabel = new JLabel("Grille:");
-        panel.add(messageLabel);
-
-        String[] constellations = {
-                "Regular", "Medium", "Bold"
-        };
-        JComboBox comboBox = new JComboBox(constellations);
-        comboBox.addActionListener(action -> {
-            String select = (String) comboBox.getSelectedItem();
-            switch (select) {
-                case "Regular" -> {
-                    IMAGE grille = styleCtrl.transGrilleStyle(Param.image, styleCtrl.GRILLE_REGULAR, false);
-                    updateCenterLabel(updateNode(grille, Param.ADD_NODE));
-                }
-                case "Medium" -> {
-                    IMAGE grille = styleCtrl.transGrilleStyle(Param.image, styleCtrl.GRILLE_MEDIUM, false);
-                    updateCenterLabel(updateNode(grille, Param.ADD_NODE));
-                }
-                case "Bold" -> {
-                    IMAGE grille = styleCtrl.transGrilleStyle(Param.image, styleCtrl.GRILLE_BOLD, false);
-                    updateCenterLabel(updateNode(grille, Param.ADD_NODE));
-                }
-            }
+        JLabel textLabel = new JLabel("");
+        textLabel.setFont(applyBtnFont);
+        textLabel.setHorizontalAlignment(JLabel.CENTER);
+        JButton btn1 = Param.functionButton("Regular");
+        btn1.addActionListener(ac -> {
+            textLabel.setText("Regular");
+            IMAGE grille = styleCtrl.transGrilleStyle(Param.image, styleCtrl.GRILLE_REGULAR, false);
+            updateCenterLabel(updateNode(grille, Param.ADD_NODE));
         });
-        panel.add(comboBox);
+
+        JButton btn2 = Param.functionButton("Medium");
+        btn2.addActionListener(ac -> {
+            textLabel.setText("Medium");
+            IMAGE grille = styleCtrl.transGrilleStyle(Param.image, styleCtrl.GRILLE_MEDIUM, false);
+            updateCenterLabel(updateNode(grille, Param.ADD_NODE));
+        });
+
+        JButton btn3 = Param.functionButton("Bold");
+        btn3.addActionListener(ac -> {
+            textLabel.setText("Bold");
+            IMAGE grille = styleCtrl.transGrilleStyle(Param.image, styleCtrl.GRILLE_BOLD, false);
+            updateCenterLabel(updateNode(grille, Param.ADD_NODE));
+        });
+        panel.add(btn1);
+        panel.add(btn2);
+        panel.add(btn3);
+        panel.add(textLabel);
         return panel;
     }
 
@@ -548,34 +572,37 @@ public class FrameBase {
         sobel.addActionListener(ac -> {
             IMAGE edge = new IMAGE();
             try {
-                textLabel.setText("<html>SOBEL</html>");
+                textLabel.setText("SOBEL");
                 edge = edgeCtrl.getImgEdge(Param.image, EdgeController.SOBEL);
             } catch (Exception e) {
             }
             updateCenterLabel(updateNode(edge, Param.ADD_NODE));
         });
+        sobel.setToolTipText("泛用性强，对噪声的抗性强");
 
         JButton prewitt = Param.functionButton("PREWITT");
         prewitt.addActionListener(ac -> {
             IMAGE edge = new IMAGE();
             try {
-                textLabel.setText("<html>PREWITT</html>");
+                textLabel.setText("PREWITT");
                 edge = edgeCtrl.getImgEdge(Param.image, EdgeController.PREWITT);
             } catch (Exception e) {
             }
             updateCenterLabel(updateNode(edge, Param.ADD_NODE));
         });
+        prewitt.setToolTipText("边缘清晰，对噪声的抗性一般");
 
         JButton mar = Param.functionButton("MAR");
         mar.addActionListener(ac -> {
             IMAGE edge = new IMAGE();
             try {
-                textLabel.setText("<html>MAR</html>");
+                textLabel.setText("MAR");
                 edge = edgeCtrl.getImgEdge(Param.image, EdgeController.MARR);
             } catch (Exception e) {
             }
             updateCenterLabel(updateNode(edge, Param.ADD_NODE));
         });
+        mar.setToolTipText("仅适用于提取明暗对比明显的场景");
         panel.add(sobel);
         panel.add(prewitt);
         panel.add(mar);

@@ -19,6 +19,7 @@ public class EdgeController {
     }
 
     public IMAGE getImgEdge(IMAGE img, int edgeType) throws Exception {
+        long set = System.currentTimeMillis();
         IMAGE gas = blurCtrl.quickGasBlur(img);
         IMAGE result = new IMAGE();
         if(edgeType == SOBEL) {
@@ -30,6 +31,7 @@ public class EdgeController {
         } else {
             result = gas;
         }
+        System.out.println(System.currentTimeMillis() - set);
         return result;
     }
 }
