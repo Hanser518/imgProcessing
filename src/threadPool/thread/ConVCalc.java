@@ -1,8 +1,8 @@
-package service.threadPool.thread;
+package threadPool.thread;
 
 
 import entity.EventPool;
-import service.threadPool.core.ThreadCore;
+import threadPool.core.ThreadCore;
 
 public class ConVCalc extends ThreadCore {
 

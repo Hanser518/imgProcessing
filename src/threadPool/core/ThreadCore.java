@@ -1,4 +1,4 @@
-package service.threadPool.core;
+package threadPool.core;
 
 import entity.EventPool;
 

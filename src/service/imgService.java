@@ -46,4 +46,6 @@ public interface imgService {
     int[][] erosionImg(IMAGE px, int radius);
 
     int[][] traceImg(IMAGE px) throws Exception;
+
+    int[][] getThumbnail(IMAGE px, int step);
 }

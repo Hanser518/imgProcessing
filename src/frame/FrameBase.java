@@ -15,6 +15,8 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -58,7 +60,22 @@ public class FrameBase {
 
         baseFrame = initServ.initializeMainFrame();
         centerLabel = initServ.initializeCenterLabel();
+        centerLabel.addMouseMotionListener(new MouseMotionListener() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int x = e.getX();
+                int y = e.getY();
+                processLabel.setText("Location:" + x + ":" + y);
+            }
+        });
         previewLabel = new JLabel();
+        processLabel.setFont(funcFont);
+        processLabel.setForeground(Color.WHITE);
         updateSideBar(fileChoosePanel);
         fileChoosePanel.setBackground(new Color(255, 255, 255));
         initServ.initializeFileList();
@@ -69,6 +86,20 @@ public class FrameBase {
         baseFrame.add(headPanel(), BorderLayout.NORTH);
         baseFrame.add(bottomPanel(), BorderLayout.SOUTH);
         baseFrame.setVisible(true);
+
+        baseFrame.addMouseMotionListener(new MouseMotionListener() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                int x = e.getX();
+                int y = e.getY();
+                processLabel.setText("Location:" + x + ":" + y);
+            }
+        });
     }
 
     public static IMAGE updateNode(IMAGE newImage, int operation) {
@@ -89,6 +120,11 @@ public class FrameBase {
                 if (Param.node.next != null) {
                     Param.node = Param.node.next;
                 }
+            }
+            case CLEAR_NODE -> {
+                Param.node.next = null;
+                Param.node.prev = null;
+                node.image = new IMAGE();
             }
         }
         fileNameLabel.setText(Param.node.nodeName);
@@ -247,14 +283,15 @@ public class FrameBase {
         base.add(reLoadBtn);
 
         JButton closeButton = new JButton("Close");
-        closeButton.addActionListener(e -> updateCenterLabel(updateNode(new IMAGE(), Param.ADD_NODE)));
+        closeButton.addActionListener(e -> updateCenterLabel(updateNode(new IMAGE(), CLEAR_NODE)));
         base.add(closeButton);
 
 
         operationPanel.add(base);
         operationPanel.add(blurPanel());
-        operationPanel.add(edgeBox());
+        operationPanel.add(edgePanel());
         operationPanel.add(grilleBox());
+        operationPanel.add(grillePanel());
         operationPanel.add(styleBox());
         operationPanel.add(adjustPanel());
 
@@ -273,19 +310,19 @@ public class FrameBase {
     }
 
     public JPanel gasPanel() {
-        JLabel gasCount = new JLabel("BlurSize: " + Param.blurSize);
+        JLabel gasCount = new JLabel("BlurRadio: " + Param.blurRadio);
         gasCount.setFont(Param.countFont);
         JPanel gasBlurPanel = new JPanel();
         gasBlurPanel.setLayout(new GridLayout(2, 1));
         gasBlurPanel.setBorder(new TitledBorder(new EtchedBorder(), "GasBlur"));
-        JSlider gasSlider = new JSlider(1, 100, Param.blurSize);
+        JSlider gasSlider = new JSlider(1, 100, Param.blurRadio);
         gasSlider.addChangeListener(change -> {
-            Param.blurSize = gasSlider.getValue();
-            gasCount.setText("BlurSize: " + Param.blurSize);
+            Param.blurRadio = gasSlider.getValue();
+            gasCount.setText("BlurRadio: " + Param.blurRadio);
         });
         JButton gasBtn = Param.buildApplyButton();
         gasBtn.addActionListener(ac -> {
-            IMAGE gas = blurCtrl.getQuickGasBlur(Param.image, Param.blurSize, 32);
+            IMAGE gas = blurCtrl.getQuickGasBlur(Param.image, Param.blurRadio, 32);
             updateCenterLabel(updateNode(gas, Param.ADD_NODE));
         });
         gasSlider.setMajorTickSpacing(12);
@@ -304,19 +341,19 @@ public class FrameBase {
     }
 
     public JPanel strangePanel() {
-        JLabel strangeCount = new JLabel("BlurSize: " + Param.strangeBlurSize);
+        JLabel strangeCount = new JLabel("BlurRadio: " + Param.strangeBlurRadio);
         strangeCount.setFont(Param.countFont);
         JPanel strangeBlurPanel = new JPanel();
         strangeBlurPanel.setLayout(new GridLayout(2, 1));
         strangeBlurPanel.setBorder(new TitledBorder(new EtchedBorder(), "StrangeBlur"));
-        JSlider strangeSlider = new JSlider(1, 100, Param.strangeBlurSize);
+        JSlider strangeSlider = new JSlider(1, 100, Param.strangeBlurRadio);
         strangeSlider.addChangeListener(change -> {
-            Param.strangeBlurSize = strangeSlider.getValue();
-            strangeCount.setText("BlurSize: " + Param.strangeBlurSize);
+            Param.strangeBlurRadio = strangeSlider.getValue();
+            strangeCount.setText("BlurRadio: " + Param.strangeBlurRadio);
         });
         JButton stgBtn = Param.buildApplyButton();
         stgBtn.addActionListener(ac -> {
-            IMAGE strange = blurCtrl.getStrangeBlur(Param.image, Param.strangeBlurSize);
+            IMAGE strange = blurCtrl.getStrangeBlur(Param.image, Param.strangeBlurRadio);
             updateCenterLabel(updateNode(strange, Param.ADD_NODE));
         });
         strangeSlider.setMajorTickSpacing(12);
@@ -339,6 +376,7 @@ public class FrameBase {
         southPanel.setBackground(bkC1);
         southPanel.setLayout(new FlowLayout(FlowLayout.TRAILING));
 
+        southPanel.add(processLabel);
         southPanel.add(saveButton());
         southPanel.add(zoomPanel());
         JButton cancelBtn = new JButton("Cancel");
@@ -389,6 +427,7 @@ public class FrameBase {
             Param.zoom = value / 100.0;
             zoomX.setText(String.format("%2.2f", Param.zoom));
         });
+        slider.setOpaque(false);
         slider.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -451,48 +490,96 @@ public class FrameBase {
         return panel;
     }
 
-    public JPanel edgeBox() {
+    public JPanel grillePanel(){
         JPanel panel = new JPanel();
-        panel.setBackground(new Color(177, 123, 89));
-        panel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        panel.setBorder(new TitledBorder(new EtchedBorder(), "Grille"));
+        panel.setLayout(new GridLayout(2, 1, 1, 1));
 
-        JLabel messageLabel = new JLabel("Edge:");
-        panel.add(messageLabel);
+        JLabel textField = new JLabel(String.format("%.3f", grilleParam / 1000.0));
+        textField.setHorizontalAlignment(JLabel.CENTER);
+        textField.setFont(countFont);
+        JSlider slider = new JSlider(0, 1000, grilleParam);
+        slider.addChangeListener(c -> {
+            grilleParam = slider.getValue();
+            textField.setText(String.format("%.3f", grilleParam / 1000.0));
+        });
+        slider.setMajorTickSpacing(100);
+        slider.setMinorTickSpacing(10);
+        slider.setPaintTicks(true);
+        panel.add(slider);
 
-        String[] constellations = {
-                "Sobel", "Prewitt", "Mar"
-        };
-        JComboBox comboBox = new JComboBox(constellations);
-        comboBox.addActionListener(action -> {
-            String select = (String) comboBox.getSelectedItem();
-            switch (select) {
-                case "Sobel" -> {
-                    IMAGE edge = new IMAGE();
-                    try {
-                        edge = edgeCtrl.getImgEdge(Param.image, EdgeController.SOBEL);
-                    } catch (Exception e) {
-                    }
-                    updateCenterLabel(updateNode(edge, Param.ADD_NODE));
-                }
-                case "Prewitt" -> {
-                    IMAGE edge = new IMAGE();
-                    try {
-                        edge = edgeCtrl.getImgEdge(Param.image, EdgeController.PREWITT);
-                    } catch (Exception e) {
-                    }
-                    updateCenterLabel(updateNode(edge, Param.ADD_NODE));
-                }
-                case "Mar" -> {
-                    IMAGE edge = new IMAGE();
-                    try {
-                        edge = edgeCtrl.getImgEdge(Param.image, EdgeController.MARR);
-                    } catch (Exception e) {
-                    }
-                    updateCenterLabel(updateNode(edge, Param.ADD_NODE));
-                }
+        JPanel paramPanel = new JPanel();
+        paramPanel.setLayout(new GridLayout(1, 3));
+        JButton type = Param.functionButton("Vertical");
+        type.addActionListener(ac -> {
+            if(grilleType < 2) grilleType ++;
+            else grilleType = 0;
+            switch(grilleType) {
+                case 0 -> type.setText("Horizon");
+                case 1 -> type.setText("Vertical");
+                case 2 -> type.setText("Multiple");
+                default -> type.setText("Wrong");
             }
         });
-        panel.add(comboBox);
+
+        JButton apply = Param.buildApplyButton();
+        apply.addActionListener(ac -> {
+            IMAGE grille = styleCtrl.buildGrille(Param.image, grilleParam / 1000.0, grilleType);
+            updateCenterLabel(updateNode(grille, Param.ADD_NODE));
+        });
+
+        paramPanel.add(type);
+        paramPanel.add(textField);
+        paramPanel.add(apply);
+        panel.add(paramPanel);
+        return panel;
+    }
+
+    public JPanel edgePanel() {
+        JPanel panel = new JPanel();
+        // panel.setBackground(new Color(177, 123, 89));
+        panel.setBorder(new TitledBorder(new EtchedBorder(), "Edge"));
+        panel.setLayout(new GridLayout(2, 2, 1, 1));
+
+        JLabel textLabel = new JLabel("");
+        textLabel.setFont(applyBtnFont);
+        textLabel.setHorizontalAlignment(JLabel.CENTER);
+        JButton sobel = Param.functionButton("SOBEL");
+        sobel.addActionListener(ac -> {
+            IMAGE edge = new IMAGE();
+            try {
+                textLabel.setText("<html>SOBEL</html>");
+                edge = edgeCtrl.getImgEdge(Param.image, EdgeController.SOBEL);
+            } catch (Exception e) {
+            }
+            updateCenterLabel(updateNode(edge, Param.ADD_NODE));
+        });
+
+        JButton prewitt = Param.functionButton("PREWITT");
+        prewitt.addActionListener(ac -> {
+            IMAGE edge = new IMAGE();
+            try {
+                textLabel.setText("<html>PREWITT</html>");
+                edge = edgeCtrl.getImgEdge(Param.image, EdgeController.PREWITT);
+            } catch (Exception e) {
+            }
+            updateCenterLabel(updateNode(edge, Param.ADD_NODE));
+        });
+
+        JButton mar = Param.functionButton("MAR");
+        mar.addActionListener(ac -> {
+            IMAGE edge = new IMAGE();
+            try {
+                textLabel.setText("<html>MAR</html>");
+                edge = edgeCtrl.getImgEdge(Param.image, EdgeController.MARR);
+            } catch (Exception e) {
+            }
+            updateCenterLabel(updateNode(edge, Param.ADD_NODE));
+        });
+        panel.add(sobel);
+        panel.add(prewitt);
+        panel.add(mar);
+        panel.add(textLabel);
         return panel;
     }
 

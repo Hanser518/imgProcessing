@@ -1,18 +1,16 @@
 package controller;
 
-import algorithm.edgeTrace.entity.Node;
-import algorithm.edgeTrace.entity.Point;
-import algorithm.edgeTrace.main.EdgeTrace;
 import discard.ImgProcessingController;
 import entity.IMAGE;
+import frame.entity.Param;
 import service.imgService;
 import service.impl.imgServiceImpl;
-import service.threadPool.ThreadPoolPaper;
+import threadPool.ThreadPoolPaper;
 import service.ICalculateService;
 import service.impl.ICalculateServiceImpl;
-import service.threadPool.core.ThreadPoolCore;
-import service.threadPool.core.ThreadPoolReflectCore;
-import service.threadPool.thread.PaperBlur;
+import threadPool.core.ThreadPoolCore;
+import threadPool.core.ThreadPoolReflectCore;
+import threadPool.thread.PaperBlur;
 
 import java.util.List;
 
@@ -63,17 +61,39 @@ public class StylizeController {
         IMAGE ad = AdCtrl.adjustSatAndVal(img, 36, 24);
         System.out.println("adjust over");
         if (multiple) {
-            IMAGE gas = transPaperStyle(ad, 24, kernelSize); // kernelSize
+            IMAGE gas = BlurCtrl.getQuickGasBlur(ad, kernelSize, 16); // kernelSize
             List<IMAGE> imgList = imgCtrl.asyncSplit(gas, (int) (1 / radio), true);
             IMAGE ver = imgCtrl.combineImages(imgList, grilleType, true);
             imgList = imgCtrl.asyncSplit(ver, (int) (1 / (radio * 1.73)), false);
             IMAGE res = imgCtrl.combineImages(imgList, grilleType, false);
             return res;
         } else {
-            IMAGE gas = transPaperStyle(ad, 24, kernelSize); // kernelSize
+            IMAGE gas = BlurCtrl.getQuickGasBlur(ad, kernelSize, 16); // kernelSize
             List<IMAGE> imgList = imgCtrl.asyncSplit(gas, (int) (1 / radio), true);
             return imgCtrl.combineImages(imgList, grilleType, true);
         }
+    }
+
+    public IMAGE buildGrille(IMAGE img, double rate, int grilleType){
+        rate = Math.min(Math.max(rate, 0), 1);
+        IMAGE res = new IMAGE();
+        switch (grilleType){
+            case Param.GRILLE_MULTIPLE -> {
+                List<IMAGE> imgList = imgCtrl.asyncSplit(img, (int) (1 / rate), true);
+                IMAGE ver = imgCtrl.combineImages(imgList, grilleType, true);
+                imgList = imgCtrl.asyncSplit(ver, (int) (1 / (rate * 1.73)), false);
+                res = imgCtrl.combineImages(imgList, grilleType, false);
+            }
+            case Param.GRILLE_VERTICAL -> {
+                List<IMAGE> imgList = imgCtrl.asyncSplit(img, (int) (1 / (rate * 1.73)), true);
+                res = imgCtrl.combineImages(imgList, grilleType, true);
+            }
+            case Param.GRILLE_HORIZONTAL -> {
+                List<IMAGE> imgList = imgCtrl.asyncSplit(img, (int) (1 / rate), false);
+                res = imgCtrl.combineImages(imgList, grilleType, false);
+            }
+        }
+        return res;
     }
 
     public IMAGE transOilPaintingStyle(IMAGE img) throws Exception {

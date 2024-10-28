@@ -1,4 +1,4 @@
-package service.threadPool.core;
+package threadPool.core;
 
 import entity.EventPool;
 import service.ICalculateService;
@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import static service.threadPool.core.ThreadPoolReflectCore.getCombines;
+import static threadPool.core.ThreadPoolReflectCore.getCombines;
 
 public abstract class ThreadPoolCore {
     protected int[][] data;

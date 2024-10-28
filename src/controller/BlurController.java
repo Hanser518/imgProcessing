@@ -1,19 +1,20 @@
 package controller;
 
 import entity.IMAGE;
-import service.threadPool.ThreadPoolConV;
-import service.threadPool.core.ThreadPoolCore;
-import service.threadPool.ThreadPoolStrange;
-import service.threadPool.core.ThreadPoolReflectCore;
-import service.threadPool.thread.ConVCalc;
-import service.threadPool.thread.ConVCalc2;
-import service.threadPool.thread.ConVStrange;
+import threadPool.ThreadPoolConV;
+import threadPool.core.ThreadPoolCore;
+import threadPool.core.ThreadPoolReflectCore;
+import threadPool.thread.ConVCalc;
+import threadPool.thread.ConVCalc2;
+import threadPool.thread.ConVStrange;
 
 import static controller.StylizeController.calcService;
+import static controller.StylizeController.imgServ;
 
 public class BlurController {
     static ThreadPoolCore conV;
-    static ThreadPoolReflectCore refConv;
+    static ThreadPoolReflectCore conV2;
+    static ProcessingController prcCtrl = new ProcessingController();
 
     /**
      * 获取一个半径为1的高斯滤波图像
@@ -38,9 +39,9 @@ public class BlurController {
     public IMAGE getGasBlur(IMAGE img, int size, int maxThreadCount) {
         double[][] kernel = calcService.getGasKernel(size);
         try {
-            refConv = new ThreadPoolReflectCore(img.getPixelMatrix(), kernel, maxThreadCount, new ConVCalc());
-            refConv.start();
-            return new IMAGE(refConv.getData());
+            conV2 = new ThreadPoolReflectCore(img.getPixelMatrix(), kernel, maxThreadCount, new ConVCalc());
+            conV2.start();
+            return new IMAGE(conV2.getData());
         } catch (Exception e) {
             conV = new ThreadPoolConV(img.getPixelMatrix(), kernel, maxThreadCount);
             conV.start();
@@ -49,34 +50,40 @@ public class BlurController {
     }
 
     public IMAGE getQuickGasBlur(IMAGE img, int size, int maxThreadCount) {
-        size = (int) (size * 1.33);
+        long set = System.currentTimeMillis();
+        size = size * 0.9 > 1 ? (int)(size * 0.9) : 1;
         double[][] kernel = calcService.getGasKernel(size);
+        int step = (int) (1 + Math.sqrt(size));
+        System.out.println(step);
+        int[][] matrix = imgServ.getThumbnail(img, Math.min(step, 5));
         try {
-            if (size > 10) {
-                double[][] kernel1 = calcService.getGasKernel((int) (size * 0.7));
-                refConv = new ThreadPoolReflectCore(img.getPixelMatrix(), kernel1, maxThreadCount, new ConVCalc2());
-                refConv.start();
-                double[][] kernel2 = calcService.getGasKernel(size - (int) (size * 0.6));
-                refConv = new ThreadPoolReflectCore(refConv.getData(), kernel2, maxThreadCount, new ConVCalc2());
-                refConv.start();
+            if (size > 5) {
+                double[][] kernel1 = calcService.getGasKernel((int) (size * 0.66));
+                conV2 = new ThreadPoolReflectCore(matrix, kernel1, maxThreadCount, new ConVCalc2());
+                conV2.start();
+                double[][] kernel2 = calcService.getGasKernel(size - (int) (size * 0.66));
+                conV2 = new ThreadPoolReflectCore(conV2.getData(), kernel2, maxThreadCount, new ConVCalc2());
+                conV2.start();
             } else {
-                refConv = new ThreadPoolReflectCore(img.getPixelMatrix(), kernel, maxThreadCount, new ConVCalc2());
-                refConv.start();
+                conV2 = new ThreadPoolReflectCore(matrix, kernel, maxThreadCount, new ConVCalc2());
+                conV2.start();
             }
-            return new IMAGE(refConv.getData());
+            System.out.println(System.currentTimeMillis() - set);
+            return prcCtrl.resizeImage(new IMAGE(conV2.getData()), (double) img.getWidth() / conV2.getData().length, prcCtrl.RESIZE_ENTIRETY);
         } catch (Exception e) {
-            conV = new ThreadPoolConV(img.getPixelMatrix(), kernel, maxThreadCount);
+            conV = new ThreadPoolConV(matrix, kernel, maxThreadCount);
             conV.start();
         }
+        System.out.println(System.currentTimeMillis() - set);
         return new IMAGE(conV.getData());
     }
 
     public IMAGE getStrangeBlur(IMAGE img, int size) {
         double[][] kernel = calcService.getGasKernel(size);
         try {
-            refConv = new ThreadPoolReflectCore(img.getPixelMatrix(), kernel, 24, new ConVStrange());
-            refConv.start();
-            return new IMAGE(refConv.getData());
+            conV2 = new ThreadPoolReflectCore(img.getPixelMatrix(), kernel, 24, new ConVStrange());
+            conV2.start();
+            return new IMAGE(conV2.getData());
         } catch (Exception e) {
             conV = new ThreadPoolConV(img.getPixelMatrix(), kernel, 24);
             conV.start();

@@ -1,8 +1,8 @@
-package service.threadPool;
+package threadPool;
 
 
-import service.threadPool.thread.ConVCalc;
-import service.threadPool.core.ThreadPoolCore;
+import threadPool.thread.ConVCalc;
+import threadPool.core.ThreadPoolCore;
 
 import java.util.Stack;
 

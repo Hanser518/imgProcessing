@@ -1,7 +1,7 @@
 package discard;
 
 import service.ICalculateService;
-import service.threadPool.thread.ConVCalc;
+import threadPool.thread.ConVCalc;
 import entity.EventPool;
 import service.impl.ICalculateServiceImpl;
 
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import static service.threadPool.core.ThreadPoolReflectCore.getCombines;
+import static threadPool.core.ThreadPoolReflectCore.getCombines;
 
 public class ThreadPoolConVService {
     int[][] data;

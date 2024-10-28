@@ -5,10 +5,10 @@ import algorithm.edgeTrace.entity.Point;
 import algorithm.edgeTrace.main.EdgeTrace;
 import controller.EdgeController;
 import entity.IMAGE;
-import service.threadPool.thread.ConVCalc;
-import service.threadPool.core.ThreadPoolCore;
+import threadPool.thread.ConVCalc;
+import threadPool.core.ThreadPoolCore;
 import service.imgService;
-import service.threadPool.core.ThreadPoolReflectCore;
+import threadPool.core.ThreadPoolReflectCore;
 
 public class imgServiceImpl implements imgService {
     static private ThreadPoolCore conv;
@@ -185,6 +185,24 @@ public class imgServiceImpl implements imgService {
         return px.HSV2RGB(hsv);
     }
 
+    @Override
+    public int[][] getThumbnail(IMAGE px, int step) {
+        int[][] matrix = px.getPixelMatrix();
+        int width = px.getWidth();
+        int height = px.getHeight();
+        int resWidth = width / step;
+        int resHeight = height / step;
+        resWidth = resWidth > 0 ? resWidth : 1;
+        resHeight = resHeight > 0 ? resHeight : 1;
+        int[][] result = new int[resWidth][resHeight];
+        for(int i = 0;i < resWidth;i ++){
+            for(int j = 0;j < resHeight;j ++){
+                result[i][j] = matrix[i * step][j * step];
+            }
+        }
+        return result;
+    }
+
     private void trackAndDilate(Node node, int width, int height, double[][][] hsv){
         if (node.getNext() != null) {
             trackAndDilate(node.getNext(), width, height, hsv);
@@ -197,20 +215,6 @@ public class imgServiceImpl implements imgService {
                 int[] nextDir = EdgeTrace.getNextCoordinate(i, p.getPx(), p.getPy());
                 if(nextDir[0] > -1 && nextDir[0] < width && nextDir[1] > -1 && nextDir[1] < height){
                     hsv[nextDir[0]][nextDir[1]] = hsv[p.getPx()][p.getPy()];
-//                    double hn = hsv[nextDir[0]][nextDir[1]][0];
-//                    double sn = hsv[nextDir[0]][nextDir[1]][1];
-//                    double vn = hsv[nextDir[0]][nextDir[1]][2];
-//                    double hp = hsv[p.getPx()][p.getPy()][0];
-//                    double sp = hsv[p.getPx()][p.getPy()][1];
-//                    double vp = hsv[p.getPx()][p.getPy()][2];
-//                    hsv[nextDir[0]][nextDir[1]][0] = Math.max(hn, hp); // hn > hp ? hn * 0.9 + hp * 0.1 : hn * 0.1 + hp * 0.9;
-//                    hsv[nextDir[0]][nextDir[1]][1] = Math.max(sn, sp); // sn > sp ? sn * 0.9 + sp * 0.1 : sn * 0.1 + sp * 0.9;
-//                    hsv[nextDir[0]][nextDir[1]][2] = Math.max(vn, vp); // vn > vp ? vn * 0.9 + vp * 0.1 : vn * 0.1 + vp * 0.9;
-//                    if(sn > sp){
-//                        hsv[nextDir[0]][nextDir[1]] = new double[]{hn, sn, vn};
-//                    }else{
-//                        hsv[nextDir[0]][nextDir[1]] = new double[]{hp, sp, vp};
-//                    }
                 }
             }
         }

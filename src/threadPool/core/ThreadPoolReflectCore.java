@@ -1,4 +1,4 @@
-package service.threadPool.core;
+package threadPool.core;
 
 import entity.EventPool;
 import service.ICalculateService;
@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+/**
+ * 最好不要动，因为我也看不懂了
+ */
 public class ThreadPoolReflectCore {
     protected int[][] data;     // 待处理数据
     protected double[][] kernel;// 卷积核
@@ -34,7 +37,7 @@ public class ThreadPoolReflectCore {
         this.width = requestData.length;
         this.height = requestData[0].length;
         this.kernel = ConVKernel;
-        this.threadCountLimit = MaxThreadCount < 0 ? 999 : 8;
+        this.threadCountLimit = MaxThreadCount < 0 ? 999 : Math.min(MaxThreadCount, 8);
         this.threadCount = Math.min((int) Math.sqrt(kernel.length) + 3, threadCountLimit);
         classOfThread = threadItem.getClass();
         initEvent();
@@ -70,6 +73,9 @@ public class ThreadPoolReflectCore {
         int totalArea = width * height;
         int totalBlock = totalArea / 6400000 * (int) Math.sqrt(kernel.length) + 1;
         blockSize = Math.min(width, height) / totalBlock + 1;
+        while((width / blockSize) * (height / blockSize) < threadCountLimit){
+            blockSize -= 10;
+        }
         // 对矩阵数据进行任务分配及切分，每最大blockSize*blockSize为一个事件组，同时生成对应点位的标识符
         int wCount = width % blockSize == 0 ? width / blockSize : width / blockSize + 1;
         int hCount = height % blockSize == 0 ? height / blockSize : height / blockSize + 1;

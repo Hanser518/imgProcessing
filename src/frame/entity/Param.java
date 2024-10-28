@@ -3,6 +3,7 @@ package frame.entity;
 import entity.IMAGE;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
@@ -26,8 +27,8 @@ public class Param {
     public static int frameWidth;
     public static int frameHeight;
 
-    public static int blurSize = 1;
-    public static int strangeBlurSize = 1;
+    public static int blurRadio = 1;
+    public static int strangeBlurRadio = 1;
     public static int saturation = 0;
     public static int value = 0;
 
@@ -48,14 +49,25 @@ public class Param {
     /**
      * 节点操作参数
      */
-    public static final int ADD_NODE = 1;
     public static final int CANCEL_NODE = 0;
+    public static final int ADD_NODE = 1;
     public static final int RETRY_NODE = 2;
+    public static final int CLEAR_NODE = 3;
+
+    /**
+     * 光栅操作参数
+     */
+    public static final int GRILLE_HORIZONTAL = 0;
+    public static final int GRILLE_VERTICAL = 1;
+    public static final int GRILLE_MULTIPLE = 2;
+    public static int grilleParam = 1;
+    public static int grilleType = 1;
 
     /**
      * 封装后的字体
      */
     public static final Font countFont = new Font("Microsoft YaHei", Font.PLAIN, 16);
+    public static final Font funcFont = new Font("Microsoft YaHei", Font.BOLD, 15);
     public static final Font applyBtnFont = new Font("MV Boli", Font.BOLD, 16);
     public static final Font fileBtnFont = new Font("Inter Semi Bold", Font.BOLD, 14);
     public static final Font titalFont = new Font("OPPO Sans Medium", Font.PLAIN, 15);
@@ -69,6 +81,14 @@ public class Param {
         apply.setContentAreaFilled(false);
         apply.setBorderPainted(false);
         return apply;
+    }
+
+    public static JButton functionButton(String name){
+        JButton btn = new JButton(name);
+        btn.setFont(Param.funcFont);
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        return btn;
     }
 
     public static JButton buildBackButton(){

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import static service.threadPool.core.ThreadPoolReflectCore.getCombines;
+import static threadPool.core.ThreadPoolReflectCore.getCombines;
 
 public class ThreadPoolPaperService {
     int[][] data;

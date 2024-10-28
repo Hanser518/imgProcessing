@@ -2,11 +2,11 @@ package test;
 
 import controller.ImgController;
 import entity.IMAGE;
-import service.threadPool.thread.ConVCalc;
-import service.threadPool.thread.ConVStrange;
-import service.threadPool.thread.ConfActive;
-import service.threadPool.thread.PaperBlur;
-import service.threadPool.core.ThreadPoolReflectCore;
+import threadPool.thread.ConVCalc;
+import threadPool.thread.ConVStrange;
+import threadPool.thread.ConfActive;
+import threadPool.thread.PaperBlur;
+import threadPool.core.ThreadPoolReflectCore;
 
 import static controller.StylizeController.calcService;
 
