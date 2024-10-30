@@ -44,7 +44,7 @@ public class StylizeController {
 
     public IMAGE transGrilleStyle(IMAGE img, int grilleType, boolean multiple) {
         double radio = 1;
-        int kernelSize = 117;
+        int kernelSize = 67;
         switch (grilleType) {
             case 0 -> {
                 radio = 0.01024;
@@ -53,7 +53,7 @@ public class StylizeController {
             }
             case 1 -> {
                 radio = 0.0425;
-                kernelSize = 153;
+                kernelSize = 81;
             }
             case 2 -> radio = 0.04125;
             default -> radio = 0.5;

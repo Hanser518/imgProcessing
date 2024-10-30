@@ -4,6 +4,7 @@ import controller.BlurController;
 import controller.ImgController;
 import discard.ImgProcessingController;
 import entity.IMAGE;
+import frame.entity.Param;
 import service.ICalculateService;
 import service.impl.ICalculateServiceImpl;
 
@@ -26,8 +27,8 @@ public class imgGasTest {
         int gasSize = 100;
 
         long set1 = System.currentTimeMillis();
-        // IMAGE gas1 = blurCtrl.getGasBlur(px, gasSize, 32);
-        // imgCtrl2.showImg(gas1, "gas");
+        gas = blurCtrl.getFixQuickGasBlur(px, gasSize);
+        imgCtrl2.showImg(gas, "fix");
         long set2 = System.currentTimeMillis();
 
         IMAGE gas2 = blurCtrl.getQuickGasBlur(px, gasSize, 32);

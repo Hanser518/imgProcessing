@@ -6,6 +6,7 @@ import threadPool.core.ThreadPoolCore;
 
 import java.util.Stack;
 
+@Deprecated
 public class ThreadPoolConV extends ThreadPoolCore {
     Stack<ConVCalc> leisureThreads = new Stack<>();
 

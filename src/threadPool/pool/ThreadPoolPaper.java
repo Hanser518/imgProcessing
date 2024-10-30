@@ -6,6 +6,7 @@ import threadPool.core.ThreadPoolCore;
 
 import java.util.Stack;
 
+@Deprecated
 public class ThreadPoolPaper extends ThreadPoolCore {
     Stack<PaperBlur> leisureThreads = new Stack<>();
 

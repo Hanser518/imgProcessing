@@ -6,6 +6,7 @@ import threadPool.thread.ConVStrange;
 
 import java.util.Stack;
 
+@Deprecated
 public class ThreadPoolStrange extends ThreadPoolCore {
     Stack<ConVStrange> leisureThreads = new Stack<>();
 

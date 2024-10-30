@@ -28,6 +28,7 @@ public class Param {
     public static int frameHeight;
 
     public static int blurRadio = 1;
+    public static boolean BLUR_QUICK = true;
     public static int strangeBlurRadio = 1;
     public static int saturation = 0;
     public static int value = 0;
@@ -69,7 +70,7 @@ public class Param {
     public static final Font countFont = new Font("Microsoft YaHei", Font.PLAIN, 16);
     public static final Font funcFont = new Font("Microsoft YaHei", Font.BOLD, 15);
     public static final Font applyBtnFont = new Font("MV Boli", Font.BOLD, 16);
-    public static final Font fileBtnFont = new Font("Inter Semi Bold", Font.BOLD, 14);
+    public static final Font fileBtnFont = new Font("Microsoft YaHei UI", Font.BOLD, 14);
     public static final Font titalFont = new Font("OPPO Sans Medium", Font.PLAIN, 15);
 
     public static final Color bkC1 = new Color(73, 82, 103);

@@ -1,5 +1,6 @@
 package frame;
 
+import algorithm.wpfo.main.WPFO;
 import controller.*;
 import entity.IMAGE;
 import frame.entity.ImageNode;
@@ -34,7 +35,7 @@ public class FrameBase {
     private static final JLabel fileNameLabel = new JLabel();
     private static JLabel centerLabel;
     private static JLabel previewLabel;
-    private static JPanel fileChoosePanel = new JPanel();
+    private static final JPanel fileChoosePanel = new JPanel();
     private static JScrollPane sideBar = new JScrollPane();
 
     private static final IFileService fileService = new IFileServiceImpl();
@@ -72,8 +73,8 @@ public class FrameBase {
                     sx = e.getX();
                     sy = e.getY();
                 }else{
-                    int moveX = (-e.getX() + sx) * 10;
-                    int moveY = (-e.getY() + sy) * 10;
+                    int moveX = -(-e.getX() + sx);
+                    int moveY = -(-e.getY() + sy);
                     Rectangle rect = new Rectangle(sx - moveX, sy - moveY, 1, 1);
                     System.out.println(sx + " " + sy);
                     System.out.println((sx - moveX) + " " + (sy - moveY) + " " + moveX + " " + moveY);
@@ -84,7 +85,7 @@ public class FrameBase {
             public void mouseMoved(MouseEvent e) {
                 int x = e.getX();
                 int y = e.getY();
-                processLabel.setText("Location:" + x + ":" + y);
+                processLabel.setText("Location:" + image.getWidth() + ":" + image.getHeight());
             }
         });
         centerLabel.addMouseListener(new MouseAdapter() {
@@ -124,38 +125,38 @@ public class FrameBase {
 
     public static IMAGE updateNode(IMAGE newImage, int operation) {
         switch (operation) {
-            case Param.ADD_NODE -> {
+            case ADD_NODE -> {
                 ImageNode next = new ImageNode(newImage);
-                Param.node.next = next;
-                next.prev = Param.node;
-                Param.node = next;
-                Param.node.nodeName = new File(Param.pathNow).getName();
+                node.next = next;
+                next.prev = node;
+                node = next;
+                node.nodeName = new File(pathNow).getName();
             }
-            case Param.CANCEL_NODE -> {
-                if (Param.node.prev != null) {
-                    Param.node = Param.node.prev;
+            case CANCEL_NODE -> {
+                if (node.prev != null) {
+                    node = node.prev;
                 }
             }
-            case Param.RETRY_NODE -> {
-                if (Param.node.next != null) {
-                    Param.node = Param.node.next;
+            case RETRY_NODE -> {
+                if (node.next != null) {
+                    node = node.next;
                 }
             }
             case CLEAR_NODE -> {
-                Param.node.next = null;
-                Param.node.prev = null;
+                node.next = null;
+                node.prev = null;
                 node.image = new IMAGE();
             }
         }
-        fileNameLabel.setText(Param.node.nodeName);
-        return Param.node.image;
+        fileNameLabel.setText(node.nodeName);
+        return node.image;
     }
 
     public static void updateCenterLabel(boolean finish) {
         centerLabel.setIcon(null);
         // 获取图像宽高，计算比例
         centerLabel.setText(finish ? "ok" : "wait");
-        centerLabel.setFont(Param.titalFont);
+        centerLabel.setFont(titalFont);
         baseFrame.revalidate(); // 重新验证布局
         baseFrame.repaint(); // 重新绘制组件
     }
@@ -165,9 +166,10 @@ public class FrameBase {
         // 获取图像宽高，计算比例
         int imgWidth = newImage.getWidth();
         int imgHeight = newImage.getHeight();
-        double imgRate = Math.min((double) Param.frameWidth / imgWidth, (double) Param.frameHeight / imgHeight) * Param.zoom;
-        Param.image = newImage;
+        double imgRate = Math.min((double) frameWidth / imgWidth, (double) frameHeight / imgHeight) * zoom;
+        image = newImage;
         centerLabel.setIcon(new ImageIcon(pcsCtrl.resizeImage(newImage, imgRate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
+        centerLabel.setBackground(Color.darkGray);
         baseFrame.revalidate(); // 重新验证布局
         baseFrame.repaint(); // 重新绘制组件
     }
@@ -195,14 +197,14 @@ public class FrameBase {
     }
 
     public static void updateFileList() {
-        Param.fileList.clear();
+        fileList.clear();
         String filePath = "";
-        if (Param.path.isEmpty()) {
-            filePath = Param.path_head;
+        if (path.isEmpty()) {
+            filePath = path_head;
         } else {
-            filePath = Param.path.get(Param.path.size() - 1);
+            filePath = path.get(path.size() - 1);
         }
-        Param.fileList = fileService.getFileList(filePath);
+        fileList = fileService.getFileList(filePath);
         updateSidePanel();
     }
 
@@ -211,15 +213,15 @@ public class FrameBase {
         fileChoosePanel.setLayout(new BoxLayout(fileChoosePanel, BoxLayout.Y_AXIS));
         JButton backBtn = buildBackButton();
         backBtn.addActionListener(action -> {
-            if (!Param.path.isEmpty()) {
-                Param.path.remove(Param.path.size() - 1);
+            if (!path.isEmpty()) {
+                path.remove(path.size() - 1);
             } else {
-                Param.path_head = Param.path_head.length() <= 2 ? '.' + Param.path_head : Param.path_head;
+                path_head = path_head.length() <= 2 ? '.' + path_head : path_head;
             }
             updateFileList();
         });
         fileChoosePanel.add(backBtn);
-        for (File file : Param.fileList) {
+        for (File file : fileList) {
             JButton fileBtn = fileButton(file);
             fileChoosePanel.add(fileBtn);
         }
@@ -237,11 +239,11 @@ public class FrameBase {
 
     public static void fileChooser(File file) {
         String suffix = fileService.getFileType(file);
-        Param.pathNow = file.getAbsolutePath();
+        pathNow = file.getAbsolutePath();
         switch (suffix) {
             case "JPG", "PNG" -> {
                 try {
-                    updateCenterLabel(updateNode(new IMAGE(file.getAbsolutePath(), 0), Param.ADD_NODE));
+                    updateCenterLabel(updateNode(new IMAGE(file.getAbsolutePath(), 0), ADD_NODE));
                 } catch (IOException ignored) {
                 }
             }
@@ -276,7 +278,7 @@ public class FrameBase {
         fileNameLabel.setFont(titalFont);
         fileNameLabel.setForeground(Color.white);
 
-        headPanel.add(Param.processLabel);
+        headPanel.add(processLabel);
         headPanel.add(fileNameLabel);
 
         JButton exitButton = new JButton("Exit");
@@ -296,26 +298,26 @@ public class FrameBase {
         JPanel base = new JPanel();
         base.setLayout(new GridLayout(2, 2));
 
-        JButton reLoadBtn = Param.functionButton("ReLoad");
+        JButton reLoadBtn = functionButton("ReLoad");
         reLoadBtn.addActionListener(e -> {
-            System.out.println(Param.pathNow);
-            fileChooser(new File(Param.pathNow));
+            System.out.println(pathNow);
+            fileChooser(new File(pathNow));
         });
         base.add(reLoadBtn);
 
-        JButton closeButton = Param.functionButton("Close");
+        JButton closeButton = functionButton("Close");
         closeButton.addActionListener(e -> updateCenterLabel(updateNode(new IMAGE(), CLEAR_NODE)));
         base.add(closeButton);
 
-        JButton cancelBtn = Param.functionButton("Cancel");
+        JButton cancelBtn = functionButton("Cancel");
         cancelBtn.addActionListener(ac -> {
-            updateCenterLabel(updateNode(null, Param.CANCEL_NODE));
+            updateCenterLabel(updateNode(null, CANCEL_NODE));
         });
         base.add(cancelBtn);
 
-        JButton retryBtn = Param.functionButton("Retry");
+        JButton retryBtn = functionButton("Retry");
         retryBtn.addActionListener(ac -> {
-            updateCenterLabel(updateNode(null, Param.RETRY_NODE));
+            updateCenterLabel(updateNode(null, RETRY_NODE));
         });
         base.add(retryBtn);
 
@@ -343,20 +345,25 @@ public class FrameBase {
     }
 
     public JPanel gasPanel() {
-        JLabel gasCount = new JLabel("BlurRadio: " + Param.blurRadio);
-        gasCount.setFont(Param.countFont);
+        JLabel gasCount = new JLabel("BlurRadio: " + blurRadio);
+        gasCount.setFont(countFont);
         JPanel gasBlurPanel = new JPanel();
         gasBlurPanel.setLayout(new GridLayout(2, 1));
         gasBlurPanel.setBorder(new TitledBorder(new EtchedBorder(), "GasBlur"));
-        JSlider gasSlider = new JSlider(1, 100, Param.blurRadio);
+        JSlider gasSlider = new JSlider(1, 100, blurRadio);
         gasSlider.addChangeListener(change -> {
-            Param.blurRadio = gasSlider.getValue();
-            gasCount.setText("BlurRadio: " + Param.blurRadio);
+            blurRadio = gasSlider.getValue();
+            gasCount.setText("BlurRadio: " + blurRadio);
         });
-        JButton gasBtn = Param.buildApplyButton();
+        JButton gasBtn = buildApplyButton();
         gasBtn.addActionListener(ac -> {
-            IMAGE gas = blurCtrl.getQuickGasBlur(Param.image, Param.blurRadio, 32);
-            updateCenterLabel(updateNode(gas, Param.ADD_NODE));
+            IMAGE gas;
+            if(BLUR_QUICK) {
+                gas = blurCtrl.getQuickGasBlur(Param.image, Param.blurRadio, 32);
+            }else{
+                gas = blurCtrl.getGasBlur(Param.image, Param.blurRadio, 32);
+            }
+            updateCenterLabel(updateNode(gas, ADD_NODE));
         });
         gasSlider.setMajorTickSpacing(12);
         gasSlider.setMinorTickSpacing(6);
@@ -365,8 +372,19 @@ public class FrameBase {
         gasBlurPanel.add(gasSlider);
 
         JPanel gasPanel = new JPanel();
-        gasPanel.setLayout(new GridLayout(1, 2));
+        gasPanel.setLayout(new GridLayout(2, 2));
         gasPanel.add(gasCount);
+
+        JPanel modelPanel = new JPanel();
+        modelPanel.setBorder(new TitledBorder(new EtchedBorder(), "GasModel"));
+        modelPanel.setLayout(new GridLayout(1, 2));
+        JButton model = Param.functionButton("Quick");
+        model.addActionListener(ac -> {
+           BLUR_QUICK = !BLUR_QUICK;
+           model.setText(BLUR_QUICK ? "Quick" : "Normal");
+        });
+        gasPanel.add(new JLabel());
+        gasPanel.add(model);
         gasPanel.add(gasBtn);
         gasBlurPanel.add(gasPanel);
 
@@ -374,20 +392,20 @@ public class FrameBase {
     }
 
     public JPanel strangePanel() {
-        JLabel strangeCount = new JLabel("BlurRadio: " + Param.strangeBlurRadio);
-        strangeCount.setFont(Param.countFont);
+        JLabel strangeCount = new JLabel("BlurRadio: " + strangeBlurRadio);
+        strangeCount.setFont(countFont);
         JPanel strangeBlurPanel = new JPanel();
         strangeBlurPanel.setLayout(new GridLayout(2, 1));
         strangeBlurPanel.setBorder(new TitledBorder(new EtchedBorder(), "StrangeBlur"));
-        JSlider strangeSlider = new JSlider(1, 100, Param.strangeBlurRadio);
+        JSlider strangeSlider = new JSlider(1, 100, strangeBlurRadio);
         strangeSlider.addChangeListener(change -> {
-            Param.strangeBlurRadio = strangeSlider.getValue();
-            strangeCount.setText("BlurRadio: " + Param.strangeBlurRadio);
+            strangeBlurRadio = strangeSlider.getValue();
+            strangeCount.setText("BlurRadio: " + strangeBlurRadio);
         });
-        JButton stgBtn = Param.buildApplyButton();
+        JButton stgBtn = buildApplyButton();
         stgBtn.addActionListener(ac -> {
-            IMAGE strange = blurCtrl.getStrangeBlur(Param.image, Param.strangeBlurRadio);
-            updateCenterLabel(updateNode(strange, Param.ADD_NODE));
+            IMAGE strange = blurCtrl.getStrangeBlur(image, strangeBlurRadio);
+            updateCenterLabel(updateNode(strange, ADD_NODE));
         });
         strangeSlider.setMajorTickSpacing(12);
         strangeSlider.setMinorTickSpacing(6);
@@ -421,11 +439,11 @@ public class FrameBase {
         save.addActionListener(ac -> {
             LocalDateTime date = LocalDateTime.now();
             String time = date.format(DateTimeFormatter.ofPattern("yyyyMMdd_hhmmss")) + "_" + (int) (Math.random() * 1000);
-            File file = new File(Param.pathNow);
+            File file = new File(pathNow);
             String name = file.getName();
             name = name.substring(0, name.lastIndexOf("."));
             try {
-                imgCtrl2.saveByName2(Param.image, "Visible", name + time);
+                imgCtrl2.saveByName2(image, "Visible", name + time);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -441,35 +459,35 @@ public class FrameBase {
         JButton down = new JButton("-");
         JLabel zoomX = new JLabel();
 
-        zoomX.setText(String.format("%2.2f", Param.zoom));
+        zoomX.setText(String.format("%2.2f", zoom));
         zoomX.setForeground(Color.white);
-        JSlider slider = new JSlider(50, 250, (int) (Param.zoom * 100));
+        JSlider slider = new JSlider(50, 500, (int) (zoom * 100));
         slider.addChangeListener(change -> {
             int value = slider.getValue();
-            Param.zoom = value / 100.0;
-            zoomX.setText(String.format("%2.2f", Param.zoom));
+            zoom = value / 100.0;
+            zoomX.setText(String.format("%2.2f", zoom));
         });
         slider.setOpaque(false);
         slider.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                updateCenterLabel(Param.image);
+                updateCenterLabel(image);
             }
         });
         slider.setMajorTickSpacing(25);
         slider.setMinorTickSpacing(5);
         slider.setPaintTicks(true);
         plus.addActionListener(ac -> {
-            Param.zoom += 0.1;
-            zoomX.setText(String.format("%2.2f", Param.zoom));
+            zoom += 0.1;
+            zoomX.setText(String.format("%2.2f", zoom));
             slider.setValue((int) (zoom * 100));
-            updateCenterLabel(Param.image);
+            updateCenterLabel(image);
         });
         down.addActionListener(ac -> {
-            Param.zoom -= 0.1;
-            zoomX.setText(String.format("%2.2f", Param.zoom));
+            zoom -= 0.1;
+            zoomX.setText(String.format("%2.2f", zoom));
             slider.setValue((int) (zoom * 100));
-            updateCenterLabel(Param.image);
+            updateCenterLabel(image);
         });
 
         panel.add(slider);
@@ -487,25 +505,25 @@ public class FrameBase {
         JLabel textLabel = new JLabel("");
         textLabel.setFont(applyBtnFont);
         textLabel.setHorizontalAlignment(JLabel.CENTER);
-        JButton btn1 = Param.functionButton("Regular");
+        JButton btn1 = functionButton("Regular");
         btn1.addActionListener(ac -> {
             textLabel.setText("Regular");
-            IMAGE grille = styleCtrl.transGrilleStyle(Param.image, styleCtrl.GRILLE_REGULAR, false);
-            updateCenterLabel(updateNode(grille, Param.ADD_NODE));
+            IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_REGULAR, false);
+            updateCenterLabel(updateNode(grille, ADD_NODE));
         });
 
-        JButton btn2 = Param.functionButton("Medium");
+        JButton btn2 = functionButton("Medium");
         btn2.addActionListener(ac -> {
             textLabel.setText("Medium");
-            IMAGE grille = styleCtrl.transGrilleStyle(Param.image, styleCtrl.GRILLE_MEDIUM, false);
-            updateCenterLabel(updateNode(grille, Param.ADD_NODE));
+            IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_MEDIUM, false);
+            updateCenterLabel(updateNode(grille, ADD_NODE));
         });
 
-        JButton btn3 = Param.functionButton("Bold");
+        JButton btn3 = functionButton("Bold");
         btn3.addActionListener(ac -> {
             textLabel.setText("Bold");
-            IMAGE grille = styleCtrl.transGrilleStyle(Param.image, styleCtrl.GRILLE_BOLD, false);
-            updateCenterLabel(updateNode(grille, Param.ADD_NODE));
+            IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_BOLD, false);
+            updateCenterLabel(updateNode(grille, ADD_NODE));
         });
         panel.add(btn1);
         panel.add(btn2);
@@ -534,7 +552,7 @@ public class FrameBase {
 
         JPanel paramPanel = new JPanel();
         paramPanel.setLayout(new GridLayout(1, 3));
-        JButton type = Param.functionButton("Vertical");
+        JButton type = functionButton("Vertical");
         type.addActionListener(ac -> {
             if(grilleType < 2) grilleType ++;
             else grilleType = 0;
@@ -546,10 +564,10 @@ public class FrameBase {
             }
         });
 
-        JButton apply = Param.buildApplyButton();
+        JButton apply = buildApplyButton();
         apply.addActionListener(ac -> {
-            IMAGE grille = styleCtrl.buildGrille(Param.image, grilleParam / 1000.0, grilleType);
-            updateCenterLabel(updateNode(grille, Param.ADD_NODE));
+            IMAGE grille = styleCtrl.buildGrille(image, grilleParam / 1000.0, grilleType);
+            updateCenterLabel(updateNode(grille, ADD_NODE));
         });
 
         paramPanel.add(type);
@@ -568,39 +586,39 @@ public class FrameBase {
         JLabel textLabel = new JLabel("");
         textLabel.setFont(applyBtnFont);
         textLabel.setHorizontalAlignment(JLabel.CENTER);
-        JButton sobel = Param.functionButton("SOBEL");
+        JButton sobel = functionButton("SOBEL");
         sobel.addActionListener(ac -> {
             IMAGE edge = new IMAGE();
             try {
                 textLabel.setText("SOBEL");
-                edge = edgeCtrl.getImgEdge(Param.image, EdgeController.SOBEL);
+                edge = edgeCtrl.getImgEdge(image, EdgeController.SOBEL);
             } catch (Exception e) {
             }
-            updateCenterLabel(updateNode(edge, Param.ADD_NODE));
+            updateCenterLabel(updateNode(edge, ADD_NODE));
         });
         sobel.setToolTipText("泛用性强，对噪声的抗性强");
 
-        JButton prewitt = Param.functionButton("PREWITT");
+        JButton prewitt = functionButton("PREWITT");
         prewitt.addActionListener(ac -> {
             IMAGE edge = new IMAGE();
             try {
                 textLabel.setText("PREWITT");
-                edge = edgeCtrl.getImgEdge(Param.image, EdgeController.PREWITT);
+                edge = edgeCtrl.getImgEdge(image, EdgeController.PREWITT);
             } catch (Exception e) {
             }
-            updateCenterLabel(updateNode(edge, Param.ADD_NODE));
+            updateCenterLabel(updateNode(edge, ADD_NODE));
         });
         prewitt.setToolTipText("边缘清晰，对噪声的抗性一般");
 
-        JButton mar = Param.functionButton("MAR");
+        JButton mar = functionButton("MAR");
         mar.addActionListener(ac -> {
             IMAGE edge = new IMAGE();
             try {
                 textLabel.setText("MAR");
-                edge = edgeCtrl.getImgEdge(Param.image, EdgeController.MARR);
+                edge = edgeCtrl.getImgEdge(image, EdgeController.MARR);
             } catch (Exception e) {
             }
-            updateCenterLabel(updateNode(edge, Param.ADD_NODE));
+            updateCenterLabel(updateNode(edge, ADD_NODE));
         });
         mar.setToolTipText("仅适用于提取明暗对比明显的场景");
         panel.add(sobel);
@@ -626,17 +644,17 @@ public class FrameBase {
             String select = (String) comboBox.getSelectedItem();
             switch (select) {
                 case "Paper" -> {
-                    IMAGE reStyle = styleCtrl.transPaperStyle(Param.image, 24, 118);
-                    updateCenterLabel(updateNode(reStyle, Param.ADD_NODE));
+                    IMAGE reStyle = styleCtrl.transPaperStyle(image, 24, 118);
+                    updateCenterLabel(updateNode(reStyle, ADD_NODE));
                 }
                 case "Oil" -> {
                     IMAGE reStyle = new IMAGE();
                     try {
-                        reStyle = styleCtrl.transOilPaintingStyle(Param.image);
+                        reStyle = styleCtrl.transOilPaintingStyle(image);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
-                    updateCenterLabel(updateNode(reStyle, Param.ADD_NODE));
+                    updateCenterLabel(updateNode(reStyle, ADD_NODE));
                 }
             }
         });
@@ -657,14 +675,14 @@ public class FrameBase {
         btnPanel.setBackground(subBackColor);
         JButton cdrBtn = new JButton("CDR");
         cdrBtn.addActionListener(e -> {
-            IMAGE cdr = adCtrl.CDR(Param.image);
-            updateCenterLabel(updateNode(cdr, Param.ADD_NODE));
+            IMAGE cdr = adCtrl.CDR(image);
+            updateCenterLabel(updateNode(cdr, ADD_NODE));
         });
 
-        JButton apply = Param.buildApplyButton();
+        JButton apply = buildApplyButton();
         apply.addActionListener(ac -> {
-            IMAGE asv = adCtrl.adjustSatAndVal(Param.image, Param.saturation, Param.value);
-            updateCenterLabel(updateNode(asv, Param.ADD_NODE));
+            IMAGE asv = adCtrl.adjustSatAndVal(image, saturation, value);
+            updateCenterLabel(updateNode(asv, ADD_NODE));
         });
 
         btnPanel.add(cdrBtn);
@@ -672,17 +690,17 @@ public class FrameBase {
         panel.add(btnPanel);
 
         JLabel saturationLabel = new JLabel();
-        saturationLabel.setText(String.format("%3d", Param.saturation));
+        saturationLabel.setText(String.format("%3d", saturation));
         saturationLabel.setForeground(fontColor);
-        JSlider saturationSlider = new JSlider(-99, 99, Param.saturation);
+        JSlider saturationSlider = new JSlider(-99, 99, saturation);
         saturationSlider.setBackground(subBackColor);
         saturationSlider.setMajorTickSpacing(20);
         saturationSlider.setMinorTickSpacing(5);
         saturationSlider.setPaintLabels(true);
         saturationSlider.setPaintTicks(true);
         saturationSlider.addChangeListener(c -> {
-            Param.saturation = saturationSlider.getValue();
-            saturationLabel.setText(String.format("%3d", Param.saturation));
+            saturation = saturationSlider.getValue();
+            saturationLabel.setText(String.format("%3d", saturation));
         });
         JPanel sPanel = new JPanel();
         sPanel.setBackground(subBackColor);
@@ -693,17 +711,17 @@ public class FrameBase {
         panel.add(sPanel);
 
         JLabel valueLabel = new JLabel();
-        valueLabel.setText(String.format("%3d", Param.value));
+        valueLabel.setText(String.format("%3d", value));
         valueLabel.setForeground(fontColor);
-        JSlider valueSlider = new JSlider(-99, 99, Param.value);
+        JSlider valueSlider = new JSlider(-99, 99, value);
         valueSlider.setBackground(subBackColor);
         valueSlider.setMajorTickSpacing(20);
         valueSlider.setMinorTickSpacing(5);
         valueSlider.setPaintLabels(true);
         valueSlider.setPaintTicks(true);
         valueSlider.addChangeListener(c -> {
-            Param.value = valueSlider.getValue();
-            valueLabel.setText(String.format("%3d", Param.value));
+            value = valueSlider.getValue();
+            valueLabel.setText(String.format("%3d", value));
         });
         JPanel vPanel = new JPanel();
         vPanel.setBackground(subBackColor);

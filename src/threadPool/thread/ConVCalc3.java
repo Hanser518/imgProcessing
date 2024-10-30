@@ -4,39 +4,32 @@ package threadPool.thread;
 import entity.EventPool;
 import threadPool.core.ThreadCore;
 
-public class ConVCalc2 extends ThreadCore {
+import java.lang.reflect.Method;
 
-    public ConVCalc2() {
+public class ConVCalc3 extends ThreadCore {
+    public static int[][] fixMatrix = null;
+
+    public ConVCalc3() {
         super();
     }
 
-
-    public ConVCalc2(EventPool ep) {
-        super(ep);
+    private int getStep(int x, int y){
+        if(fixMatrix[x][y] == 0){
+            fixMatrix[x][y] = 1;
+        }
+        return (int) (Math.sqrt(kernel.length) / fixMatrix[x][y]) + 1;
     }
 
-    private int getStep(){
-        return (int) (Math.sqrt(kernel.length) / 2) + 1;
+    public static void setFocusData(int[][] data){
+        ConVCalc3.fixMatrix = data;
     }
-
-    private int getSide() {
-        return (int) (kernel.length / 1.4) + 1;
-    }
-
     @Override
     public int matrixCalc(int x, int y) {
         double r = 0, g = 0, b = 0;
         double rate = 0;
-        int step = 1;
-        int side = kernel.length;
-//        if(data.length * data[0].length > 1.2e7){
-//            step = getStep();
-//        }else{
-//            side = getSide();
-//        }
-        step = getStep();
+        int step = getStep(x, y);
         for (int i = 0; i < kernel.length; i += step) {
-            for (int j = 0; j < kernel[0].length; j += step) {
+            for (int j = 0; j < kernel.length; j += step) {
                 r += kernel[i][j] * ((data[x + i][y + j] >> 16) & 0xFF);
                 g += kernel[i][j] * ((data[x + i][y + j] >> 8) & 0xFF);
                 b += kernel[i][j] * ((data[x + i][y + j]) & 0xFF);

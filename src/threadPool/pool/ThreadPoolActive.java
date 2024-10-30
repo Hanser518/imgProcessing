@@ -6,6 +6,7 @@ import threadPool.thread.ConfActive;
 import java.util.Arrays;
 import java.util.Stack;
 
+@Deprecated
 public class ThreadPoolActive extends ThreadPoolCore {
     Stack<ConfActive> leisureThreads = new Stack<>();
 

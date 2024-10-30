@@ -63,6 +63,17 @@ public class ThreadPoolReflectCore {
         }
     }
 
+    public void setFocusData(int[][] data){
+        try{
+            Method set = classOfThread.getMethod("setFocusData", int[][].class);
+            if (set.isDefault())
+                System.out.println("Thread do not contain method: setFocusData");
+            else
+                set.invoke(thread, (Object) data);
+        } catch (Exception ignored) {
+        }
+    }
+
     public void customMethod(String methodName, Object params) throws Exception{
         Method set = classOfThread.getMethod(methodName, params.getClass());
         set.invoke(thread, params);

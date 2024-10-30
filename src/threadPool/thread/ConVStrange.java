@@ -20,9 +20,11 @@ public class ConVStrange extends ThreadCore {
     }
 
     // 获取不同位置的步长
-    private int getStep(int loc, int len) {
-        int dis = Math.abs(len / 2 - loc);
-        return (int) (Math.sqrt(dis + 1)) + 1;
+    private int getStep(int x, int y){
+        if(x % 6 == 0 || y % 7 == 0){
+            return (int) (Math.sqrt(kernel.length) / 2) + 1;
+        }
+        return (int) (Math.sqrt(kernel.length)) + 1;
     }
 
     public static void setK(){
@@ -35,26 +37,35 @@ public class ConVStrange extends ThreadCore {
         double r = 0, g = 0, b = 0;
         double rate = 0;
         // (x + y) % random > 5 || (x + y) % 100 > random || (Math.abs(x - y) % 100 > random)
-        if (Math.random() > 0.075) {
-            int s = (kernel.length - kernels.length) / 2;
-            int len = kernels.length;
-            for (int i = s; i < kernels.length + s; i += getStep(i, len)) {
-                for (int j = s; j < kernels.length + s; j += getStep(i, len)) {
-                    r += kernels[i - s][j - s] * ((data[x + i][y + j] >> 16) & 0xFF);
-                    g += kernels[i - s][j - s] * ((data[x + i][y + j] >> 8) & 0xFF);
-                    b += kernels[i - s][j - s] * ((data[x + i][y + j]) & 0xFF);
-                    rate += kernels[i - s][j - s];
-                }
-            }
-        } else {
-            int len = kernel.length;
-            for (int i = 0; i < kernel.length; i += getStep(i, len)) {
-                for (int j = 0; j < kernel.length; j += getStep(j, len)) {
-                    r += kernel[i][j] * ((data[x + i][y + j] >> 16) & 0xFF);
-                    g += kernel[i][j] * ((data[x + i][y + j] >> 8) & 0xFF);
-                    b += kernel[i][j] * ((data[x + i][y + j]) & 0xFF);
-                    rate += kernel[i][j];
-                }
+//        if (Math.random() > 0.075) {
+//            int s = (kernel.length - kernels.length) / 2;
+//            int len = kernels.length;
+//            for (int i = s; i < kernels.length + s; i += getStep(i, len)) {
+//                for (int j = s; j < kernels.length + s; j += getStep(i, len)) {
+//                    r += kernels[i - s][j - s] * ((data[x + i][y + j] >> 16) & 0xFF);
+//                    g += kernels[i - s][j - s] * ((data[x + i][y + j] >> 8) & 0xFF);
+//                    b += kernels[i - s][j - s] * ((data[x + i][y + j]) & 0xFF);
+//                    rate += kernels[i - s][j - s];
+//                }
+//            }
+//        } else {
+//            int len = kernel.length;
+//            for (int i = 0; i < kernel.length; i += getStep(i, len)) {
+//                for (int j = 0; j < kernel.length; j += getStep(j, len)) {
+//                    r += kernel[i][j] * ((data[x + i][y + j] >> 16) & 0xFF);
+//                    g += kernel[i][j] * ((data[x + i][y + j] >> 8) & 0xFF);
+//                    b += kernel[i][j] * ((data[x + i][y + j]) & 0xFF);
+//                    rate += kernel[i][j];
+//                }
+//            }
+//        }
+        int step = getStep(x, y);
+        for (int i = 0; i < kernel.length; i += step) {
+            for (int j = 0; j < kernel.length; j += step) {
+                r += kernel[i][j] * ((data[x + i][y + j] >> 16) & 0xFF);
+                g += kernel[i][j] * ((data[x + i][y + j] >> 8) & 0xFF);
+                b += kernel[i][j] * ((data[x + i][y + j]) & 0xFF);
+                rate += kernel[i][j];
             }
         }
         rate = rate < 10e-2 ? 1.0 : rate;

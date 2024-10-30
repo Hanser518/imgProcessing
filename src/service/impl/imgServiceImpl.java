@@ -187,6 +187,7 @@ public class imgServiceImpl implements imgService {
 
     @Override
     public int[][] getThumbnail(IMAGE px, int step) {
+        System.out.println("Thumbnail");
         int[][] matrix = px.getPixelMatrix();
         int width = px.getWidth();
         int height = px.getHeight();
