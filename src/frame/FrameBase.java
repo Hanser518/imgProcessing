@@ -68,11 +68,11 @@ public class FrameBase {
         centerLabel.addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                if(!init){
+                if (!init) {
                     init = true;
                     sx = e.getX();
                     sy = e.getY();
-                }else{
+                } else {
                     int moveX = -(-e.getX() + sx);
                     int moveY = -(-e.getY() + sy);
                     Rectangle rect = new Rectangle(sx - moveX, sy - moveY, 1, 1);
@@ -81,6 +81,7 @@ public class FrameBase {
                     scrollPane.getViewport().scrollRectToVisible(rect);
                 }
             }
+
             @Override
             public void mouseMoved(MouseEvent e) {
                 int x = e.getX();
@@ -350,40 +351,47 @@ public class FrameBase {
         JPanel gasBlurPanel = new JPanel();
         gasBlurPanel.setLayout(new GridLayout(2, 1));
         gasBlurPanel.setBorder(new TitledBorder(new EtchedBorder(), "GasBlur"));
-        JSlider gasSlider = new JSlider(1, 100, blurRadio);
+        JSlider gasSlider = new JSlider(1, MAX_BLUR, blurRadio);
+        JButton model = Param.functionButton("Quick");
+
+
         gasSlider.addChangeListener(change -> {
             blurRadio = gasSlider.getValue();
             gasCount.setText("BlurRadio: " + blurRadio);
+            model.setText((BLUR_QUICK ? "Quick：" : "Normal：") + blurRadio);
         });
         JButton gasBtn = buildApplyButton();
         gasBtn.addActionListener(ac -> {
             IMAGE gas;
-            if(BLUR_QUICK) {
+            if (BLUR_QUICK) {
                 gas = blurCtrl.getQuickGasBlur(Param.image, Param.blurRadio, 32);
-            }else{
+            } else {
                 gas = blurCtrl.getGasBlur(Param.image, Param.blurRadio, 32);
             }
             updateCenterLabel(updateNode(gas, ADD_NODE));
         });
-        gasSlider.setMajorTickSpacing(12);
-        gasSlider.setMinorTickSpacing(6);
+        gasSlider.setMajorTickSpacing(MAX_BLUR / 6 - 1);
+        gasSlider.setMinorTickSpacing(MAX_BLUR / 36 - 1);
         gasSlider.setPaintLabels(true);
         gasSlider.setPaintTicks(true);
         gasBlurPanel.add(gasSlider);
 
         JPanel gasPanel = new JPanel();
-        gasPanel.setLayout(new GridLayout(2, 2));
-        gasPanel.add(gasCount);
+        gasPanel.setLayout(new GridLayout(1, 2));
+        // gasPanel.add(gasCount);
 
         JPanel modelPanel = new JPanel();
         modelPanel.setBorder(new TitledBorder(new EtchedBorder(), "GasModel"));
         modelPanel.setLayout(new GridLayout(1, 2));
-        JButton model = Param.functionButton("Quick");
         model.addActionListener(ac -> {
-           BLUR_QUICK = !BLUR_QUICK;
-           model.setText(BLUR_QUICK ? "Quick" : "Normal");
+            BLUR_QUICK = !BLUR_QUICK;
+            MAX_BLUR = BLUR_QUICK ? 200 : 100;
+            gasSlider.setMaximum(MAX_BLUR);
+            gasSlider.setMajorTickSpacing(MAX_BLUR / 6 - 1);
+            gasSlider.setMinorTickSpacing(MAX_BLUR / 36 - 1);
+            model.setText((BLUR_QUICK ? "Quick：" : "Normal：") + blurRadio);
         });
-        gasPanel.add(new JLabel());
+        // gasPanel.add(new JLabel());
         gasPanel.add(model);
         gasPanel.add(gasBtn);
         gasBlurPanel.add(gasPanel);
@@ -532,7 +540,7 @@ public class FrameBase {
         return panel;
     }
 
-    public JPanel grillePanel(){
+    public JPanel grillePanel() {
         JPanel panel = new JPanel();
         panel.setBorder(new TitledBorder(new EtchedBorder(), "Grille"));
         panel.setLayout(new GridLayout(2, 1, 1, 1));
@@ -554,9 +562,9 @@ public class FrameBase {
         paramPanel.setLayout(new GridLayout(1, 3));
         JButton type = functionButton("Vertical");
         type.addActionListener(ac -> {
-            if(grilleType < 2) grilleType ++;
+            if (grilleType < 2) grilleType++;
             else grilleType = 0;
-            switch(grilleType) {
+            switch (grilleType) {
                 case 0 -> type.setText("Horizon");
                 case 1 -> type.setText("Vertical");
                 case 2 -> type.setText("Multiple");

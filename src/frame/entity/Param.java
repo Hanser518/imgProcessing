@@ -27,6 +27,7 @@ public class Param {
     public static int frameWidth;
     public static int frameHeight;
 
+    public static int MAX_BLUR = 200;
     public static int blurRadio = 1;
     public static boolean BLUR_QUICK = true;
     public static int strangeBlurRadio = 1;

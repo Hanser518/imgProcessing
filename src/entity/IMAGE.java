@@ -67,7 +67,7 @@ public class IMAGE {
         rawFile = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                rawFile.setRGB(i, j, (0) | (255 << 16) | (255 << 8) | (255));
+                rawFile.setRGB(i, j, (128 << 24) | (255 << 16) | (255 << 8) | (255));
             }
         }
         pixelList = rawFile.getRGB(0, 0, width, height, null, 0, width);

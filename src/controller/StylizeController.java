@@ -66,8 +66,7 @@ public class StylizeController {
             List<IMAGE> imgList = imgCtrl2.asyncSplit(gas, (int) (1 / radio), true);
             IMAGE ver = imgCtrl.combineImages(imgList, grilleType, true);
             imgList = imgCtrl2.asyncSplit(ver, (int) (1 / (radio * 1.73)), false);
-            IMAGE res = imgCtrl.combineImages(imgList, grilleType, false);
-            return res;
+            return imgCtrl.combineImages(imgList, grilleType, false);
         } else {
             IMAGE gas = BlurCtrl.getQuickGasBlur(ad, kernelSize, 16); // kernelSize
             List<IMAGE> imgList = imgCtrl2.asyncSplit(gas, (int) (1 / radio), true);

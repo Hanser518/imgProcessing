@@ -102,6 +102,22 @@ public class AdjustServiceImpl implements IAdjustService {
     }
 
     @Override
+    public int[][] AdjustSaturationAndValue(IMAGE px, int sat, int val) {
+        int s = Math.max(-100, Math.min(100, sat));
+        double sRate = 1.0 + s * 0.005;    // 调整最大范围为0.5 ~ 1.5
+        int v = Math.max(-100, Math.min(100, val));
+        double vRate = 1.0 + v * 0.005;    // 调整最大范围为0.5 ~ 1.5
+        double[][][] hsv = px.RGB2HSV();
+        for (int i = 0; i < px.getWidth(); i++) {
+            for (int j = 0; j < px.getHeight(); j++) {
+                hsv[i][j][1] = Math.min(hsv[i][j][1] * sRate, 1.0);
+                hsv[i][j][2] = Math.min(hsv[i][j][2] * vRate, 1.0);
+            }
+        }
+        return px.HSV2RGB(hsv);
+    }
+
+    @Override
     public IMAGE getReizedImage(IMAGE px, int wSize, int hSize) {
         BufferedImage raw = px.getImg();
         Image scaledImage = raw.getScaledInstance(wSize, hSize, Image.SCALE_AREA_AVERAGING);

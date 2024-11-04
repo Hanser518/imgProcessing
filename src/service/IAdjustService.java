@@ -27,6 +27,8 @@ public interface IAdjustService {
      */
     public int[][] AdjustValue(IMAGE px, int val);
 
+    public int[][] AdjustSaturationAndValue(IMAGE px, int sat, int val);
+
     /**
      * 图像尺寸缩放
      * @param px

@@ -50,9 +50,8 @@ public class AdjustController {
     public IMAGE adjustSatAndVal(IMAGE px, int saturation, int value){
         int sat = Math.max(-100, Math.min(100, saturation));
         int val = Math.max(-100, Math.min(100, value));
-        int[][] pxSaturation = adService.AdjustSaturation(px, sat);
-        int[][] pxValue = adService.AdjustValue(new IMAGE(pxSaturation), val);
-        return new IMAGE(pxValue);
+        int[][] pxSV = adService.AdjustSaturationAndValue(px, sat, val);
+        return new IMAGE(pxSV);
     }
 
     public IMAGE test(IMAGE px, int value) {
