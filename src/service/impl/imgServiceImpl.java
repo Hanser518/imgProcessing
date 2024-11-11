@@ -56,8 +56,18 @@ public class imgServiceImpl implements imgService {
 
     @Override
     public int[][] getMarrEdge(IMAGE px) throws Exception {
-        double[][] kernel = new double[][]{{ 0,-1, 0}, {-1, 4,-1}, { 0,-1, 0},};
-        kernel = new double[][]{{3, -1, 0}, {-1, -2, -1}, {0, -1, 3}};
+        double[][] kernel = new double[][]{{0, -1, 0}, {-1, 4, -1}, {0, -1, 0},};
+        kernel = new double[][]{
+                {3, -1, 0},
+                {-1, -2, -1},
+                {0, -1, 3}};
+//        kernel = new double[][]{
+//                { 0,-2, 0, 0, 0},
+//                { 0, 0,-1, 0, 0},
+//                { 2, 0, 0,-1, 0},
+//                { 0, 2, 0, 0,-2},
+//                { 0, 0, 2, 0, 0}
+//        };
         conv2 = new ThreadPoolReflectCore(px.getGrayMatrixInArgbModule(), kernel, 24, new ConVCalc());
         // conv2 = new ThreadPoolReflectCore(px.getPixelMatrix(), kernel, 24, new ConVCalc());
         conv2.start();
@@ -115,8 +125,8 @@ public class imgServiceImpl implements imgService {
         int height = px.getHeight();
         int[][] result = new int[width][height];
         int[][] rawData = px.getGrayMatrix();
-        for(int i = 0;i < width;i ++){
-            for(int j = 0;j < height;j ++){
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
                 int value = rawData[i][j];
                 int count = 0;
                 int ac = 0;
@@ -124,16 +134,16 @@ public class imgServiceImpl implements imgService {
                     for (int l = -radius; l < radius * 2 + 1; l++) {
                         try {
                             if (rawData[i + k][j + l] >= 32) {
-                                ac ++;
+                                ac++;
                             }
-                            count ++;
+                            count++;
                         } catch (Exception ignored) {
                         }
                     }
                 }
-                if(ac > count / 2 || value > 32){
+                if (ac > count / 2 || value > 32) {
                     result[i][j] = (255 << 24) | (187 << 16) | (187 << 8) | 187;
-                }else{
+                } else {
                     result[i][j] = (255 << 24) | (0);
                 }
             }
@@ -196,15 +206,15 @@ public class imgServiceImpl implements imgService {
         resWidth = resWidth > 0 ? resWidth : 1;
         resHeight = resHeight > 0 ? resHeight : 1;
         int[][] result = new int[resWidth][resHeight];
-        for(int i = 0;i < resWidth;i ++){
-            for(int j = 0;j < resHeight;j ++){
+        for (int i = 0; i < resWidth; i++) {
+            for (int j = 0; j < resHeight; j++) {
                 result[i][j] = matrix[i * step][j * step];
             }
         }
         return result;
     }
 
-    private void trackAndDilate(Node node, int width, int height, double[][][] hsv){
+    private void trackAndDilate(Node node, int width, int height, double[][][] hsv) {
         if (node.getNext() != null) {
             trackAndDilate(node.getNext(), width, height, hsv);
         }
@@ -212,9 +222,9 @@ public class imgServiceImpl implements imgService {
             return;
         }
         for (Point p : node.getPointList()) {
-            for(int i = 0;i < 16;i ++){
+            for (int i = 0; i < 16; i++) {
                 int[] nextDir = EdgeTrace.getNextCoordinate(i, p.getPx(), p.getPy());
-                if(nextDir[0] > -1 && nextDir[0] < width && nextDir[1] > -1 && nextDir[1] < height){
+                if (nextDir[0] > -1 && nextDir[0] < width && nextDir[1] > -1 && nextDir[1] < height) {
                     hsv[nextDir[0]][nextDir[1]] = hsv[p.getPx()][p.getPy()];
                 }
             }

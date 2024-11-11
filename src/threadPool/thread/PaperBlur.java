@@ -28,8 +28,9 @@ public class PaperBlur extends ThreadCore {
         double r = 0, g = 0, b = 0;
         double rate = 0;
         int len = kernel.length;
-        for (int i = 0; i < kernel.length; i += getStep(i, len)) {
-            for(int j = 0;j < kernel.length; j += getStep(j, len)){
+        int step = (int) (Math.sqrt(kernel.length) / 2) + 1;
+        for (int i = 0; i < kernel.length; i += step) {
+            for(int j = 0;j < kernel.length; j += step){
                 r += kernel[i][j] * ((data[x + i][y + j] >> 16) & 0xFF);
                 g += kernel[i][j] * ((data[x + i][y + j] >> 8) & 0xFF);
                 b += kernel[i][j] * ((data[x + i][y + j]) & 0xFF);

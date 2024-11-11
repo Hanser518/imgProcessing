@@ -63,8 +63,8 @@ public class ThreadPoolReflectCore {
         }
     }
 
-    public void setFocusData(int[][] data){
-        try{
+    public void setFocusData(int[][] data) {
+        try {
             Method set = classOfThread.getMethod("setFocusData", int[][].class);
             if (set.isDefault())
                 System.out.println("Thread do not contain method: setFocusData");
@@ -74,7 +74,7 @@ public class ThreadPoolReflectCore {
         }
     }
 
-    public void customMethod(String methodName, Object params) throws Exception{
+    public void customMethod(String methodName, Object params) throws Exception {
         Method set = classOfThread.getMethod(methodName, params.getClass());
         set.invoke(thread, params);
     }
@@ -84,7 +84,7 @@ public class ThreadPoolReflectCore {
         int totalArea = width * height;
         int totalBlock = totalArea / 6400000 * (int) Math.sqrt(kernel.length) + 1;
         blockSize = Math.min(width, height) / totalBlock + 1;
-        while((width / blockSize) * (height / blockSize) < threadCountLimit){
+        while ((width / blockSize) * (height / blockSize) < threadCountLimit) {
             blockSize -= 10;
         }
         // 对矩阵数据进行任务分配及切分，每最大blockSize*blockSize为一个事件组，同时生成对应点位的标识符
@@ -142,7 +142,7 @@ public class ThreadPoolReflectCore {
             }
             if ((System.currentTimeMillis() - outSet) / 100.0 > 1) {
                 outSet = System.currentTimeMillis();
-                System.out.printf("\r@%2d %2.4f percent",threadCount, (1 - (double) eventIndex.size() / ePools.length));
+                System.out.printf("\r@%2d %2.4f percent", threadCount, (1 - (double) eventIndex.size() / ePools.length));
             }
         }
         int limit = threadPool.size();

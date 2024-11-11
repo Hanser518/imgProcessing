@@ -17,6 +17,8 @@ public class IMAGE {
     private int[] pixelList;
     private int[] hsvList;
 
+    private int[][] pixelMatrix;
+
     /**
      * 图像宽高
      */
@@ -51,6 +53,7 @@ public class IMAGE {
                 rawFile.setRGB(i, j, px[i][j]);
             }
         }
+        pixelMatrix = px;
         pixelList = rawFile.getRGB(0, 0, width, height, null, 0, width);
     }
 
@@ -215,6 +218,9 @@ public class IMAGE {
      * @return
      */
     public int[][] getPixelMatrix() {
+        if(pixelMatrix != null){
+            return pixelMatrix;
+        }
         int[][] matrix = new int[width][height];
         for (int i = 0; i < pixelList.length; i++) {
             int x = i % width;
