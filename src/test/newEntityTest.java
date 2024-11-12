@@ -2,7 +2,7 @@ package test;
 
 import controller.ImgController;
 import entity.IMAGE;
-import algorithm.cnn.entity.ImageC;
+import algorithm.cnnDiscard.entity.ImageC;
 
 import java.io.IOException;
 

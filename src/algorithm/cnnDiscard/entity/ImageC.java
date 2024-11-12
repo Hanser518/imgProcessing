@@ -1,4 +1,4 @@
-package algorithm.cnn.entity;
+package algorithm.cnnDiscard.entity;
 
 import algorithm.edgeTrace.main.EdgeTrace;
 

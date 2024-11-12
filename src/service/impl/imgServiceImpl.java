@@ -69,7 +69,7 @@ public class imgServiceImpl implements imgService {
 //                { 0, 0, 2, 0, 0}
 //        };
         conv2 = new ThreadPoolReflectCore(px.getGrayMatrixInArgbModule(), kernel, 24, new ConVCalc());
-        // conv2 = new ThreadPoolReflectCore(px.getPixelMatrix(), kernel, 24, new ConVCalc());
+        // conv2 = new ThreadPoolReflectCore(px.getArgbMatrix(), kernel, 24, new ConVCalc());
         conv2.start();
         int width = px.getWidth();
         int height = px.getHeight();

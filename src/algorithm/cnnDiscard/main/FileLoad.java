@@ -1,4 +1,4 @@
-package algorithm.cnn.main;
+package algorithm.cnnDiscard.main;
 
 import controller.ImgController;
 
