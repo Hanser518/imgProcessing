@@ -30,10 +30,18 @@ public class ThreadPoolReflectCore {
     protected List<Thread> threadPool = new ArrayList<>();  // 线程池
     protected Stack<Object> leisure = new Stack<>();        // 空闲线程
 
-    public ThreadPoolReflectCore(int[][] requestData, double[][] ConVKernel, int MaxThreadCount, Object threadItem) throws Exception {
+    public ThreadPoolReflectCore(int[][] requestData, double[][] ConVKernel, int MaxThreadCount, Object threadItem, boolean... fill) throws Exception {
         // 对图像进行填充处理，此时数据矩阵长宽发生改变，原矩阵长宽存储于width和height中
         ICalculateService calcService = new ICalculateServiceImpl();
-        this.data = calcService.pixFill(requestData, ConVKernel);
+        if(fill.length > 0){
+            if(fill[0]){
+                this.data = calcService.pixFill(requestData, ConVKernel);
+            }else{
+                this.data = requestData;
+            }
+        }else{
+            this.data = calcService.pixFill(requestData, ConVKernel);
+        }
         this.width = requestData.length;
         this.height = requestData[0].length;
         this.kernel = ConVKernel;

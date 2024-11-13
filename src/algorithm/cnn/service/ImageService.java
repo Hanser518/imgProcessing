@@ -28,8 +28,8 @@ public class ImageService {
             int expandsMultiplier;
             int width = img.getWidth();
             int height = img.getHeight();
-            expandsMultiplier = (width / 100) * (height / 100);
-            result.addAll(RandomSplit(img, expandsMultiplier, 100, 100));
+            expandsMultiplier = (width / 99) * (height / 99);
+            result.addAll(RandomSplit(img, expandsMultiplier, 99, 99));
         }
         ip.setImageList(result);
         return ip;
