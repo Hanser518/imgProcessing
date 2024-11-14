@@ -4,7 +4,6 @@ package algorithm.cnn.core;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,13 +14,12 @@ public class ThreadPoolCenter extends Thread{
 
 
     protected List<Thread> threadPool = new ArrayList<>();  // 线程池
-    protected List<EventCore> resultList = new ArrayList<>();   //
 
 
     public ThreadPoolCenter(List<? extends ImageCore> imgList, double[][] kernel,
                             Class<? extends EventCore> eventClass,
                             Integer maxThreads, Boolean fillImage) {
-        List eventList = new ArrayList<>();
+        List<EventCore> eventList = new ArrayList<>();
         try{
             Constructor<? extends EventCore> constructorOfEvent = eventClass.getConstructor();
             Field filedData = eventClass.getDeclaredField("data");

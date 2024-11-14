@@ -141,6 +141,41 @@ public class ImgController {
         frame.setVisible(true);
     }
 
+    public void showImg(BufferedImage img, String name) {
+        // 图像宽高
+        int imgWidth = img.getWidth();
+        int imgHeight = img.getHeight();
+        // 屏幕宽高
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Dimension screenSize = toolkit.getScreenSize();
+        int screenWidth = screenSize.width;
+        int screenHeight = screenSize.height;
+        // 确定缩放比
+        double rateW = (double) screenWidth / imgWidth;
+        double rateH = (double) screenHeight / imgHeight;
+        double rate;
+        if (rateW > rateH) {
+            rate = rateH * 0.3;
+        } else {
+            rate = rateW * 0.2;
+        }
+        // 窗口大小
+        int frameWidth = (int) (imgWidth * rate);
+        int frameHeight = (int) (imgHeight * rate);
+        JFrame frame = new JFrame();
+        frame.setTitle(name);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(frameWidth, frameHeight);
+
+        JLabel label = new JLabel(new ImageIcon(pcsCtrl.resizeImage(new IMAGE(img), rate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
+
+        JPanel panel = new JPanel();
+        panel.add(label);
+
+        frame.add(panel);
+        frame.setVisible(true);
+    }
+
     public List<IMAGE> asyncSplit(IMAGE img, int count, boolean horizontal) {
         long set = System.currentTimeMillis();
         List<IMAGE> result = new ArrayList<>();

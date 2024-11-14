@@ -5,39 +5,37 @@ import algorithm.cnn.entity.ImageCNN;
 import algorithm.cnn.entity.ImagePool;
 import algorithm.cnn.service.ConvCalcService;
 import algorithm.cnn.service.ImageService;
+import controller.ImgController;
 
 import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-    private static ConvCalcService convCalc = new ConvCalcService();
+    private static ImgController imgCtrl2 = new ImgController();
     private static ConvCalcController convController = new ConvCalcController();
     public static void main(String[] args) {
         ImagePool ip1 = new ImagePool("output/7820");
         System.out.println("7820: " + ip1.getPoolSize());
 
-        ImageService.trans2TrainPool(ip1, 200);
+        ImageService.trans2TrainPool(ip1, 500);
         List<ImageCNN> list = convController.convCalc(ip1.getImageList(), ConvCalcController.FEATURE_EASY, ConvCalcController.ACTIVATION_MAX);
         list = convController.poolingCalc(list, 11);
-        for(int i = 0;i < 10;i ++){
-            ImageCNN ep = list.get(i);
-            System.out.println(i + " " + ep.getWidth() + " " + ep.getHeight());
+        for(int i = 0;i < 5;i ++){
+            imgCtrl2.showImg(list.get((int) (list.size() * Math.random())).getRawFile(), "Index1." + i);
         }
         System.out.println(list.size());
 
         list = convController.convCalc(list, ConvCalcController.FEATURE_EASY, ConvCalcController.ACTIVATION_MAX);
         list = convController.poolingCalc(list, 11);
         for(int i = 0;i < 10;i ++){
-            ImageCNN ep = list.get(i);
-            System.out.println(i + " " + ep.getWidth() + " " + ep.getHeight());
+            imgCtrl2.showImg(list.get((int) (list.size() * Math.random())).getRawFile(), "Index2." + i);
         }
         System.out.println(list.size());
 
         list = convController.convCalc(list, ConvCalcController.FEATURE_EASY, ConvCalcController.ACTIVATION_MAX);
         list = convController.poolingCalc(list, 11);
-        for(int i = 0;i < 10;i ++){
-            ImageCNN ep = list.get(i);
-            System.out.println(i + " " + ep.getWidth() + " " + ep.getHeight());
+        for(int i = 0;i < 15;i ++){
+            imgCtrl2.showImg(list.get((int) (list.size() * Math.random())).getRawFile(), "Index3." + i);
         }
         System.out.println(list.size());
 
