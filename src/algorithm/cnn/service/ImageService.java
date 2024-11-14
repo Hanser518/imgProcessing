@@ -21,15 +21,15 @@ public class ImageService {
         return ip;
     }
 
-    public static ImagePool trans2TrainPool(ImagePool ip){
+    public static ImagePool trans2TrainPool(ImagePool ip, int size){
         List<ImageCNN> imgList = ip.getImageList();
         List<ImageCNN> result = new ArrayList<>();
         for (ImageCNN img : imgList) {
             int expandsMultiplier;
             int width = img.getWidth();
             int height = img.getHeight();
-            expandsMultiplier = (width / 99) * (height / 99);
-            result.addAll(RandomSplit(img, expandsMultiplier, 99, 99));
+            expandsMultiplier = (width / size) * (height / size);
+            result.addAll(RandomSplit(img, expandsMultiplier, size, size));
         }
         ip.setImageList(result);
         return ip;

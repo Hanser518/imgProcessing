@@ -168,7 +168,6 @@ public class ThreadPoolReflectCore {
                 System.out.printf("\r@ %2.4f percent", (1 - (double) eventIndex.size() / ePools.length));
             }
         }
-        System.out.println();
         data = combineData();
         System.out.println("ThreadCount:" + threadCount + ", EventPool:" + ePools.length);
 

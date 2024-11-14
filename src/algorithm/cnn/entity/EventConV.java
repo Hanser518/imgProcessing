@@ -2,22 +2,22 @@ package algorithm.cnn.entity;
 
 import algorithm.cnn.core.EventCore;
 
-public class EventConv extends EventCore {
+public class EventConV extends EventCore {
     @Override
     public void setData(int[][] data) {
         this.data = data;
-        this.result = new int[data.length][data[0].length];
     }
 
     @Override
     public void setKernel(double[][] kernel) {
         this.kernel = kernel;
+        this.result = new int[data.length - kernel.length / 2 * 2][data[0].length - kernel[0].length / 2 * 2];
     }
 
     @Override
     public void setStep(int step) {
         this.step = step;
-        this.result = new int[data.length / step][data[0].length / step];
+        this.result = new int[result.length / step][result[0].length / step];
     }
 
     @Override

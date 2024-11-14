@@ -18,7 +18,7 @@ public class ThreadPoolCenter extends Thread{
     protected List<EventCore> resultList = new ArrayList<>();   //
 
 
-    public ThreadPoolCenter(List<ImageCore> imgList, double[][] kernel,
+    public ThreadPoolCenter(List<? extends ImageCore> imgList, double[][] kernel,
                             Class<? extends EventCore> eventClass,
                             Integer maxThreads, Boolean fillImage) {
         List eventList = new ArrayList<>();
@@ -62,14 +62,19 @@ public class ThreadPoolCenter extends Thread{
 
     @Override
     public void run(){
-        for(Thread t : threadPool){
-            if(t.getState().toString().equals("NEW") && threadCount < threadCountLimit){
-                threadCount ++;
-                t.start();
+        do {
+            for(Thread t : threadPool){
+                if(t.getState().toString().equals("NEW") && threadCount < threadCountLimit){
+                    threadCount ++;
+                    // System.out.println("append thread");
+                    t.start();
+                }
+                if(t.getState().toString().equals("TERMINATED")){
+                    // System.out.println("remove thread");
+                    threadCount --;
+                }
             }
-            if(t.getState().toString().equals("")){
-                threadCount --;
-            }
-        }
+            // System.out.println(threadCount);
+        }while (threadCount > 0);
     }
 }

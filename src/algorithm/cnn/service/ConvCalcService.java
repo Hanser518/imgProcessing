@@ -1,9 +1,7 @@
 package algorithm.cnn.service;
 
 import algorithm.cnn.core.ThreadPoolCenter;
-import algorithm.cnn.entity.EventConv;
-import algorithm.cnn.entity.ImageCNN;
-import algorithm.cnn.entity.ImagePool;
+import algorithm.cnn.entity.*;
 import algorithm.cnn.param.DatabaseKernel;
 import entity.IMAGE;
 import service.imgService;
@@ -32,6 +30,8 @@ public class ConvCalcService {
     public static Integer POOLING_AVG = 12;
     public static Integer POOLING_MEDIUM = 13;
 
+    public static Integer count1445687 = 0;
+
     private static final imgService imgServ = new imgServiceImpl();
     private static ThreadPoolReflectCore conv2;
 
@@ -42,22 +42,21 @@ public class ConvCalcService {
         return resultList;
     }
 
-    private void featureCalc(ImageCNN img, List<ImageCNN> list, int count){
-        try{
-            List<EventConv> ecList = new ArrayList<>();
-            for(int i = 0;i < count;i ++){
-                EventConv ec = new EventConv();
+    private void featureCalc(ImageCNN img, List<ImageCNN> list, int count) {
+        try {
+            List<EventConV> ecList = new ArrayList<>();
+            for (int i = 0; i < count; i++) {
+                EventConV ec = new EventConV();
                 ImageCNN px = (ImageCNN) ImageCNN.fillImageEdge(img, DatabaseKernel.features[i].length / 2, DatabaseKernel.features[i][0].length / 2);
-                System.out.println(img.getWidth() + " " + px.getWidth());
-                ec.setData(px.getArgbMatrix());
+                ec.setData(px.getGrayMatrix());
                 ec.setKernel(DatabaseKernel.features[i]);
                 ec.setStep(1);
                 ecList.add(ec);
             }
             ThreadPoolCenter TPC = new ThreadPoolCenter(ecList, 8);
             TPC.start();
-            ecList = (List<EventConv>)TPC.getEventList();
-            for(EventConv ec : ecList){
+            ecList = (List<EventConV>) TPC.getEventList();
+            for (EventConV ec : ecList) {
                 list.add(new ImageCNN(ec.getResult()));
             }
         } catch (Exception e) {
@@ -68,21 +67,51 @@ public class ConvCalcService {
 
     public ImageCNN activeCalc(ImageCNN img, Integer activationMode) {
         ThreadCore treadType;
-        if(activationMode.equals(ACTIVATION_MAX)){
+        if (activationMode.equals(ACTIVATION_MAX)) {
             treadType = new ConvMax();
-        }else if(activationMode.equals(ACTIVATION_AVG)){
+        } else if (activationMode.equals(ACTIVATION_AVG)) {
             treadType = new ConvMax();
-        } else{
+        } else {
             treadType = new ConVCalc();
         }
-        try{
+        try {
             conv2 = new ThreadPoolReflectCore(img.getArgbMatrix(), DatabaseKernel.matrix[3], 24, treadType);
             conv2.start();
+            System.out.println(++count1445687);
             return new ImageCNN(conv2.getData());
         } catch (Exception e) {
             return img;
         }
     }
+
+    public List<ImageCNN> activeCalc(List<ImageCNN> imgList, Integer activationMode) {
+        List<ImageCNN> result = new ArrayList<>();
+        try {
+//            List<EventMax> ecList = new ArrayList<>();
+//            for (int i = 0; i < imgList.size(); i++) {
+//                EventMax ec = new EventMax();
+//                ImageCNN px = (ImageCNN) ImageCNN.fillImageEdge(imgList.get(i), DatabaseKernel.matrix[3].length / 2, DatabaseKernel.matrix[3].length / 2);
+//                ec.setData(px.getArgbMatrix());
+//                ec.setKernel(DatabaseKernel.matrix[3]);
+//                ec.setStep(1);
+//                ecList.add(ec);
+//            }
+//            ThreadPoolCenter TPC = new ThreadPoolCenter(ecList, 8);
+//            TPC.start();
+//            ecList = (List<EventMax>) TPC.getEventList();
+            ThreadPoolCenter TPC2 = new ThreadPoolCenter(imgList, DatabaseKernel.matrix[3], EventMax.class, 8, true);
+            TPC2.start();
+            List<EventMax> ecList = (List<EventMax>) TPC2.getEventList();
+            for (EventMax ec : ecList) {
+                result.add(new ImageCNN(ec.getResult()));
+            }
+        } catch (Exception e) {
+            return imgList;
+        }
+        return result;
+    }
+
+
 
 
     @Deprecated
@@ -100,21 +129,26 @@ public class ConvCalcService {
         return pool;
     }
 
-//    public ImageCNN poolingCalc(ImageCNN img, Integer poolingMode) {
-//        ThreadCore treadType;
-//        if(poolingMode.equals(POOLING_MAX)){
-//            // treadType = new PoolingMax();
-//        }else if(poolingMode.equals(POOLING_AVG)){
-//            treadType = new ConvMax();
-//        } else{
-//            treadType = new ConVCalc();
-//        }
-//        try{
-//            conv2 = new ThreadPoolReflectCore(img.getArgbMatrix(), DatabaseKernel.matrix[3], 24, treadType);
-//            conv2.start();
-//            return new ImageCNN(conv2.getData());
-//        } catch (Exception e) {
-//            return img;
-//        }
-//    }
+    public List<ImageCNN> poolingCalc(List<ImageCNN> imgList, Integer poolingMode) {
+        List<ImageCNN> result = new ArrayList<>();
+        try {
+            List<EventPooling> ecList = new ArrayList<>();
+            for (int i = 0; i < imgList.size(); i++) {
+                EventPooling ec = new EventPooling();
+                ec.setData(imgList.get(i).getArgbMatrix());
+                ec.setKernel(DatabaseKernel.matrix[2]);
+                ec.setStep(DatabaseKernel.matrix[2].length);
+                ecList.add(ec);
+            }
+            ThreadPoolCenter TPC = new ThreadPoolCenter(ecList, 8);
+            TPC.start();
+            ecList = (List<EventPooling>) TPC.getEventList();
+            for (EventPooling ec : ecList) {
+                result.add(new ImageCNN(ec.getResult()));
+            }
+        } catch (Exception e) {
+            return imgList;
+        }
+        return result;
+    }
 }

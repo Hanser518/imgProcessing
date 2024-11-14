@@ -316,9 +316,7 @@ public abstract class ImageCore {
             }
         }
         try{
-            System.out.println("PREPARE CONSTRUCTOR");
             Constructor<? extends ImageCore> constructorOfImage = img.getClass().getConstructor(BufferedImage.class);
-            System.out.println("GET CONSTRUCTOR");
             return constructorOfImage.newInstance(newImg);
 
         }catch (Exception e){
