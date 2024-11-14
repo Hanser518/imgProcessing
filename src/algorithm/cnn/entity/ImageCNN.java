@@ -1,6 +1,6 @@
 package algorithm.cnn.entity;
 
-import entity.core.ImageCore;
+import algorithm.cnn.core.ImageCore;
 
 import java.awt.image.BufferedImage;
 
@@ -15,9 +15,10 @@ public class ImageCNN extends ImageCore {
     }
 
     public ImageCNN(int[][] argbMatrix){
-        super();
-        this.width = argbMatrix.length;
-        this.height = argbMatrix[0].length;
-        this.argbMatrix = argbMatrix;
+        super(argbMatrix);
+    }
+
+    public ImageCNN(BufferedImage image){
+        super(image);
     }
 }

@@ -1,5 +1,7 @@
 package algorithm.cnn.service;
 
+import algorithm.cnn.core.ThreadPoolCenter;
+import algorithm.cnn.entity.EventConv;
 import algorithm.cnn.entity.ImageCNN;
 import algorithm.cnn.entity.ImagePool;
 import algorithm.cnn.param.DatabaseKernel;
@@ -41,14 +43,25 @@ public class ConvCalcService {
     }
 
     private void featureCalc(ImageCNN img, List<ImageCNN> list, int count){
-
         try{
+            List<EventConv> ecList = new ArrayList<>();
             for(int i = 0;i < count;i ++){
-                conv2 = new ThreadPoolReflectCore(img.getArgbMatrix(), DatabaseKernel.features[i], 24, new ConVCalc());
-                conv2.start();
-                list.add(new ImageCNN(conv2.getData()));
+                EventConv ec = new EventConv();
+                ImageCNN px = (ImageCNN) ImageCNN.fillImageEdge(img, DatabaseKernel.features[i].length / 2, DatabaseKernel.features[i][0].length / 2);
+                System.out.println(img.getWidth() + " " + px.getWidth());
+                ec.setData(px.getArgbMatrix());
+                ec.setKernel(DatabaseKernel.features[i]);
+                ec.setStep(1);
+                ecList.add(ec);
+            }
+            ThreadPoolCenter TPC = new ThreadPoolCenter(ecList, 8);
+            TPC.start();
+            ecList = (List<EventConv>)TPC.getEventList();
+            for(EventConv ec : ecList){
+                list.add(new ImageCNN(ec.getResult()));
             }
         } catch (Exception e) {
+            System.out.println("featureCalc ERROR: " + e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -87,21 +100,21 @@ public class ConvCalcService {
         return pool;
     }
 
-    public ImageCNN poolingCalc(ImageCNN img, Integer poolingMode) {
-        ThreadCore treadType;
-        if(poolingMode.equals(POOLING_MAX)){
-            // treadType = new PoolingMax();
-        }else if(poolingMode.equals(POOLING_AVG)){
-            treadType = new ConvMax();
-        } else{
-            treadType = new ConVCalc();
-        }
-        try{
-            conv2 = new ThreadPoolReflectCore(img.getArgbMatrix(), DatabaseKernel.matrix[3], 24, treadType);
-            conv2.start();
-            return new ImageCNN(conv2.getData());
-        } catch (Exception e) {
-            return img;
-        }
-    }
+//    public ImageCNN poolingCalc(ImageCNN img, Integer poolingMode) {
+//        ThreadCore treadType;
+//        if(poolingMode.equals(POOLING_MAX)){
+//            // treadType = new PoolingMax();
+//        }else if(poolingMode.equals(POOLING_AVG)){
+//            treadType = new ConvMax();
+//        } else{
+//            treadType = new ConVCalc();
+//        }
+//        try{
+//            conv2 = new ThreadPoolReflectCore(img.getArgbMatrix(), DatabaseKernel.matrix[3], 24, treadType);
+//            conv2.start();
+//            return new ImageCNN(conv2.getData());
+//        } catch (Exception e) {
+//            return img;
+//        }
+//    }
 }

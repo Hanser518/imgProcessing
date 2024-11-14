@@ -39,17 +39,17 @@ public class ConvCalcController {
         return resultList;
     }
 
-    public List<ImageCNN> poolingCalc(List<ImageCNN> imgList, Integer poolingCalc){
-        List<ImageCNN> resultList = new ArrayList<>();
-        for(ImageCNN img : imgList){
-            resultList.add(poolingCalc(img, poolingCalc));
-        }
-        return resultList;
-    }
+//    public List<ImageCNN> poolingCalc(List<ImageCNN> imgList, Integer poolingCalc){
+//        List<ImageCNN> resultList = new ArrayList<>();
+//        for(ImageCNN img : imgList){
+//            resultList.add(poolingCalc(img, poolingCalc));
+//        }
+//        return resultList;
+//    }
 
-    public ImageCNN poolingCalc(ImageCNN img, Integer POOLING_MODE){
-        return convService.poolingCalc(img, POOLING_MODE);
-    }
+//    public ImageCNN poolingCalc(ImageCNN img, Integer POOLING_MODE){
+//        return convService.poolingCalc(img, POOLING_MODE);
+//    }
 
 
 }

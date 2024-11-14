@@ -19,7 +19,7 @@ public class Main {
 
         ImageService.trans2TrainPool(ip1);
         List<ImageCNN> list = convController.convCalc(ip1.getImageList(), ConvCalcController.FEATURE_EASY, ConvCalcController.ACTIVATION_MAX);
-        list = convController.poolingCalc(list, 11);
+//        list = convController.poolingCalc(list, 11);
 
 //        list = convController.convCalc(list, ConvCalcController.FEATURE_EASY, ConvCalcController.ACTIVATION_MAX);
 //        list = convController.poolingCalc(list, 11);
