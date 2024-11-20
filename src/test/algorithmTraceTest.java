@@ -7,9 +7,9 @@ import controller.ProcessingController;
 import controller.StylizeController;
 import entity.IMAGE;
 import service.ICalculateService;
-import service.imgService;
+import service.ImgService;
 import service.impl.ICalculateServiceImpl;
-import service.impl.imgServiceImpl;
+import service.impl.ImgServiceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ public class algorithmTraceTest {
     static EdgeController edgeCtrl = new EdgeController();
     static StylizeController styleCtrl = new StylizeController();
     static ProcessingController proCtrl = new ProcessingController();
-    static imgService service = new imgServiceImpl();
+    static ImgService service = new ImgServiceImpl();
     static ICalculateService calcServ = new ICalculateServiceImpl();
 
     public static void main(String[] args) throws Exception {

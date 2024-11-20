@@ -10,6 +10,7 @@ import java.util.Stack;
 
 import static threadPool.core.ThreadPoolReflectCore.getCombines;
 
+@Deprecated
 public class ThreadPoolPaperService {
     int[][] data;
     double[] kernel;

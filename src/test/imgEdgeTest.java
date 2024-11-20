@@ -6,15 +6,15 @@ import discard.ImgProcessingController;
 import entity.IMAGE;
 import service.ICalculateService;
 import service.impl.ICalculateServiceImpl;
-import service.impl.imgServiceImpl;
-import service.imgService;
+import service.impl.ImgServiceImpl;
+import service.ImgService;
 
 public class imgEdgeTest {
     static ICalculateService calculateServer = new ICalculateServiceImpl();
     static ImgProcessingController imgCtrl = new ImgProcessingController();
     static ImgController imgCtrl2 = new ImgController();
     static EdgeController edgeCtrl = new EdgeController();
-    static imgService service = new imgServiceImpl();
+    static ImgService service = new ImgServiceImpl();
 
     public static void main(String[] args) throws Exception {
         String fileName = "bus";

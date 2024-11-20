@@ -11,6 +11,7 @@ import java.util.Stack;
 
 import static threadPool.core.ThreadPoolReflectCore.getCombines;
 
+@Deprecated
 public class ThreadPoolConVService {
     int[][] data;
     double[][] kernel;

@@ -3,6 +3,7 @@ package discard;
 
 import entity.EventPool;
 
+@Deprecated
 public class PaperBlurCalc implements Runnable {
     EventPool ep;
     int[][] data;

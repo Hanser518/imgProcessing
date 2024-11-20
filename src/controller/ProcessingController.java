@@ -2,7 +2,9 @@ package controller;
 
 import entity.IMAGE;
 import service.IAdjustService;
+import service.ImgService;
 import service.impl.AdjustServiceImpl;
+import service.impl.ImgServiceImpl;
 
 import java.util.List;
 
@@ -13,6 +15,7 @@ public class ProcessingController {
     public final Integer RESIZE_VERTICAL = 2;
 
     private static final IAdjustService adService = new AdjustServiceImpl();
+    private static final ImgService imgService = new ImgServiceImpl();
 
     /**
      * 改变图像大小
@@ -55,5 +58,9 @@ public class ProcessingController {
             }
         }
         return new IMAGE(result);
+    }
+
+    public IMAGE erosionImage(IMAGE img){
+        return new IMAGE(imgService.erosionImg(img, 1));
     }
 }

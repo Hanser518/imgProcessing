@@ -2,8 +2,6 @@ package algorithm.cnn.controller;
 
 import algorithm.cnn.entity.ImageCNN;
 import algorithm.cnn.service.ConvCalcService;
-import service.imgService;
-import service.impl.imgServiceImpl;
 import threadPool.core.ThreadPoolReflectCore;
 
 import java.util.ArrayList;

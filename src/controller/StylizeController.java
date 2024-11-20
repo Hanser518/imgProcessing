@@ -3,8 +3,8 @@ package controller;
 import discard.ImgProcessingController;
 import entity.IMAGE;
 import frame.entity.Param;
-import service.imgService;
-import service.impl.imgServiceImpl;
+import service.ImgService;
+import service.impl.ImgServiceImpl;
 import threadPool.pool.ThreadPoolPaper;
 import service.ICalculateService;
 import service.impl.ICalculateServiceImpl;
@@ -26,7 +26,7 @@ public class StylizeController {
     static EdgeController edgeCtrl = new EdgeController();
     static ImgProcessingController imgCtrl = new ImgProcessingController();
     static ImgController imgCtrl2 = new ImgController();
-    static imgService imgServ = new imgServiceImpl();
+    static ImgService imgServ = new ImgServiceImpl();
     static ThreadPoolCore conV;
 
     public IMAGE transPaperStyle(IMAGE img, int maxTreadCount, int... kernelSize) {

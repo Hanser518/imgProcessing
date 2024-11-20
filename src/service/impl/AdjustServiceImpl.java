@@ -16,7 +16,7 @@ public class AdjustServiceImpl implements IAdjustService {
         Map<Integer, Double> rate = calcService.getActiveAccumulateRate(px);
 
         // 1.判断方向
-        double top = 1.518; // 1.05;
+        double top = 1.318; // 1.05;
         double center = 1.0;
         double bottom = 0.874; // 1 - 0.318 / 2;
         if (rate.get(4) < 0.5) {

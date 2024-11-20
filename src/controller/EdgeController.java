@@ -1,8 +1,8 @@
 package controller;
 
 import entity.IMAGE;
-import service.impl.imgServiceImpl;
-import service.imgService;
+import service.impl.ImgServiceImpl;
+import service.ImgService;
 
 public class EdgeController {
     public static final int SOBEL = 0;
@@ -10,7 +10,7 @@ public class EdgeController {
     public static final int MARR = 2;
 
     static private final BlurController blurCtrl = new BlurController();
-    static private final imgService imgServ = new imgServiceImpl();
+    static private final ImgService imgServ = new ImgServiceImpl();
     public IMAGE getImgEdge(IMAGE img) throws Exception {
         IMAGE gas = blurCtrl.quickGasBlur(img);
         IMAGE raw = new IMAGE(imgServ.getSobelEdge(gas));

@@ -65,37 +65,6 @@ public class FrameBase {
         centerLabel = initServ.initializeCenterLabel();
 
         JScrollPane scrollPane = new JScrollPane(centerLabel);
-        centerLabel.addMouseMotionListener(new MouseMotionListener() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                if (!init) {
-                    init = true;
-                    sx = e.getX();
-                    sy = e.getY();
-                } else {
-                    int moveX = -(-e.getX() + sx);
-                    int moveY = -(-e.getY() + sy);
-                    Rectangle rect = new Rectangle(sx - moveX, sy - moveY, 1, 1);
-                    System.out.println(sx + " " + sy);
-                    System.out.println((sx - moveX) + " " + (sy - moveY) + " " + moveX + " " + moveY);
-                    scrollPane.getViewport().scrollRectToVisible(rect);
-                }
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                int x = e.getX();
-                int y = e.getY();
-                processLabel.setText("Location:" + image.getWidth() + ":" + image.getHeight());
-            }
-        });
-        centerLabel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                init = false;
-            }
-
-        });
         previewLabel = new JLabel();
         processLabel.setFont(funcFont);
         processLabel.setForeground(Color.WHITE);
@@ -108,20 +77,6 @@ public class FrameBase {
         baseFrame.add(headPanel(), BorderLayout.NORTH);
         baseFrame.add(bottomPanel(), BorderLayout.SOUTH);
         baseFrame.setVisible(true);
-
-        baseFrame.addMouseMotionListener(new MouseMotionListener() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                int x = e.getX();
-                int y = e.getY();
-                processLabel.setText("Location:" + x + ":" + y);
-            }
-        });
     }
 
     public static IMAGE updateNode(IMAGE newImage, int operation) {
@@ -645,7 +600,7 @@ public class FrameBase {
         panel.add(messageLabel);
 
         String[] constellations = {
-                "Paper", "Oil"
+                "Paper", "Oil", "Erosion"
         };
         JComboBox comboBox = new JComboBox(constellations);
         comboBox.addActionListener(action -> {
@@ -656,12 +611,15 @@ public class FrameBase {
                     updateCenterLabel(updateNode(reStyle, ADD_NODE));
                 }
                 case "Oil" -> {
-                    IMAGE reStyle = new IMAGE();
                     try {
-                        reStyle = styleCtrl.transOilPaintingStyle(image);
+                        IMAGE reStyle = styleCtrl.transOilPaintingStyle(image);
+                        updateCenterLabel(updateNode(reStyle, ADD_NODE));
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
+                }
+                case "Erosion" -> {
+                    IMAGE reStyle = pcsCtrl.erosionImage(image);
                     updateCenterLabel(updateNode(reStyle, ADD_NODE));
                 }
             }

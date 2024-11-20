@@ -14,6 +14,7 @@ public class ThreadPoolCenter extends Thread{
 
 
     protected List<Thread> threadPool = new ArrayList<>();  // 线程池
+    protected List<? extends EventCore> resultList;    // ⌛待处理事件列表
 
 
     public ThreadPoolCenter(List<? extends ImageCore> imgList, double[][] kernel,
@@ -45,6 +46,16 @@ public class ThreadPoolCenter extends Thread{
         initThreads(maxThreads);
     }
 
+    public <T extends ImageCore> ThreadPoolCenter(T img, Class<? extends EventCore> eventClass, double[][] kernel, Boolean fillImage){
+
+        // 判断对图像进行填充
+        if(fillImage == null || fillImage){
+            img = ImageCore.fillImageEdge(img, kernel.length / 2, kernel[0].length / 2);
+        }
+
+
+    }
+
     private void initThreads(Integer maxThreads){
         for(EventCore ec : eventList){
             Thread t = new Thread(ec);
@@ -57,6 +68,12 @@ public class ThreadPoolCenter extends Thread{
     public List<? extends EventCore> getEventList(){
         return eventList;
     }
+
+    public List<? extends EventCore> getResultList(){
+        return resultList;
+    }
+
+
 
     @Override
     public void run(){
@@ -74,5 +91,6 @@ public class ThreadPoolCenter extends Thread{
             }
             // System.out.println(threadCount);
         }while (threadCount > 0);
+        resultList = eventList;
     }
 }

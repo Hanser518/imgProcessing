@@ -7,10 +7,10 @@ import controller.EdgeController;
 import entity.IMAGE;
 import threadPool.thread.ConVCalc;
 import threadPool.core.ThreadPoolCore;
-import service.imgService;
+import service.ImgService;
 import threadPool.core.ThreadPoolReflectCore;
 
-public class imgServiceImpl implements imgService {
+public class ImgServiceImpl implements ImgService {
     static private ThreadPoolCore conv;
     static private ThreadPoolReflectCore conv2;
     static EdgeController edgeCtrl = new EdgeController();
@@ -153,7 +153,6 @@ public class imgServiceImpl implements imgService {
 
     @Override
     public int[][] erosionImg(IMAGE px, int radius) {
-        double[][] kernel = new double[radius * 2 + 1][radius * 2 + 1];
         int width = px.getWidth();
         int height = px.getHeight();
         int[][] result = px.getPixelMatrix();
@@ -164,7 +163,10 @@ public class imgServiceImpl implements imgService {
                     for (int l = -radius; l < radius * 2 + 1; l++) {
                         try {
                             int r = (result[i + k][j + l] >> 16) & 0xFF;
-                            if (r >= 32) {
+                            int g = (result[i + k][j + l] >> 8) & 0xFF;
+                            int b = result[i + k][j + l] & 0xFF;
+                            int value = (int) (r * 0.33 + g * 0.33 + b * 0.33);
+                            if (value >= 32) {
                                 act++;
                             }
                         } catch (Exception ignored) {

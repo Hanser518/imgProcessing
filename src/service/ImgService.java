@@ -2,7 +2,7 @@ package service;
 
 import entity.IMAGE;
 
-public interface imgService {
+public interface ImgService {
     /**
      * 获取sobel算子计算边缘
      *

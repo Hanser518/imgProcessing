@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class ImgProcessingController {
     private final ICalculateService calcServer = new ICalculateServiceImpl();
     private final IPictureService picServer = new IPictureServiceImpl();

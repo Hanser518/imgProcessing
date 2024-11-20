@@ -4,8 +4,8 @@ import algorithm.cnn.core.ThreadPoolCenter;
 import algorithm.cnn.entity.*;
 import algorithm.cnn.param.DatabaseKernel;
 import entity.IMAGE;
-import service.imgService;
-import service.impl.imgServiceImpl;
+import service.ImgService;
+import service.impl.ImgServiceImpl;
 import threadPool.core.ThreadCore;
 import threadPool.core.ThreadPoolReflectCore;
 import threadPool.thread.ConVCalc;
@@ -32,7 +32,7 @@ public class ConvCalcService {
 
     public static Integer count1445687 = 0;
 
-    private static final imgService imgServ = new imgServiceImpl();
+    private static final ImgService imgServ = new ImgServiceImpl();
     private static ThreadPoolReflectCore conv2;
 
     public List<ImageCNN> convCalc(ImageCNN img, Integer model) {

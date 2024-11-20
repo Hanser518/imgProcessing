@@ -66,6 +66,11 @@ public class Param {
     public static int grilleType = 1;
 
     /**
+     *
+     */
+    public static boolean window;
+
+    /**
      * 封装后的字体
      */
     public static final Font countFont = new Font("Microsoft YaHei", Font.PLAIN, 16);

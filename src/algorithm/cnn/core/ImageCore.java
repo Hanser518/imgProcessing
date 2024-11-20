@@ -6,9 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 
-public abstract class ImageCore {
-    public static int GRAY_SINGLE_MODE = 1;
-    public static int GRAY_TREBLE_MODE = 3;
+public class ImageCore {
 
     /**
      * 图像源文件
@@ -35,15 +33,15 @@ public abstract class ImageCore {
     public ImageCore(String path) {
         try {
             rawFile = ImageIO.read(new File(path));
+            width = rawFile.getWidth();
+            height = rawFile.getHeight();
         } catch (IOException e) {
-            rawFile = new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
+            rawFile = null; //new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
+            throw new RuntimeException(e);
         }
-        width = rawFile.getWidth();
-        height = rawFile.getHeight();
     }
 
     public ImageCore() {
-        this.rawFile = null;
     }
 
     public ImageCore(BufferedImage image) {
@@ -61,7 +59,17 @@ public abstract class ImageCore {
     /**
      * 获取图像数据
      */
-    public BufferedImage getImg() {
+    public BufferedImage getRawFile() {
+        if (rawFile == null) {
+            rawFile = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            if (argbMatrix != null) {
+                for (int i = 0; i < width; i++) {
+                    for (int j = 0; j < height; j++) {
+                        rawFile.setRGB(i, j, argbMatrix[i][j]);
+                    }
+                }
+            }
+        }
         return rawFile;
     }
 
@@ -77,20 +85,6 @@ public abstract class ImageCore {
      */
     public int getWidth() {
         return width;
-    }
-
-    public BufferedImage getRawFile() {
-        if (rawFile == null) {
-            rawFile = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            if (argbMatrix != null) {
-                for (int i = 0; i < width; i++) {
-                    for (int j = 0; j < height; j++) {
-                        rawFile.setRGB(i, j, argbMatrix[i][j]);
-                    }
-                }
-            }
-        }
-        return rawFile;
     }
 
     /**
@@ -282,12 +276,11 @@ public abstract class ImageCore {
      * @param horizontal 水平方向填充量
      * @param vertical   竖直方向填充量
      */
-    public static ImageCore fillImageEdge(ImageCore img, int horizontal, int vertical) {
+    public static <T extends ImageCore> T fillImageEdge(T img, int horizontal, int vertical) {
         int width = img.getWidth();     // 宽
         int height = img.getHeight();   // 高
         BufferedImage image = img.getRawFile();
         BufferedImage newImg = new BufferedImage(width + 2 * horizontal, height + 2 * vertical, BufferedImage.TYPE_INT_ARGB);
-        int[][] result = new int[width + 2 * horizontal][height + 2 * vertical];
         for (int i = 0; i < width + 2 * horizontal; i++) {
             for (int j = 0; j < height + 2 * vertical; j++) {
                 if (i < horizontal) {
@@ -317,11 +310,9 @@ public abstract class ImageCore {
         }
         try{
             Constructor<? extends ImageCore> constructorOfImage = img.getClass().getConstructor(BufferedImage.class);
-            return constructorOfImage.newInstance(newImg);
-
-        }catch (Exception e){
-            System.out.println("ERROR:" + e.getMessage());
-            return null;
+            return (T) constructorOfImage.newInstance(newImg);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
