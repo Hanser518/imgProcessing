@@ -9,6 +9,7 @@ import frame.service.IFileService;
 import frame.service.InitializeService;
 import frame.service.impl.IFileServiceImpl;
 import frame.service.impl.InitializeServiceImpl;
+import netscape.javascript.JSObject;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -22,21 +23,30 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 import static frame.entity.Param.*;
 
 public class FrameBase {
     private boolean fileBarOpen = true;
     private boolean operateBarOpen = false;
+    private boolean layerBarOpen = false;
 
     private static JFrame baseFrame;
     private static final JLabel fileNameLabel = new JLabel();
+    private static final JLabel layerLabel = new JLabel();
     private static JLabel centerLabel;
-    private static JLabel previewLabel;
+    private static final JPanel layerPanel = new JPanel();
     private static final JPanel fileChoosePanel = new JPanel();
     private static JScrollPane sideBar = new JScrollPane();
+    private static JScrollPane sidePanel = new JScrollPane();
+    private static final JPanel thumbPanel = new JPanel();
+
 
     private static final IFileService fileService = new IFileServiceImpl();
     private static final InitializeService initServ = new InitializeServiceImpl();
@@ -48,12 +58,15 @@ public class FrameBase {
     private static final BlurController blurCtrl = new BlurController();
     private static final ImgController imgCtrl2 = new ImgController();
 
+
+
     private boolean init = false;
     private int sx, sy;
 
     public static void main(String[] args) {
         System.out.println("Hello image");
         SwingUtilities.invokeLater(FrameBase::new);
+
     }
 
     public FrameBase() {
@@ -61,15 +74,17 @@ public class FrameBase {
         System.setProperty("awt.useSystemAAFontSettings", "on");
         System.setProperty("swing.aatext", "true");
 
+        testFunction(blurCtrl.getClass(), "getQuickGasBlur", null);
+
         baseFrame = initServ.initializeMainFrame();
         centerLabel = initServ.initializeCenterLabel();
 
         JScrollPane scrollPane = new JScrollPane(centerLabel);
-        previewLabel = new JLabel();
         processLabel.setFont(funcFont);
         processLabel.setForeground(Color.WHITE);
         updateSideBar(fileChoosePanel);
         fileChoosePanel.setBackground(new Color(255, 255, 255));
+        initLayerPanel();
         initServ.initializeFileList();
 
         baseFrame.add(sideBar, BorderLayout.WEST);
@@ -80,32 +95,42 @@ public class FrameBase {
     }
 
     public static IMAGE updateNode(IMAGE newImage, int operation) {
+        ImageNode nodeNow = imageLayer.getNode(imageLayer.getIndex());
         switch (operation) {
             case ADD_NODE -> {
                 ImageNode next = new ImageNode(newImage);
-                node.next = next;
-                next.prev = node;
-                node = next;
-                node.nodeName = new File(pathNow).getName();
+                nodeNow.next = next;
+                next.prev = nodeNow;
+                nodeNow = next;
+                nodeNow.nodeName = new File(pathNow).getName();
             }
             case CANCEL_NODE -> {
-                if (node.prev != null) {
-                    node = node.prev;
+                if (nodeNow.prev != null) {
+                    nodeNow = nodeNow.prev;
                 }
             }
             case RETRY_NODE -> {
-                if (node.next != null) {
-                    node = node.next;
+                if (nodeNow.next != null) {
+                    nodeNow = nodeNow.next;
                 }
             }
             case CLEAR_NODE -> {
-                node.next = null;
-                node.prev = null;
-                node.image = new IMAGE();
+                nodeNow.next = null;
+                nodeNow.prev = null;
+                nodeNow.image = new IMAGE();
             }
         }
-        fileNameLabel.setText(node.nodeName);
-        return node.image;
+        fileNameLabel.setText(nodeNow.nodeName);
+        System.out.println("Operation Layer:" + imageLayer.getIndex());
+        imageLayer.updateLayer(nodeNow, imageLayer.getIndex());
+        return nodeNow.image;
+    }
+
+    public static IMAGE updateNode(){
+        ImageNode nodeNow = imageLayer.getNode(imageLayer.getIndex());
+        fileNameLabel.setText(nodeNow.nodeName);
+        System.out.println("Operation Layer:" + imageLayer.getIndex());
+        return nodeNow.image;
     }
 
     public static void updateCenterLabel(boolean finish) {
@@ -118,6 +143,7 @@ public class FrameBase {
     }
 
     public static void updateCenterLabel(IMAGE newImage) {
+        updateLayerThumb(imageLayer.getIndex());
         centerLabel.setText(null);
         // 获取图像宽高，计算比例
         int imgWidth = newImage.getWidth();
@@ -131,6 +157,7 @@ public class FrameBase {
     }
 
     public static void updateCenterLabel(String path) {
+        updateLayerThumb(imageLayer.getIndex());
         centerLabel.setIcon(null);
         try {
             File f = new File(path);
@@ -193,6 +220,16 @@ public class FrameBase {
         baseFrame.repaint(); // 重新绘制组件
     }
 
+    public static void updateSideBar2(JPanel component) {
+        if(sidePanel != null) {
+            baseFrame.remove(sidePanel);
+        }
+        sidePanel = new JScrollPane(component);
+        baseFrame.add(sidePanel, BorderLayout.EAST);
+        baseFrame.revalidate(); // 重新验证布局
+        baseFrame.repaint(); // 重新绘制组件
+    }
+
     public static void fileChooser(File file) {
         String suffix = fileService.getFileType(file);
         pathNow = file.getAbsolutePath();
@@ -209,6 +246,83 @@ public class FrameBase {
         }
     }
 
+    public static void initLayerPanel() {
+        layerPanel.setBackground(new Color(235, 235, 235));
+        layerPanel.setLayout(new BorderLayout());
+        int[] layerCount = imageLayer.getRange();
+        layerLabel.setText(String.format("%d/%d", imageLayer.getIndex() + 1, layerCount[1]));
+        layerLabel.setHorizontalAlignment(JLabel.CENTER);
+
+        JButton layerUp = Param.functionButton2("+");
+        JButton layerDown = Param.functionButton2("-");
+        layerUp.addActionListener(ac -> {
+            if(imageLayer.getIndex() >= imageLayer.getRange()[1] - 1){
+                imageLayer.addLayer(new IMAGE());
+            }
+            imageLayer.setIndex(imageLayer.getIndex() != null ? imageLayer.getIndex() + 1 : 0);
+            layerLabel.setText(String.format("%d/%d", imageLayer.getIndex() + 1, imageLayer.getRange()[1]));
+            updateCenterLabel(updateNode());
+        });
+        layerDown.addActionListener(ac -> {
+            imageLayer.setIndex(imageLayer.getIndex() > 0 ? imageLayer.getIndex() - 1 : 0);
+            layerLabel.setText(String.format("%d/%d", imageLayer.getIndex() + 1, imageLayer.getRange()[1]));
+            updateCenterLabel(updateNode());
+        });
+
+        JPanel paramPanel = new JPanel();
+        paramPanel.setLayout(new GridLayout(2, 1));
+        paramPanel.add(layerLabel);
+
+        JPanel optionPanel = new JPanel();
+        optionPanel.setLayout(new GridLayout(1, 2));
+        optionPanel.add(layerUp);
+        optionPanel.add(layerDown);
+
+        paramPanel.add(optionPanel);
+
+        thumbPanel.setLayout(new BoxLayout(thumbPanel, BoxLayout.PAGE_AXIS));
+        layerPanel.add(paramPanel, BorderLayout.NORTH);
+        layerPanel.add(thumbPanel, BorderLayout.CENTER);
+    }
+
+    public static void updateLayerThumb(Integer index){
+        int[] range = imageLayer.getRange();
+        if(range[1] > thumbList.size()){
+            System.out.println("THUMB IN");
+            for(int i = thumbList.size();i < range[1];i ++){
+                ImageNode node = imageLayer.getNode(i);
+                IMAGE nodeImg = node.image;
+                double imgRate = Math.min((double) 100 / nodeImg.getWidth(), (double) 100 / nodeImg.getHeight());
+                nodeImg = pcsCtrl.resizeImage(nodeImg, imgRate, pcsCtrl.RESIZE_ENTIRETY);
+                JLabel thumbLabel = new JLabel();
+                thumbLabel.setIcon(new ImageIcon(nodeImg.getImg()));
+                thumbLabel.setBorder(new TitledBorder(new EtchedBorder(), node.nodeName));
+                int finalI = i;
+                thumbLabel.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        imageLayer.setIndex(finalI);
+                        layerLabel.setText(String.format("%d/%d", imageLayer.getIndex() + 1, imageLayer.getRange()[1]));
+                        updateCenterLabel(updateNode());
+                        System.out.println("CLICK:" + finalI);
+                    }
+                });
+                thumbList.add(thumbLabel);
+                thumbPanel.add(thumbLabel);
+            }
+        }else{
+            ImageNode node = imageLayer.getNode(index);
+            IMAGE nodeImg = node.image;
+            double imgRate = Math.min((double) 100 / nodeImg.getWidth(), (double) 100 / nodeImg.getHeight());
+            nodeImg = pcsCtrl.resizeImage(nodeImg, imgRate, pcsCtrl.RESIZE_ENTIRETY);
+            JLabel thumbLabel = thumbList.get(index);
+            thumbLabel.setIcon(new ImageIcon(nodeImg.getImg()));
+            thumbLabel.setBorder(new TitledBorder(new EtchedBorder(), node.nodeName));
+            thumbList.set(index, thumbLabel);
+        }
+
+    }
+
     public JPanel headPanel() {
         JPanel headPanel = new JPanel();
         headPanel.setBackground(new Color(177, 123, 89));
@@ -218,6 +332,7 @@ public class FrameBase {
         fileBtn.addActionListener(e -> {
             fileBarOpen = !fileBarOpen;
             operateBarOpen = false;
+            layerBarOpen = false;
             updateSideBar(fileBarOpen ? fileChoosePanel : null);
         });
         headPanel.add(fileBtn);
@@ -226,10 +341,17 @@ public class FrameBase {
         operation.addActionListener(e -> {
             operateBarOpen = !operateBarOpen;
             fileBarOpen = false;
+            layerBarOpen = false;
             updateSideBar(operateBarOpen ? OperationBar() : null);
         });
         headPanel.add(operation);
 
+        JButton layer = new JButton("Layer");
+        layer.addActionListener(e -> {
+            layerBarOpen = !layerBarOpen;
+            updateSideBar2(layerBarOpen ? layerPanel : null);
+        });
+        headPanel.add(layer);
 
         fileNameLabel.setFont(titalFont);
         fileNameLabel.setForeground(Color.white);
@@ -307,7 +429,7 @@ public class FrameBase {
         gasBlurPanel.setLayout(new GridLayout(2, 1));
         gasBlurPanel.setBorder(new TitledBorder(new EtchedBorder(), "GasBlur"));
         JSlider gasSlider = new JSlider(1, MAX_BLUR, blurRadio);
-        JButton model = Param.functionButton("Quick");
+        JButton model = functionButton("Quick");
 
 
         gasSlider.addChangeListener(change -> {
@@ -319,9 +441,9 @@ public class FrameBase {
         gasBtn.addActionListener(ac -> {
             IMAGE gas;
             if (BLUR_QUICK) {
-                gas = blurCtrl.getQuickGasBlur(Param.image, Param.blurRadio, 32);
+                gas = blurCtrl.getQuickGasBlur(image, blurRadio, 32);
             } else {
-                gas = blurCtrl.getGasBlur(Param.image, Param.blurRadio, 32);
+                gas = blurCtrl.getGasBlur(image, blurRadio, 32);
             }
             updateCenterLabel(updateNode(gas, ADD_NODE));
         });
@@ -700,5 +822,28 @@ public class FrameBase {
         return panel;
     }
 
-
+    public void testFunction(Class<?> classOfService,
+                             String methodName,
+                             Map<String, Object> params) {
+        try {
+            Method[] methodList = classOfService.getDeclaredMethods();
+            Method method = null;
+            for (Method m : methodList) {
+                if (m.getName().equals(methodName)) {
+                    method = m;
+                    System.out.println("Catch method:" + methodName);
+                }
+            }
+            if (method == null) {
+                System.out.println("No such method:" + methodName);
+                return;
+            }
+            Parameter[] paramList = method.getParameters();
+            for (Parameter p : paramList) {
+                System.out.println(p.isNamePresent() + "|" + p.getParameterizedType());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

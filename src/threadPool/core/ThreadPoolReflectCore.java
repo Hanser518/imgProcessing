@@ -45,7 +45,7 @@ public class ThreadPoolReflectCore {
         this.width = requestData.length;
         this.height = requestData[0].length;
         this.kernel = ConVKernel;
-        this.threadCountLimit = MaxThreadCount < 0 ? 999 : Math.min(MaxThreadCount, 8);
+        this.threadCountLimit = MaxThreadCount < 0 ? 999 : Math.min(MaxThreadCount, 12);
         this.threadCount = Math.min((int) Math.sqrt(kernel.length) + 3, threadCountLimit);
         classOfThread = threadItem.getClass();
         initEvent();

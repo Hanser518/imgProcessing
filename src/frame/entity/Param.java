@@ -47,6 +47,8 @@ public class Param {
      */
     public static IMAGE image = new IMAGE();
     public static ImageNode node = new ImageNode(image);
+    public static Layer imageLayer = new Layer();
+    public static ArrayList<JLabel> thumbList = new ArrayList<>();
 
     /**
      * 节点操作参数
@@ -95,6 +97,12 @@ public class Param {
         btn.setFont(Param.funcFont);
         btn.setContentAreaFilled(false);
         // btn.setBorderPainted(false);
+        return btn;
+    }
+
+    public static JButton functionButton2(String name){
+        JButton btn = functionButton(name);
+        btn.setBorderPainted(false);
         return btn;
     }
 
