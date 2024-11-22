@@ -23,14 +23,14 @@ public class imgReflectTest {
 
         imgCtrl2.showImg(px, "reflect");
         set1 = System.currentTimeMillis();
-        conv = new ThreadPoolReflectCore(px.getPixelMatrix(), calcService.getGasKernel(67), 24, new PaperBlur());
+        conv = new ThreadPoolReflectCore(px.getArgbMatrix(), calcService.getGasKernel(67), 24, new PaperBlur());
         conv.start();
         System.out.println((System.currentTimeMillis() - set1) / 1000.0);
         res = new IMAGE(conv.getData());
         imgCtrl2.showImg(res, "paper");
 
         set1 = System.currentTimeMillis();
-        conv = new ThreadPoolReflectCore(px.getPixelMatrix(), calcService.getGasKernel(3), 24, new ConfActive());
+        conv = new ThreadPoolReflectCore(px.getArgbMatrix(), calcService.getGasKernel(3), 24, new ConfActive());
         conv.customMethod("setThreshold", 32);
         conv.start();
         System.out.println((System.currentTimeMillis() - set1) / 1000.0);
@@ -38,14 +38,14 @@ public class imgReflectTest {
         imgCtrl2.showImg(res, "ac");
 
         set1 = System.currentTimeMillis();
-        conv = new ThreadPoolReflectCore(px.getPixelMatrix(), calcService.getGasKernel(30), 24, new ConVCalc());
+        conv = new ThreadPoolReflectCore(px.getArgbMatrix(), calcService.getGasKernel(30), 24, new ConVCalc());
         conv.start();
         System.out.println((System.currentTimeMillis() - set1) / 1000.0);
         res = new IMAGE(conv.getData());
         imgCtrl2.showImg(res, "conv");
 
         set1 = System.currentTimeMillis();
-        conv = new ThreadPoolReflectCore(px.getPixelMatrix(), calcService.getGasKernel(67), 32, new ConVStrange());
+        conv = new ThreadPoolReflectCore(px.getArgbMatrix(), calcService.getGasKernel(67), 32, new ConVStrange());
         conv.start();
         System.out.println((System.currentTimeMillis() - set1) / 1000.0);
         res = new IMAGE(conv.getData());

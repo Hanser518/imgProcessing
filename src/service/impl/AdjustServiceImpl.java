@@ -50,7 +50,7 @@ public class AdjustServiceImpl implements IAdjustService {
         double c2 = bottom - Math.pow(endPoint, 2) * a2 - endPoint * b2;
 
         // 4.计算图像
-        int[][] result = px.getPixelMatrix();
+        int[][] result = px.getArgbMatrix();
         for (int i = 0; i < result.length; i++) {
             for (int j = 0; j < result[i].length; j++) {
                 double enhance = 1;
@@ -79,7 +79,7 @@ public class AdjustServiceImpl implements IAdjustService {
     public int[][] AdjustSaturation(IMAGE px, int sat) {
         int s = Math.max(-100, Math.min(100, sat));
         double adRate = 1.0 + s * 0.005;    // 调整最大范围为0.5 ~ 1.5
-        double[][][] hsv = px.RGB2HSV();
+        double[][][] hsv = px.getHsvMatrix();
         for (int i = 0; i < px.getWidth(); i++) {
             for (int j = 0; j < px.getHeight(); j++) {
                 hsv[i][j][1] = Math.min(hsv[i][j][1] * adRate, 1.0);
@@ -92,7 +92,7 @@ public class AdjustServiceImpl implements IAdjustService {
     public int[][] AdjustValue(IMAGE px, int val) {
         int v = Math.max(-100, Math.min(100, val));
         double adRate = 1.0 + v * 0.005;    // 调整最大范围为0.5 ~ 1.5
-        double[][][] hsv = px.RGB2HSV();
+        double[][][] hsv = px.getHsvMatrix();
         for (int i = 0; i < px.getWidth(); i++) {
             for (int j = 0; j < px.getHeight(); j++) {
                 hsv[i][j][2] = Math.min(hsv[i][j][2] * adRate, 1.0);
@@ -107,7 +107,7 @@ public class AdjustServiceImpl implements IAdjustService {
         double sRate = 1.0 + s * 0.005;    // 调整最大范围为0.5 ~ 1.5
         int v = Math.max(-100, Math.min(100, val));
         double vRate = 1.0 + v * 0.005;    // 调整最大范围为0.5 ~ 1.5
-        double[][][] hsv = px.RGB2HSV();
+        double[][][] hsv = px.getHsvMatrix();
         for (int i = 0; i < px.getWidth(); i++) {
             for (int j = 0; j < px.getHeight(); j++) {
                 hsv[i][j][1] = Math.min(hsv[i][j][1] * sRate, 1.0);
@@ -129,7 +129,7 @@ public class AdjustServiceImpl implements IAdjustService {
 
     @Override
     public int[][] test(IMAGE px, int value) {
-        double[][][] hsv = px.RGB2HSV();
+        double[][][] hsv = px.getHsvMatrix();
 
         double p1x = 0.33 * Math.sin(Math.toRadians(0));
         double p1y = 0.33 * Math.cos(Math.toRadians(0));

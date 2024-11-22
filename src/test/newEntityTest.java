@@ -14,11 +14,11 @@ public class newEntityTest {
         long set;
 
         set = System.currentTimeMillis();
-        IMAGE raw = new IMAGE(px.getPixelMatrix());
+        IMAGE raw = new IMAGE(px.getArgbMatrix());
         System.out.println("RAW: " + (System.currentTimeMillis() - set));
 
         set = System.currentTimeMillis();
-        ImageC te = new ImageC(px.getPixelMatrix());
+        ImageC te = new ImageC(px.getArgbMatrix());
         System.out.println("NEW: " + (System.currentTimeMillis() - set));
 
         set = System.currentTimeMillis();

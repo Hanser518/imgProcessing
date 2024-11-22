@@ -17,11 +17,11 @@ public class ImgServiceImpl implements ImgService {
 
     private int[][] doubleKernelCalc(IMAGE px, double[][] kernel1, double[][] kernel2) throws Exception {
         // 获取x方向的sobel
-        conv2 = new ThreadPoolReflectCore(px.getGrayMatrixInArgbModule(), kernel1, 24, new ConVCalc());
+        conv2 = new ThreadPoolReflectCore(px.getGrayMatrix(), kernel1, 24, new ConVCalc());
         conv2.start();
         int[][] sobelX = conv2.getData();
         // 获取y方向的sobel
-        conv2 = new ThreadPoolReflectCore(px.getGrayMatrixInArgbModule(), kernel2, 24, new ConVCalc());
+        conv2 = new ThreadPoolReflectCore(px.getGrayMatrix(), kernel2, 24, new ConVCalc());
         conv2.start();
         int[][] sobelY = conv2.getData();
         // 合并计算结果
@@ -30,11 +30,11 @@ public class ImgServiceImpl implements ImgService {
         int[][] result = new int[width][height];
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                int value1 = px.getArgbParams(sobelX[i][j])[1];
-                int value2 = px.getArgbParams(sobelY[i][j])[1];
+                int value1 = sobelX[i][j] & 0xFF;
+                int value2 = sobelY[i][j] & 0xFF;
                 int value = (int) Math.sqrt(Math.pow(value1, 2) + Math.pow(value2, 2));
                 value = value > 16 ? value : 0;
-                result[i][j] = px.getPixParams(new int[]{255, value, value, value});
+                result[i][j] = 255 << 24 | value << 16 | value << 8 | value;
             }
         }
         return result;
@@ -68,7 +68,7 @@ public class ImgServiceImpl implements ImgService {
 //                { 0, 2, 0, 0,-2},
 //                { 0, 0, 2, 0, 0}
 //        };
-        conv2 = new ThreadPoolReflectCore(px.getGrayMatrixInArgbModule(), kernel, 24, new ConVCalc());
+        conv2 = new ThreadPoolReflectCore(px.getGrayMatrix(), kernel, 24, new ConVCalc());
         // conv2 = new ThreadPoolReflectCore(px.getArgbMatrix(), kernel, 24, new ConVCalc());
         conv2.start();
         int width = px.getWidth();
@@ -77,9 +77,9 @@ public class ImgServiceImpl implements ImgService {
         int[][] result = new int[width][height];
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                int value = px.getArgbParams(data[i][j])[1];
+                int value = data[i][j] & 0xFF;
                 // value = value > 8 ? 180 : 0;
-                result[i][j] = px.getPixParams(new int[]{255, value, value, value});
+                result[i][j] = 255 << 24 | value << 16 | value << 8 | value;
 //                int r = (data[i][j] >> 16) * 0xFF;
 //                int g = (data[i][j] >> 8) * 0xFF;
 //                int b = data[i][j] * 0xFF;
@@ -94,7 +94,7 @@ public class ImgServiceImpl implements ImgService {
     public int[][] paddingImg(IMAGE px, int radius) {
         int width = px.getWidth();
         int height = px.getHeight();
-        int[][] result = px.getPixelMatrix();
+        int[][] result = px.getArgbMatrix();
         for (int j = 0; j < height; j++) {
             for (int i = 0; i < width; i++) {
                 double act = 0;
@@ -112,7 +112,7 @@ public class ImgServiceImpl implements ImgService {
                     }
                 }
                 if (act > Math.pow(radius * 2 + 1, 2) / 3.0) {
-                    result[i][j] = px.getPixParams(new int[]{255, 187, 187, 187});
+                    result[i][j] = 255 << 24 | 187 << 16 | 187 << 8 | 187;
                 }
             }
         }
@@ -155,7 +155,7 @@ public class ImgServiceImpl implements ImgService {
     public int[][] erosionImg(IMAGE px, int radius) {
         int width = px.getWidth();
         int height = px.getHeight();
-        int[][] result = px.getPixelMatrix();
+        int[][] result = px.getArgbMatrix();
         for (int j = 0; j < height; j++) {
             for (int i = 0; i < width; i++) {
                 double act = 0;
@@ -174,7 +174,7 @@ public class ImgServiceImpl implements ImgService {
                     }
                 }
                 if (act <= Math.pow(radius * 2 + 1, 2) * 0.85) {
-                    result[i][j] = px.getPixParams(new int[]{255, 0, 0, 0});
+                    result[i][j] = 255 << 24 | 0 << 16 | 0 << 8 | 0;
                 }
             }
         }
@@ -185,7 +185,7 @@ public class ImgServiceImpl implements ImgService {
     public int[][] traceImg(IMAGE px) throws Exception {
         int width = px.getWidth();
         int height = px.getHeight();
-        double[][][] hsv = px.RGB2HSV();
+        double[][][] hsv = px.getHsvMatrix();
         IMAGE edge = edgeCtrl.getImgEdge(px, EdgeController.SOBEL);
         EdgeTrace edgeTrace = new EdgeTrace(edge);
         edgeTrace.start(EdgeTrace.PATTERN_ONE);
@@ -200,7 +200,7 @@ public class ImgServiceImpl implements ImgService {
     @Override
     public int[][] getThumbnail(IMAGE px, int step) {
         System.out.println("Thumbnail");
-        int[][] matrix = px.getPixelMatrix();
+        int[][] matrix = px.getArgbMatrix();
         int width = px.getWidth();
         int height = px.getHeight();
         int resWidth = width / step;

@@ -2,6 +2,8 @@ package algorithm.cnn.core;
 
 // 批量多线程处理输入图形
 
+import entity.Image2;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -17,7 +19,7 @@ public class ThreadPoolCenter extends Thread{
     protected List<? extends EventCore> resultList;    // ⌛待处理事件列表
 
 
-    public ThreadPoolCenter(List<? extends ImageCore> imgList, double[][] kernel,
+    public ThreadPoolCenter(List<? extends Image2> imgList, double[][] kernel,
                             Class<? extends EventCore> eventClass,
                             Integer maxThreads, Boolean fillImage) {
         List<EventCore> eventList = new ArrayList<>();
@@ -25,12 +27,12 @@ public class ThreadPoolCenter extends Thread{
             Constructor<? extends EventCore> constructorOfEvent = eventClass.getConstructor();
             Field filedData = eventClass.getDeclaredField("data");
             Field filedKernel = eventClass.getDeclaredField("kernel");
-            for(ImageCore img : imgList){
+            for(Image2 img : imgList){
                 EventCore en = constructorOfEvent.newInstance();
                 if(fillImage) {
-                    img = ImageCore.fillImageEdge(img, kernel.length / 2, kernel[0].length / 2);
+                    img = Image2.fillImageEdge(img, kernel.length / 2, kernel[0].length / 2);
                 }
-                filedData.set(en, img.argbMatrix);
+                filedData.set(en, img.getArgbMatrix());
                 filedKernel.set(en, kernel);
                 eventList.add(en);
             }
@@ -46,11 +48,11 @@ public class ThreadPoolCenter extends Thread{
         initThreads(maxThreads);
     }
 
-    public <T extends ImageCore> ThreadPoolCenter(T img, Class<? extends EventCore> eventClass, double[][] kernel, Boolean fillImage){
+    public <T extends Image2> ThreadPoolCenter(T img, Class<? extends EventCore> eventClass, double[][] kernel, Boolean fillImage){
 
         // 判断对图像进行填充
         if(fillImage == null || fillImage){
-            img = ImageCore.fillImageEdge(img, kernel.length / 2, kernel[0].length / 2);
+            img = Image2.fillImageEdge(img, kernel.length / 2, kernel[0].length / 2);
         }
 
 

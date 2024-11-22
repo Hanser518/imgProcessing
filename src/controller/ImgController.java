@@ -35,7 +35,7 @@ public class ImgController {
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }
-        int[][] p = img.getPixelMatrix();
+        int[][] p = img.getArgbMatrix();
         int width = img.getWidth();
         int height = img.getHeight();
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);

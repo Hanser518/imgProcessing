@@ -1,4 +1,4 @@
-package algorithm.cnn.core;
+package entity;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 
-public class ImageCore {
+public class Image2 {
 
     /**
      * 图像源文件
@@ -30,7 +30,7 @@ public class ImageCore {
      *
      * @param path 文件路径
      */
-    public ImageCore(String path) {
+    public Image2(String path) {
         try {
             rawFile = ImageIO.read(new File(path));
             width = rawFile.getWidth();
@@ -41,16 +41,16 @@ public class ImageCore {
         }
     }
 
-    public ImageCore() {
+    public Image2() {
     }
 
-    public ImageCore(BufferedImage image) {
+    public Image2(BufferedImage image) {
         this.rawFile = image;
         width = rawFile.getWidth();
         height = rawFile.getHeight();
     }
 
-    public ImageCore(int[][] argbMatrix){
+    public Image2(int[][] argbMatrix){
         this.width = argbMatrix.length;
         this.height = argbMatrix[0].length;
         this.argbMatrix = argbMatrix;
@@ -276,7 +276,7 @@ public class ImageCore {
      * @param horizontal 水平方向填充量
      * @param vertical   竖直方向填充量
      */
-    public static <T extends ImageCore> T fillImageEdge(T img, int horizontal, int vertical) {
+    public static <T extends Image2> T fillImageEdge(T img, int horizontal, int vertical) {
         int width = img.getWidth();     // 宽
         int height = img.getHeight();   // 高
         BufferedImage image = img.getRawFile();
@@ -309,14 +309,14 @@ public class ImageCore {
             }
         }
         try{
-            Constructor<? extends ImageCore> constructorOfImage = img.getClass().getConstructor(BufferedImage.class);
+            Constructor<? extends Image2> constructorOfImage = img.getClass().getConstructor(BufferedImage.class);
             return (T) constructorOfImage.newInstance(newImg);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static void resetImage(ImageCore img, BufferedImage image){
+    public static void resetImage(Image2 img, BufferedImage image){
         img.rawFile = image;
         img.width = image.getWidth();
         img.height = image.getHeight();

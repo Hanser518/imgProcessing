@@ -14,18 +14,19 @@ import java.util.List;
 public class IPictureServiceImpl implements IPictureService {
     static ICalculateService calculateServer = new ICalculateServiceImpl();
     static int[][] imgData = null;
+
     @Override
     public IMAGE getSubImage(IMAGE img, int width, int height, int startX, int startY) {
         int W = width + startX > img.getWidth() ? img.getWidth() - startX : width;
         int H = height + startY > img.getHeight() ? img.getHeight() - startY : height;
         int[][] px = new int[W][H];
-        if(W == 0 || H == 0){
+        if (W == 0 || H == 0) {
             System.out.println(width + " " + height + " " + startX + " " + startY);
             System.out.println(W + " " + H);
         }
-        int[][] raw = img.getPixelMatrix();
-        for(int i = 0;i < W;i ++){
-            for(int j = 0;j < H;j ++){
+        int[][] raw = img.getArgbMatrix();
+        for (int i = 0; i < W; i++) {
+            for (int j = 0; j < H; j++) {
                 px[i][j] = raw[i + startX][j + startY];
             }
         }
@@ -36,39 +37,39 @@ public class IPictureServiceImpl implements IPictureService {
     public IMAGE getCombineImage(List<IMAGE> images, boolean horizontal) {
         int width = 0;
         int height = 0;
-        for(IMAGE img: images){
-            if(horizontal){
+        for (IMAGE img : images) {
+            if (horizontal) {
                 width += img.getWidth();
                 height = img.getHeight();
-            }else{
+            } else {
                 width = img.getWidth();
                 height += img.getHeight();
             }
         }
         int[][] px = new int[width][height];
-        if(horizontal){
+        if (horizontal) {
             int x = 0;
-            for(int count = 0;count < images.size();count ++){
-                int[][] raw = images.get(count).getPixelMatrix();
-                for(int i = 0;i < raw.length;i ++){
-                    for(int j = 0;j < raw[0].length;j ++){
+            for (int count = 0; count < images.size(); count++) {
+                int[][] raw = images.get(count).getArgbMatrix();
+                for (int i = 0; i < raw.length; i++) {
+                    for (int j = 0; j < raw[0].length; j++) {
                         px[x][j] = raw[i][j];
                     }
-                    x ++;
+                    x++;
                 }
             }
-        }else{
+        } else {
             int y = 0;
-            for(int count = 0;count < images.size();count ++){
-                int[][] raw = images.get(count).getPixelMatrix();
-                for(int j = 0;j < raw[0].length;j ++){
-                    for(int i = 0;i < raw.length;i ++){
+            for (int count = 0; count < images.size(); count++) {
+                int[][] raw = images.get(count).getArgbMatrix();
+                for (int j = 0; j < raw[0].length; j++) {
+                    for (int i = 0; i < raw.length; i++) {
 //                        if(y > 120){
 //                            System.out.println(i + " " + j + " " + raw.length + " " + raw[0].length);
 //                        }
                         px[i][y] = raw[i][j];
                     }
-                    y ++;
+                    y++;
                 }
             }
         }
@@ -87,7 +88,7 @@ public class IPictureServiceImpl implements IPictureService {
 
     @Override
     public IMAGE getUltraGas(IMAGE img, int baseSize, int maxSize) {
-        int[][] map = img.getPixelMatrix();
+        int[][] map = img.getArgbMatrix();
         int[][] result = new int[img.getWidth()][img.getHeight()];
         int[][] maxFill = calculateServer.pixFill(map, calculateServer.getGasKernel(maxSize));
         // System.out.printf("Building Map...\n");
@@ -142,79 +143,79 @@ public class IPictureServiceImpl implements IPictureService {
         double[][] kernel_y = {
                 {1, 2, 1},
                 {0, 0, 0},
-                {-1,-2,-1}
+                {-1, -2, -1}
         };
         IMAGE gray = getGrayImage(img);
         // Sobel计算边缘
-        int[][] sobelX = calculateServer.convolution(gray, kernel_x, multiThreads, accurateCalculate, true).getPixelMatrix();
-        int[][] sobelY = calculateServer.convolution(gray, kernel_y, multiThreads, accurateCalculate, true).getPixelMatrix();
+        int[][] sobelX = calculateServer.convolution(gray, kernel_x, multiThreads, accurateCalculate, true).getArgbMatrix();
+        int[][] sobelY = calculateServer.convolution(gray, kernel_y, multiThreads, accurateCalculate, true).getArgbMatrix();
         int[][] matrix = new int[img.getWidth()][img.getHeight()];
         int[][] edge = new int[img.getWidth()][img.getHeight()];
         List<PIXEL> pointList = new ArrayList<>();
         PIXEL p = new PIXEL();
-        for(int i = 0;i < img.getWidth();i ++) {
+        for (int i = 0; i < img.getWidth(); i++) {
             for (int j = 0; j < img.getHeight(); j++) {
-                int[] pm = {255, 0, 0, 0};
-                int[] psx = img.getArgbParams(sobelX[i][j]);
-                int[] psy = img.getArgbParams(sobelY[i][j]);
-                pm[1] = (int) Math.sqrt(psx[1] * psx[1] + psy[1] * psy[1]);
-                pm[2] = (int) Math.sqrt(psx[2] * psx[2] + psy[2] * psy[2]);
-                pm[3] = (int) Math.sqrt(psx[3] * psx[3] + psy[3] * psy[3]);
-                matrix[i][j] = img.getPixParams(pm);
-                if(img.getGrayPixel(pm) > 160){
-                    p = new PIXEL(pm, i, j);
+                int r, g, b;
+                int xValue = sobelX[i][j];
+                int yValue = sobelY[i][j];
+                r = (int) Math.sqrt(Math.pow((xValue >> 16) & 0xFF, 2) + Math.pow((yValue >> 16) & 0xFF, 2));
+                g = (int) Math.sqrt(Math.pow((xValue >> 8) & 0xFF, 2) + Math.pow((yValue >> 8) & 0xFF, 2));
+                b = (int) Math.sqrt(Math.pow((xValue) & 0xFF, 2) + Math.pow((yValue) & 0xFF, 2));
+                matrix[i][j] = 255 << 24 | r << 16 | g << 8 | b;
+                if (r > 160) {
+                    p = new PIXEL(new int[]{255, r, g, b}, i, j);
                     pointList.add(p);
                     // edge[i][j] = img.getGrayPixel(pm);
-                }else{
+                } else {
                     edge[i][j] = 0;
                 }
             }
         }
-        if(!pureEdge){
-            if(erosion){
+        if (!pureEdge) {
+            if (erosion) {
                 return calculateServer.erosion(new IMAGE(matrix));
             }
             return new IMAGE(matrix);
         }
         // 尝试在matrix中获取一个阈值点
-        int[][] map = img.getGrayMatrix(matrix);
-        if(erosion){
+        int[][] map = new IMAGE(matrix).getGrayMatrix();
+        if (erosion) {
             IMAGE eros = calculateServer.erosion(new IMAGE(matrix));
-            map = img.getGrayMatrix(eros.getPixelMatrix());
+            map = eros.getGrayMatrix();
         }
-        while(!pointList.isEmpty()){
+        while (!pointList.isEmpty()) {
             PIXEL stackTop = pointList.get(pointList.size() - 1);
             PIXEL result = broadcastSearch(map, stackTop);
-            if(result == null){
+            if (result == null) {
                 pointList.remove(pointList.size() - 1);
-            }else{
+            } else {
                 pointList.add(result);
-                edge[result.x][result.y] = img.getGrayPixel(result.argb);
+//                edge[result.x][result.y] = img.getGrayPixel(result.argb);
             }
             // System.out.print("\r" + pointList.size());
         }
         System.out.println();
-        for(int i = 0;i < img.getWidth();i ++) {
-            for (int j = 0; j < img.getHeight(); j++) {
-                matrix[i][j] = img.getPixParams(new int[]{255, edge[i][j], edge[i][j], edge[i][j]});
-            }
-        }
+//        for(int i = 0;i < img.getWidth();i ++) {
+//            for (int j = 0; j < img.getHeight(); j++) {
+//                matrix[i][j] = img.getPixParams(new int[]{255, edge[i][j], edge[i][j], edge[i][j]});
+//            }
+//        }
         return new IMAGE(matrix);
     }
 
-    private PIXEL broadcastSearch(int[][] map, PIXEL loc){
+    private PIXEL broadcastSearch(int[][] map, PIXEL loc) {
         PIXEL result = null;
         // 以自身为中心，搜索周围2圈
-        for(int count = 1; count <= 2 && result == null; count++){
-            for(int i = loc.x - count;i < loc.x + count && result == null;i ++){
-                for(int j = loc.y - count;j < loc.y + count && result == null;j ++){
-                    try{
-                        if(map[i][j] > 16 && i != loc.x && j != loc.y){
+        for (int count = 1; count <= 2 && result == null; count++) {
+            for (int i = loc.x - count; i < loc.x + count && result == null; i++) {
+                for (int j = loc.y - count; j < loc.y + count && result == null; j++) {
+                    try {
+                        if (map[i][j] > 16 && i != loc.x && j != loc.y) {
                             result = new PIXEL(new int[]{255, 255, 255, 255}, i, j);
                             map[i][j] = 0;
                             return result;
                         }
-                    }catch (Exception e){
+                    } catch (Exception e) {
 
                     }
                 }
@@ -226,9 +227,9 @@ public class IPictureServiceImpl implements IPictureService {
     @Override
     public IMAGE getEnhanceImage(IMAGE img, double theta) {
         int[][] enhanceMatrix = calculateServer.getEnhanceMatrix(img, theta);
-        int[][] rawMatrix = img.getPixelMatrix();
-        for(int i = 0;i < img.getWidth();i ++){
-            for(int j = 0;j < img.getHeight();j ++){
+        int[][] rawMatrix = img.getArgbMatrix();
+        for (int i = 0; i < img.getWidth(); i++) {
+            for (int j = 0; j < img.getHeight(); j++) {
                 rawMatrix[i][j] = enhanceMatrix[i][j];
             }
         }
@@ -237,15 +238,17 @@ public class IPictureServiceImpl implements IPictureService {
 
     @Override
     public IMAGE getEnhanceImage2(IMAGE img) {
-        int[][] rawMatrix = img.getPixelMatrix();
+        int[][] rawMatrix = img.getArgbMatrix();
         // int lumen = img.getPixParams(new int[]{255, 10, 10, 10});
-        for(int i = 0;i < img.getWidth();i ++){
-            for(int j = 0;j < img.getHeight();j ++){
-                int[] lumen = img.getArgbParams(rawMatrix[i][j]);
-                lumen[1] = lumen[1] * 1.05 > 255 ? 255 : (int) (lumen[1] * 1.05);
-                lumen[2] = lumen[2] * 1.05 > 255 ? 255 : (int) (lumen[2] * 1.05);
-                lumen[3] = lumen[3] * 1.05 > 255 ? 255 : (int) (lumen[3] * 1.05);
-                rawMatrix[i][j] = img.getPixParams(lumen);
+        for (int i = 0; i < img.getWidth(); i++) {
+            for (int j = 0; j < img.getHeight(); j++) {
+                int r = (rawMatrix[i][j] >> 16) & 0xFF;
+                int g = (rawMatrix[i][j] >> 8) & 0xFF;
+                int b = (rawMatrix[i][j]) & 0xFF;
+                r = r * 1.05 > 255 ? 255 : (int) (r * 1.05);
+                g = g * 1.05 > 255 ? 255 : (int) (g * 1.05);
+                b = b * 1.05 > 255 ? 255 : (int) (b * 1.05);
+                rawMatrix[i][j] = 255 << 24 | r << 16 | g << 8 | b;
             }
         }
         return new IMAGE(rawMatrix);
@@ -254,46 +257,42 @@ public class IPictureServiceImpl implements IPictureService {
     @Override
     public IMAGE getGammaFix(IMAGE img, double param) {
         // 得到灰度图
-        int[][] g = img.getGrayMatrix();
-        int[][] px = img.getPixelMatrix();
+        int[][] gray = img.getGrayMatrix();
+        int[][] px = img.getArgbMatrix();
         // 根据输入的参数进行gamma修正，采用对数法
         // 对函数y = ln((x + 1.0/param) * param)求导，得到导数表达式gamma（g）
         // 函数g = param / (x * param + 1)，对g进行增强
         // 函数g` = Math.pow(param, 2) / (x * param + 1)，以g`为增强曲线
         int w = img.getWidth();
         int h = img.getHeight();
-        for(int i = 0;i < w;i ++){
-            for(int j = 0;j < h;j ++){
-                int[] p = img.getArgbParams(px[i][j]);
-                double num = Math.pow(param, 1) / Math.pow(g[i][j], 1.5) + 0.9;
-                //System.out.println("raw:  " + p[1] + " " + p[2] + " " + p[3]);
-                p[1] = (int) (g[i][j] * num);
-                p[2] = (int) (g[i][j] * num);
-                p[3] = (int) (g[i][j] * num);
-                //System.out.println((Math.pow(param, 2) / (g[i][j] * param + 1)));
-                //System.out.println("plus: " + p[1] + " " + p[2] + " " + p[3]);
-                // g[i][j] = img.getPixParams(p);
-                px[i][j] = img.getPixParams(p);
+        for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+                int r, g, b;
+                double num = Math.pow(param, 1) / Math.pow(gray[i][j], 1.5) + 0.9;
+                r = (int) (gray[i][j] * num);
+                g = (int) (gray[i][j] * num);
+                b = (int) (gray[i][j] * num);
+                px[i][j] = 255 << 24 | r << 16 | g << 8 | b;
             }
         }
         return new IMAGE(px);
     }
 
     public void imgData(IMAGE p) {
-        imgData = p.getPixelMatrix();
+        imgData = p.getArgbMatrix();
     }
 
     public IMAGE getSubImage(int width, int height, int startX, int startY) {
-        if(imgData == null) return null;
+        if (imgData == null) return null;
         int W = width + startX > imgData.length ? imgData.length - startX : width;
         int H = height + startY > imgData[0].length ? imgData[0].length - startY : height;
         int[][] px = new int[W][H];
-        if(W == 0 || H == 0){
+        if (W == 0 || H == 0) {
             System.out.println(width + " " + height + " " + startX + " " + startY);
             System.out.println(W + " " + H);
         }
-        for(int i = 0;i < W;i ++){
-            for(int j = 0;j < H;j ++){
+        for (int i = 0; i < W; i++) {
+            for (int j = 0; j < H; j++) {
                 px[i][j] = imgData[i + startX][j + startY];
             }
         }

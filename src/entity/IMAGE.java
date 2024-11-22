@@ -12,17 +12,17 @@ public class IMAGE {
     private BufferedImage rawFile;
 
     /**
-     * 像素存储
-     */
-    private int[] pixelList;
-    private int[] hsvList;
-
-    private int[][] pixelMatrix;
-
-    /**
      * 图像宽高
      */
-    private int width, height;
+    private int width;
+    private int height;
+
+    /**
+     * 像素存储
+     */
+    private int[][] argbMatrix;
+    protected double[][][] hsvMatrix;
+
 
     /**
      * 载入图像
@@ -34,34 +34,24 @@ public class IMAGE {
         rawFile = ImageIO.read(new File("./photo/" + path));
         width = rawFile.getWidth();
         height = rawFile.getHeight();
-        pixelList = rawFile.getRGB(0, 0, width, height, null, 0, width);
     }
 
     public IMAGE(String path, int num) throws IOException {
         rawFile = ImageIO.read(new File(path));
         width = rawFile.getWidth();
         height = rawFile.getHeight();
-        pixelList = rawFile.getRGB(0, 0, width, height, null, 0, width);
     }
 
-    public IMAGE(int[][] px) {
-        width = px.length;
-        height = px[0].length;
-        rawFile = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                rawFile.setRGB(i, j, px[i][j]);
-            }
-        }
-        pixelMatrix = px;
-        pixelList = rawFile.getRGB(0, 0, width, height, null, 0, width);
+    public IMAGE(int[][] argbMatrix) {
+        width = argbMatrix.length;
+        height = argbMatrix[0].length;
+        this.argbMatrix = argbMatrix;
     }
 
     public IMAGE(BufferedImage img) {
         rawFile = img;
         width = rawFile.getWidth();
         height = rawFile.getHeight();
-        pixelList = rawFile.getRGB(0, 0, width, height, null, 0, width);
     }
 
     public IMAGE() {
@@ -70,23 +60,21 @@ public class IMAGE {
         rawFile = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                rawFile.setRGB(i, j, (128 << 24) | (255 << 16) | (255 << 8) | (255));
+                rawFile.setRGB(i, j, (255 << 24) | (255 << 16) | (255 << 8) | (255));
             }
         }
-        pixelList = rawFile.getRGB(0, 0, width, height, null, 0, width);
 
     }
 
     public IMAGE(int width, int height, int value) {
-        width = width;
-        height = height;
+        this.width = width;
+        this.height = height;
         rawFile = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 rawFile.setRGB(i, j, value);
             }
         }
-        pixelList = rawFile.getRGB(0, 0, width, height, null, 0, width);
 
     }
 
@@ -118,56 +106,123 @@ public class IMAGE {
     }
 
     /**
-     * 获取图像列表
+     * 获取图像数据列表形式
      *
      * @return
      */
     public int[] getPixelList() {
+        int[] pixelList = new int[width * height];
+        getArgbMatrix();
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                pixelList[i * height + j] = argbMatrix[i][j];
+            }
+        }
         return pixelList;
     }
 
-    public double[][][] RGB2HSV() {
-        int[][] rgb = getPixelMatrix();
-        return RGB2HSV(rgb);
-    }
-
-    public double[][][] RGB2HSV(int[][] rgb) {
-        // 0-H, 1-S, 2-V
-        double[][][] hsv = new double[width][height][3];
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                double r = ((rgb[i][j] >> 16) & 0xFF) / 255.0;
-                double g = ((rgb[i][j] >> 8) & 0xFF) / 255.0;
-                double b = ((rgb[i][j]) & 0xFF) / 255.0;
-                double min = Math.min(r, Math.min(g, b));
-                double v = Math.max(r, Math.max(g, b));
-
-                double delta = v - min;
-                double s = delta / (Math.abs(v) + 2.2204460492503131e-16);
-                delta = 60.0 / (delta + 2.2204460492503131e-16);
-
-                double h;
-                if (v == r) {
-                    h = (g - b) * delta;
-                } else if (v == g) {
-                    h = (b - r) * delta + 120;
-                } else {
-                    h = (r - g) * delta + 240;
-                }
-                h = h < 0 ? h + 360 : h;
-                hsv[i][j] = new double[]{h, s, v};
+    /**
+     * 获取图像矩阵
+     *
+     * @return
+     */
+    public int[][] getArgbMatrix() {
+        if (this.argbMatrix == null) {
+            this.argbMatrix = new int[width][height];
+            int[] pixelList = rawFile.getRGB(0, 0, width, height, null, 0, width);
+            for (int i = 0; i < width * height; i++) {
+                int x = i % width;
+                int y = i / width;
+                this.argbMatrix[x][y] = pixelList[i];
             }
         }
-        return hsv;
+        return this.argbMatrix;
     }
 
-    public int[][] HSV2RGB(double[][][] hsv) {
+    /**
+     * 获取HSV矩阵
+     */
+    public double[][][] getHsvMatrix() {
+        if (this.hsvMatrix == null) {
+            if (this.argbMatrix != null) {
+                hsvMatrix = ARGB2HSV(this.argbMatrix);
+            } else {
+                hsvMatrix = ARGB2HSV(getArgbMatrix());
+            }
+        }
+        return hsvMatrix;
+    }
+
+    /**
+     * <p>获取GRAY矩阵</p>
+     * <P>默认转换为单值矩阵</P>
+     *
+     * @param model 可选参数
+     */
+    public int[][] getGrayMatrix(int... model) {
+        if (this.argbMatrix == null) {
+            getArgbMatrix();
+        }
+        return ARGB2GRAY(this.argbMatrix);
+    }
+
+    /**
+     * 将输入的rgb/argb矩阵转换为hsv矩阵
+     *
+     * @param rgbMatrix rgb/argb矩阵
+     * @return hsv矩阵
+     */
+    public static double[][][] ARGB2HSV(int[][] rgbMatrix) {
+        // 0-H, 1-S, 2-V
+        try {
+            int width = rgbMatrix.length;
+            int height = rgbMatrix[0].length;
+            double[][][] hsv = new double[width][height][3];
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
+                    double r = ((rgbMatrix[i][j] >> 16) & 0xFF) / 255.0;
+                    double g = ((rgbMatrix[i][j] >> 8) & 0xFF) / 255.0;
+                    double b = ((rgbMatrix[i][j]) & 0xFF) / 255.0;
+                    double min = Math.min(r, Math.min(g, b));
+                    double v = Math.max(r, Math.max(g, b));
+
+                    double delta = v - min;
+                    double s = delta / (Math.abs(v) + 2.2204460492503131e-16);
+                    delta = 60.0 / (delta + 2.2204460492503131e-16);
+
+                    double h;
+                    if (v == r) {
+                        h = (g - b) * delta;
+                    } else if (v == g) {
+                        h = (b - r) * delta + 120;
+                    } else {
+                        h = (r - g) * delta + 240;
+                    }
+                    h = h < 0 ? h + 360 : h;
+                    hsv[i][j] = new double[]{h, s, v};
+                }
+            }
+            return hsv;
+        } catch (Exception e) {
+            return new double[1][1][1];
+        }
+    }
+
+    /**
+     * 将输入的hsv矩阵转换为argb矩阵
+     *
+     * @param hsvMatrix hsv矩阵
+     * @return argb矩阵
+     */
+    public static int[][] HSV2RGB(double[][][] hsvMatrix) {
+        int width = hsvMatrix.length;
+        int height = hsvMatrix[0].length;
         int[][] rgb = new int[width][height];
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                double h = hsv[i][j][0];
-                double s = hsv[i][j][1];
-                double v = hsv[i][j][2];
+                double h = hsvMatrix[i][j][0];
+                double s = hsvMatrix[i][j][1];
+                double v = hsvMatrix[i][j][2];
                 int h1 = (int) Math.floor(h / 60);
                 double f = h / 60 - h1;
                 double p = v * (1 - s);
@@ -213,95 +268,42 @@ public class IMAGE {
     }
 
     /**
-     * 获取图像矩阵
+     * 将输入的argb/rgb矩阵转换为gray矩阵
+     * 默认为 255 | value | value | value 格式
      *
-     * @return
+     * @param argbMatrix argb/rgb矩阵
+     * @return gray矩阵
      */
-    public int[][] getPixelMatrix() {
-        if(pixelMatrix != null){
-            return pixelMatrix;
-        }
-        int[][] matrix = new int[width][height];
-        for (int i = 0; i < pixelList.length; i++) {
-            int x = i % width;
-            int y = i / width;
-            matrix[x][y] = pixelList[i];
-        }
-        return matrix;
-    }
-
-    public int[][] getGrayMatrixInArgbModule() {
-        int[][] m = getPixelMatrix();
+    public static int[][] ARGB2GRAY(int[][] argbMatrix) {
+        int width = argbMatrix.length;
+        int height = argbMatrix[0].length;
         int[][] result = new int[width][height];
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                int[] p = getArgbParams(m[i][j]);
-                int value = (int) (p[1] * 0.287 + p[2] * 0.589 + p[3] * 0.114);
-                result[i][j] = (254 << 24) | (value << 16) | (value << 8) | value;
+                int r = argbMatrix[i][j] >> 16 & 0xFF;
+                int g = argbMatrix[i][j] >> 8 & 0xFF;
+                int b = argbMatrix[i][j] & 0xFF;
+                int value = (int) (r * 0.287 + g * 0.589 + b * 0.114);
+                result[i][j] = (255 << 24) | (value << 16) | (value << 8) | value;
             }
         }
         return result;
     }
 
-    public int[][] getGrayMatrix(int[][] pixelMatrix) {
+    public static int[][] GRAY2ARGB(int[][] grayMatrix) {
+        int width = grayMatrix.length;
+        int height = grayMatrix[0].length;
         int[][] result = new int[width][height];
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                int[] p = getArgbParams(pixelMatrix[i][j]);
-                result[i][j] = (int) (p[1] * 0.287 + p[2] * 0.589 + p[3] * 0.114);
+                double value = (grayMatrix[i][j] & 0xFF) / 1000.0;
+                int r = (int) (value * 287);
+                int g = (int) (value * 589);
+                int b = (int) (value * 114);
+                result[i][j] = (255 << 24) | (r << 16) | (g << 8) | b;
             }
         }
         return result;
-    }
-
-    public int[][] getGrayMatrix() {
-        int[][] m = getPixelMatrix();
-        int[][] result = new int[width][height];
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                int[] p = getArgbParams(m[i][j]);
-                result[i][j] = (int) (p[1] * 0.287 + p[2] * 0.589 + p[3] * 0.114);
-            }
-        }
-        return result;
-    }
-
-    public int getGrayPixel(int[] p) {
-        return (int) (p[1] * 0.29 + p[2] * 0.59 + p[3] * 0.12);
-    }
-
-    public int getGrayPixel(int p) {
-        int[] array = new int[4];
-        array[0] = (p >> 24) & 0xFF;
-        array[1] = (p >> 16) & 0xFF;
-        array[2] = (p >> 8) & 0xFF;
-        array[3] = p & 0xFF;
-        return getGrayPixel(array);
-    }
-
-    /**
-     * 转换为argb数组
-     *
-     * @return
-     */
-    public int[] getArgbParams(int px) {
-        int[] pixel = new int[4];
-        pixel[0] = (px >> 24) & 0xFF;
-        pixel[1] = (px >> 16) & 0xFF;
-        pixel[2] = (px >> 8) & 0xFF;
-        pixel[3] = (px) & 0xFF;
-        return pixel;
-    }
-
-    /**
-     * 转换为px参数
-     *
-     * @param argb
-     * @return
-     */
-    public int getPixParams(int[] argb) {
-        int px = (argb[0] << 24) | (argb[1] << 16) | (argb[2] << 8) | argb[3];
-        return px;
     }
 
     public boolean activeTest(int px) {
@@ -339,5 +341,9 @@ public class IMAGE {
             }
         }
         return value;
+    }
+
+    public int getPixParams(int[] ints) {
+        return ints[0] << 24 | ints[1] << 16 | ints[2] << 8 | ints[3];
     }
 }

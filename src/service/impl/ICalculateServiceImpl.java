@@ -39,7 +39,7 @@ public class ICalculateServiceImpl implements ICalculateService {
     public IMAGE convolution(IMAGE img,
                              double[][] kernel,
                              boolean multiThreads, boolean accurateCalculate, boolean negativeFix) {
-        int[][] rawP = img.getPixelMatrix();
+        int[][] rawP = img.getArgbMatrix();
         int[][] picFill = pixFill(rawP, kernel);
         // 进行卷积运算
         if (!multiThreads) {
@@ -63,7 +63,7 @@ public class ICalculateServiceImpl implements ICalculateService {
                     for (int j = 0; j < img.getHeight(); j++) {
                         if (rawP[i][j] == 0) {
                             int count = 0;
-                            int[] arrR = img.getArgbParams(rawP[i][j]);
+                            int[] arrR = new int[]{255, (rawP[i][j] >> 16) & 0xFF, (rawP[i][j] >> 8) & 0xFF, rawP[i][j] & 0xFF};
                             for (int k = 0; k < 4; k++) {
                                 try {
                                     int p;
@@ -75,7 +75,7 @@ public class ICalculateServiceImpl implements ICalculateService {
                                         p = rawP[i + 1][j];
                                     else
                                         p = rawP[i][j + 1];
-                                    int[] arrP = img.getArgbParams(p);
+                                    int[] arrP = new int[]{255, (p >> 16) & 0xFF, (p >> 8) & 0xFF, p & 0xFF};
                                     for (int l = 0; l < 4; l++)
                                         arrR[l] += arrP[l];
                                     count++;
@@ -137,7 +137,7 @@ public class ICalculateServiceImpl implements ICalculateService {
 
     @Override
     public IMAGE erosion(IMAGE img) {
-        int[][] rawP = img.getPixelMatrix();
+        int[][] rawP = img.getArgbMatrix();
         int[][] result = new int[img.getWidth()][img.getHeight()];
         for (int i = 0; i < img.getWidth(); i++) {
             for (int j = 0; j < img.getHeight(); j++) {
@@ -148,8 +148,9 @@ public class ICalculateServiceImpl implements ICalculateService {
                 for (int k = -size; k <= size; k++) {
                     for (int l = -size; l <= size; l++) {
                         try {
-                            p = img.getArgbParams(rawP[i + k][j + l]);
-                            if (img.getGrayPixel(p) > 16)
+                            int px = rawP[i + k][j + l];
+                            p = new int[]{(px >> 24) & 0xFF, (px >> 16) & 0xFF, (px >> 8) & 0xFF, (px) & 0xFF};
+                            if ((img.getGrayMatrix()[i + k][j + l] & 0xFF) > 16)
                                 activeCount++;
                             count++;
                         } catch (Exception ignored) {
@@ -157,11 +158,11 @@ public class ICalculateServiceImpl implements ICalculateService {
                     }
                 }
                 if (activeCount < (count - 1) / 2) {
-                    result[i][j] = img.getPixParams(new int[]{255, 0, 0, 0});
+                    result[i][j] = 255 << 24;
                 } else {
                     for (int n = 1; n < 4; n++)
                         p[n] = p[n] * 1.5 > 255 ? 255 : (int) (p[n] * 1.5);
-                    result[i][j] = img.getPixParams(p);
+                    result[i][j] = 255 << 24 | p[1] << 16 | p[2] << 8 | p[3];
                 }
             }
         }
@@ -175,7 +176,7 @@ public class ICalculateServiceImpl implements ICalculateService {
             GMap.put(i, 0);
         int[] list = img.getPixelList();
         for (int px : list) {
-            int[] pixel = img.getArgbParams(px);
+            int[] pixel = new int[]{255, (px >> 16) & 0xFF, (px >> 8) & 0xFF, px & 0xFF};
             int gray = (int) (0.299 * pixel[1] + 0.587 * pixel[2] + 0.114 * pixel[3]);
             int G = (int) (Math.log(gray) / Math.log(2));
             G = Math.max(G, 0);
@@ -310,10 +311,10 @@ public class ICalculateServiceImpl implements ICalculateService {
         System.out.println("a1:" + a1 + "\tb1:" + b1 + "\tc1:" + c1);
         System.out.println("a2:" + a2 + "\tb2:" + b2 + "\tc2:" + c2);
 
-        int[][] matrix = img.getPixelMatrix();
+        int[][] matrix = img.getArgbMatrix();
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                int[] pixel = img.getArgbParams(matrix[i][j]);
+                int[] pixel = new int[]{255, (matrix[i][j] >> 16) & 0xFF, (matrix[i][j] >> 8) & 0xFF, matrix[i][j] & 0xFF};
                 int r = pixel[1];
                 int g = pixel[2];
                 int b = pixel[3];
@@ -485,14 +486,14 @@ public class ICalculateServiceImpl implements ICalculateService {
         int w = img.getWidth();
         int h = img.getHeight();
         IMAGE gray = picService.getGrayImage(img);
-        int[][] sobelX = convolution(gray, kernelX, true, true, true).getPixelMatrix();
-        int[][] sobelY = convolution(gray, kernelY, true, true, true).getPixelMatrix();
+        int[][] sobelX = convolution(gray, kernelX, true, true, true).getArgbMatrix();
+        int[][] sobelY = convolution(gray, kernelY, true, true, true).getArgbMatrix();
         double[][] angle = new double[w][h];    // 角度
         int[][] gradient = new int[w][h];       // 梯度值
         for (int i = 0; i < w; i++) {
             for (int j = 0; j < h; j++) {
-                int[] sx = img.getArgbParams(sobelX[i][j]);
-                int[] sy = img.getArgbParams(sobelY[i][j]);
+                int[] sx = new int[]{255, (sobelX[i][j] >> 16) & 0xFF, (sobelX[i][j] >> 8) & 0xFF, sobelX[i][j] & 0xFF};
+                int[] sy = new int[]{255, (sobelY[i][j] >> 16) & 0xFF, (sobelY[i][j] >> 8) & 0xFF, sobelY[i][j] & 0xFF};
                 int[] gd = new int[4];
                 for (int c = 0; c < 4; c++) {
                     gd[c] = (int) Math.sqrt(Math.pow(sx[c], 2) + Math.pow(sy[c], 2));
@@ -510,7 +511,7 @@ public class ICalculateServiceImpl implements ICalculateService {
         for (int i = 0; i < w; i++) {
             for (int j = 0; j < h; j++) {
                 int theta = (int) (angle[i][j] / Math.PI * 2 * dirCount);
-                if (img.getArgbParams(gradient[i][j])[1] <= 32)
+                if ((gradient[i][j] & 0xFF) <= 32)
                     theta = -1;
                 thetaMap[i][j] = theta;
             }

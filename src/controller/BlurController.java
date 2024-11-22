@@ -25,7 +25,7 @@ public class BlurController {
      * @return IMAGE
      */
     public IMAGE quickGasBlur(IMAGE img) {
-        conV = new ThreadPoolConV(img.getPixelMatrix(), calcService.getGasKernel(1), 32);
+        conV = new ThreadPoolConV(img.getArgbMatrix(), calcService.getGasKernel(1), 32);
         conV.start();
         return new IMAGE(conV.getData());
     }
@@ -41,11 +41,11 @@ public class BlurController {
     public IMAGE getGasBlur(IMAGE img, int size, int maxThreadCount) {
         double[][] kernel = calcService.getGasKernel(size);
         try {
-            conV2 = new ThreadPoolReflectCore(img.getPixelMatrix(), kernel, maxThreadCount, new ConVCalc());
+            conV2 = new ThreadPoolReflectCore(img.getArgbMatrix(), kernel, maxThreadCount, new ConVCalc());
             conV2.start();
             return new IMAGE(conV2.getData());
         } catch (Exception e) {
-            conV = new ThreadPoolConV(img.getPixelMatrix(), kernel, maxThreadCount);
+            conV = new ThreadPoolConV(img.getArgbMatrix(), kernel, maxThreadCount);
             conV.start();
         }
         return new IMAGE(conV.getData());
@@ -58,7 +58,7 @@ public class BlurController {
         // 计算步长和计算矩阵
         int step = Math.min((int) (1 + Math.sqrt(size) / 4), 5);
         int[][] matrix = img.getWidth() * img.getHeight() * step < 1e7 ?
-                img.getPixelMatrix() : imgServ.getThumbnail(img, step);
+                img.getArgbMatrix() : imgServ.getThumbnail(img, step);
         try {
             if (size > 5) {
                 recursionImgCalc(step, matrix, size, 0);
@@ -108,7 +108,7 @@ public class BlurController {
             if (size > 5) {
                 double[][] kernel1 = calcService.getGasKernel((int) (size * 0.66));
                 int[][] fixMatrix = WPFO.getData(img);
-                conV2 = new ThreadPoolReflectCore(img.getPixelMatrix(), kernel1, 16, new ConVCalc3());
+                conV2 = new ThreadPoolReflectCore(img.getArgbMatrix(), kernel1, 16, new ConVCalc3());
                 conV2.setFocusData(fixMatrix);
                 conV2.start();
                 double[][] kernel2 = calcService.getGasKernel(size - (int) (size * 0.66));
@@ -116,14 +116,14 @@ public class BlurController {
                 conV2.setFocusData(fixMatrix);
                 conV2.start();
             } else {
-                conV2 = new ThreadPoolReflectCore(img.getPixelMatrix(), kernel, 16, new ConVCalc());
+                conV2 = new ThreadPoolReflectCore(img.getArgbMatrix(), kernel, 16, new ConVCalc());
                 conV2.start();
             }
             System.out.println(System.currentTimeMillis() - set);
             return prcCtrl.resizeImage(new IMAGE(conV2.getData()), (double) img.getWidth() / conV2.getData().length, prcCtrl.RESIZE_ENTIRETY);
             // return new IMAGE(conV2.getData());
         } catch (Exception e) {
-            conV = new ThreadPoolConV(img.getPixelMatrix(), kernel, 16);
+            conV = new ThreadPoolConV(img.getArgbMatrix(), kernel, 16);
             conV.start();
         }
 
@@ -140,7 +140,7 @@ public class BlurController {
             System.out.println(System.currentTimeMillis() - set);
             return prcCtrl.resizeImage(new IMAGE(conV2.getData()), (double) img.getWidth() / conV2.getData().length, prcCtrl.RESIZE_ENTIRETY);
         } catch (Exception e) {
-            conV = new ThreadPoolConV(img.getPixelMatrix(), kernel, 24);
+            conV = new ThreadPoolConV(img.getArgbMatrix(), kernel, 24);
             conV.start();
         }
         System.out.println(System.currentTimeMillis() - set);

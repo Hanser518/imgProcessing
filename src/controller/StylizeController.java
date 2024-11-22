@@ -32,11 +32,11 @@ public class StylizeController {
     public IMAGE transPaperStyle(IMAGE img, int maxTreadCount, int... kernelSize) {
         int size = kernelSize.length > 0 ? kernelSize[0] : 131;
         try{
-            ThreadPoolReflectCore tprc = new ThreadPoolReflectCore(img.getPixelMatrix(), calcService.getGasKernel(size), maxTreadCount, new PaperBlur());
+            ThreadPoolReflectCore tprc = new ThreadPoolReflectCore(img.getArgbMatrix(), calcService.getGasKernel(size), maxTreadCount, new PaperBlur());
             tprc.start();
             return new IMAGE(tprc.getData());
         }catch (Exception e){
-            conV = new ThreadPoolPaper(img.getPixelMatrix(), calcService.getGasKernel(size), maxTreadCount);
+            conV = new ThreadPoolPaper(img.getArgbMatrix(), calcService.getGasKernel(size), maxTreadCount);
             conV.start();
         }
         return new IMAGE(conV.getData());

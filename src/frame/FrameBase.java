@@ -1,6 +1,5 @@
 package frame;
 
-import algorithm.wpfo.main.WPFO;
 import controller.*;
 import entity.IMAGE;
 import frame.entity.ImageNode;
@@ -9,7 +8,6 @@ import frame.service.IFileService;
 import frame.service.InitializeService;
 import frame.service.impl.IFileServiceImpl;
 import frame.service.impl.InitializeServiceImpl;
-import netscape.javascript.JSObject;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -17,8 +15,6 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -27,7 +23,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.Map;
 
 import static frame.entity.Param.*;
@@ -57,7 +52,6 @@ public class FrameBase {
     private static final EdgeController edgeCtrl = new EdgeController();
     private static final BlurController blurCtrl = new BlurController();
     private static final ImgController imgCtrl2 = new ImgController();
-
 
 
     private boolean init = false;
@@ -126,7 +120,7 @@ public class FrameBase {
         return nodeNow.image;
     }
 
-    public static IMAGE updateNode(){
+    public static IMAGE updateNode() {
         ImageNode nodeNow = imageLayer.getNode(imageLayer.getIndex());
         fileNameLabel.setText(nodeNow.nodeName);
         System.out.println("Operation Layer:" + imageLayer.getIndex());
@@ -221,7 +215,7 @@ public class FrameBase {
     }
 
     public static void updateSideBar2(JPanel component) {
-        if(sidePanel != null) {
+        if (sidePanel != null) {
             baseFrame.remove(sidePanel);
         }
         sidePanel = new JScrollPane(component);
@@ -256,7 +250,7 @@ public class FrameBase {
         JButton layerUp = Param.functionButton2("+");
         JButton layerDown = Param.functionButton2("-");
         layerUp.addActionListener(ac -> {
-            if(imageLayer.getIndex() >= imageLayer.getRange()[1] - 1){
+            if (imageLayer.getIndex() >= imageLayer.getRange()[1] - 1) {
                 imageLayer.addLayer(new IMAGE());
             }
             imageLayer.setIndex(imageLayer.getIndex() != null ? imageLayer.getIndex() + 1 : 0);
@@ -285,11 +279,11 @@ public class FrameBase {
         layerPanel.add(thumbPanel, BorderLayout.CENTER);
     }
 
-    public static void updateLayerThumb(Integer index){
+    public static void updateLayerThumb(Integer index) {
         int[] range = imageLayer.getRange();
-        if(range[1] > thumbList.size()){
+        if (range[1] > thumbList.size()) {
             System.out.println("THUMB IN");
-            for(int i = thumbList.size();i < range[1];i ++){
+            for (int i = thumbList.size(); i < range[1]; i++) {
                 ImageNode node = imageLayer.getNode(i);
                 IMAGE nodeImg = node.image;
                 double imgRate = Math.min((double) 100 / nodeImg.getWidth(), (double) 100 / nodeImg.getHeight());
@@ -310,7 +304,7 @@ public class FrameBase {
                 thumbList.add(thumbLabel);
                 thumbPanel.add(thumbLabel);
             }
-        }else{
+        } else {
             ImageNode node = imageLayer.getNode(index);
             IMAGE nodeImg = node.image;
             double imgRate = Math.min((double) 100 / nodeImg.getWidth(), (double) 100 / nodeImg.getHeight());

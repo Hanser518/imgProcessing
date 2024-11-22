@@ -46,7 +46,7 @@ public class EdgeTrace {
     int maxX = 9999, maxY = 9999;
 
     public EdgeTrace(IMAGE img) {
-        imgData = img.getPixelMatrix();
+        imgData = img.getArgbMatrix();
         width = img.getWidth();
         height = img.getHeight();
         pathList = new ArrayList<>();

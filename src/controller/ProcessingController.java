@@ -50,7 +50,7 @@ public class ProcessingController {
                 radio = Math.max((double) height / procHeight, (double) width / procWidth);
                 proc = resizeImage(proc, radio, RESIZE_ENTIRETY);
             }
-            int[][] procMatrix = proc.getPixelMatrix();
+            int[][] procMatrix = proc.getArgbMatrix();
             for(int w = i * step;w < (i + 1) * step;w ++){
                 for(int h = 0;h < height;h ++){
                     result[w][h] = procMatrix[w][h];

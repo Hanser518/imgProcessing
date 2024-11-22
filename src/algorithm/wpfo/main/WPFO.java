@@ -25,10 +25,10 @@ public class WPFO implements Runnable{
 
     static void init(IMAGE img){
         data = new int[img.getWidth()][img.getHeight()];
-        int[][] matrix = img.getGrayMatrix(img.getPixelMatrix());
+        int[][] matrix = img.getGrayMatrix();
         for(int i = 0;i < img.getWidth();i ++){
             for(int j = 0;j < img.getHeight();j ++){
-                int level = (int) Math.log(matrix[i][j] + 1);
+                int level = (int) Math.log(matrix[i][j] & 0xFF + 1);
                 switch (level){
                     case 1, 2 -> data[i][j] = 1;
                     case 3, 4 -> data[i][j] = 2;

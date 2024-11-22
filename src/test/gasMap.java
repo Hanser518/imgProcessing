@@ -4,7 +4,7 @@ import controller.BlurController;
 import controller.ImgController;
 import discard.ImgProcessingController;
 import entity.IMAGE;
-import algorithm.cnn.core.ImageCore;
+import entity.Image2;
 
 import java.io.IOException;
 
@@ -21,7 +21,7 @@ public class gasMap {
         imgCtrl2.showImg(gas, "gas");
         // imgCtrl.saveByName(gas, fileName, "strange");
 
-        ImageCore ic = new ImageCore(gas.getImg());
+        Image2 ic = new Image2(gas.getImg());
 
     }
 }

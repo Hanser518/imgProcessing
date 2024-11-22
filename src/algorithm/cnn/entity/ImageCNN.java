@@ -1,10 +1,10 @@
 package algorithm.cnn.entity;
 
-import algorithm.cnn.core.ImageCore;
+import entity.Image2;
 
 import java.awt.image.BufferedImage;
 
-public class ImageCNN extends ImageCore {
+public class ImageCNN extends Image2 {
     /**
      * 载入图像
      *
