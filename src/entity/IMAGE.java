@@ -84,6 +84,14 @@ public class IMAGE {
      * @return
      */
     public BufferedImage getImg() {
+        if (rawFile == null) {
+            rawFile = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
+                    rawFile.setRGB(i, j, argbMatrix[i][j]);
+                }
+            }
+        }
         return rawFile;
     }
 
@@ -156,10 +164,8 @@ public class IMAGE {
     /**
      * <p>获取GRAY矩阵</p>
      * <P>默认转换为单值矩阵</P>
-     *
-     * @param model 可选参数
      */
-    public int[][] getGrayMatrix(int... model) {
+    public int[][] getGrayMatrix() {
         if (this.argbMatrix == null) {
             getArgbMatrix();
         }
@@ -343,7 +349,7 @@ public class IMAGE {
         return value;
     }
 
-    public int getPixParams(int[] ints) {
-        return ints[0] << 24 | ints[1] << 16 | ints[2] << 8 | ints[3];
+    public int getPixParams(int[] arr) {
+        return arr[0] << 24 | arr[1] << 16 | arr[2] << 8 | arr[3];
     }
 }
