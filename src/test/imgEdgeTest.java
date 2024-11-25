@@ -3,7 +3,7 @@ package test;
 import controller.EdgeController;
 import controller.ImgController;
 import discard.ImgProcessingController;
-import entity.IMAGE;
+import entity.Image;
 import service.ICalculateService;
 import service.impl.ICalculateServiceImpl;
 import service.impl.ImgServiceImpl;
@@ -18,17 +18,17 @@ public class imgEdgeTest {
 
     public static void main(String[] args) throws Exception {
         String fileName = "bus";
-        IMAGE px = new IMAGE(fileName + ".jpg");
+        Image px = new Image(fileName + ".jpg");
 
-        IMAGE edge = new IMAGE();
+        Image edge = new Image();
 
         edge = edgeCtrl.getImgEdge(px, EdgeController.MARR);
         imgCtrl2.showImg(edge, "sobel");
 
-        edge = new IMAGE(service.dilateImg(edge, 1));
+        edge = new Image(service.dilateImg(edge, 1));
         imgCtrl2.showImg(edge, "dilate");
 
-//        edge = new IMAGE(service.paddingImg(edge, 1));
+//        edge = new Image(service.paddingImg(edge, 1));
 //        imgCtrl2.showImg(edge, "padding");
 //
 //        edge = edgeCtrl.getImgEdge(px, EdgeController.PREWITT);
@@ -39,7 +39,7 @@ public class imgEdgeTest {
 
 
 
-//        IMAGE edge = imgCtrl.getEdgeImage(px, true);
+//        Image edge = imgCtrl.getEdgeImage(px, true);
 //        imgCtrl.saveByName(edge, "edge_erosion_" + fileName);
 //
 //        edge = imgCtrl.getEdgeImage(px, false);

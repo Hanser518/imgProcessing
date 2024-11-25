@@ -1,8 +1,7 @@
 package threadPool.core;
 
 import entity.EventPool;
-import service.ICalculateService;
-import service.impl.ICalculateServiceImpl;
+import entity.Image;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -32,15 +31,14 @@ public class ThreadPoolReflectCore {
 
     public ThreadPoolReflectCore(int[][] requestData, double[][] ConVKernel, int MaxThreadCount, Object threadItem, boolean... fill) throws Exception {
         // 对图像进行填充处理，此时数据矩阵长宽发生改变，原矩阵长宽存储于width和height中
-        ICalculateService calcService = new ICalculateServiceImpl();
         if(fill.length > 0){
             if(fill[0]){
-                this.data = calcService.pixFill(requestData, ConVKernel);
+                this.data = Image.fillImageEdge(new Image(requestData), ConVKernel.length, ConVKernel[0].length).getArgbMatrix();
             }else{
                 this.data = requestData;
             }
         }else{
-            this.data = calcService.pixFill(requestData, ConVKernel);
+            this.data = Image.fillImageEdge(new Image(requestData), ConVKernel.length, ConVKernel[0].length).getArgbMatrix();
         }
         this.width = requestData.length;
         this.height = requestData[0].length;

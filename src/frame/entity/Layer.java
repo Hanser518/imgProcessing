@@ -1,6 +1,6 @@
 package frame.entity;
 
-import entity.IMAGE;
+import entity.Image;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,13 +18,13 @@ public class Layer {
     private Integer index = null;
 
     public Layer() {
-        IMAGE image = new IMAGE();
+        Image image = new Image();
         ImageNode node = new ImageNode(image);
         layerList.add(node);
         index = 0;
     }
 
-    public void addLayer(IMAGE img) {
+    public void addLayer(Image img) {
         ImageNode node = new ImageNode(img);
         layerList.add(node);
     }

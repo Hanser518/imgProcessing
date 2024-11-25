@@ -2,7 +2,7 @@ package algorithm.cnn.core;
 
 // 批量多线程处理输入图形
 
-import entity.Image2;
+import algorithm.cnn.entity.Image2;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

@@ -1,13 +1,13 @@
 package frame.entity;
 
-import entity.IMAGE;
+import entity.Image;
 
 /**
  * 节点链表
  */
 public class ImageNode {
 
-    public IMAGE image;
+    public Image image;
 
     public ImageNode prev;
 
@@ -15,7 +15,7 @@ public class ImageNode {
 
     public String nodeName;
 
-    public ImageNode(IMAGE image){
+    public ImageNode(Image image){
         this.image = image;
     }
 

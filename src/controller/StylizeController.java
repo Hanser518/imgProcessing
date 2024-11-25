@@ -1,8 +1,8 @@
 package controller;
 
 import discard.ImgProcessingController;
-import entity.IMAGE;
-import frame.entity.Param;
+import entity.Image;
+import frame.constant.Param;
 import service.ImgService;
 import service.impl.ImgServiceImpl;
 import threadPool.pool.ThreadPoolPaper;
@@ -29,20 +29,20 @@ public class StylizeController {
     static ImgService imgServ = new ImgServiceImpl();
     static ThreadPoolCore conV;
 
-    public IMAGE transPaperStyle(IMAGE img, int maxTreadCount, int... kernelSize) {
+    public Image transPaperStyle(Image img, int maxTreadCount, int... kernelSize) {
         int size = kernelSize.length > 0 ? kernelSize[0] : 131;
         try{
             ThreadPoolReflectCore tprc = new ThreadPoolReflectCore(img.getArgbMatrix(), calcService.getGasKernel(size), maxTreadCount, new PaperBlur());
             tprc.start();
-            return new IMAGE(tprc.getData());
+            return new Image(tprc.getData());
         }catch (Exception e){
             conV = new ThreadPoolPaper(img.getArgbMatrix(), calcService.getGasKernel(size), maxTreadCount);
             conV.start();
         }
-        return new IMAGE(conV.getData());
+        return new Image(conV.getData());
     }
 
-    public IMAGE transGrilleStyle(IMAGE img, int grilleType, boolean multiple) {
+    public Image transGrilleStyle(Image img, int grilleType, boolean multiple) {
         double radio = 1;
         int kernelSize = 67;
         switch (grilleType) {
@@ -59,44 +59,44 @@ public class StylizeController {
             default -> radio = 0.5;
         }
         System.out.println("adjust...");
-        IMAGE ad = AdCtrl.adjustSatAndVal(img, 36, 24);
+        Image ad = AdCtrl.adjustSatAndVal(img, 36, 24);
         System.out.println("adjust over");
         if (multiple) {
-            IMAGE gas = BlurCtrl.getQuickGasBlur(ad, kernelSize, 16); // kernelSize
-            List<IMAGE> imgList = imgCtrl2.asyncSplit(gas, (int) (1 / radio), true);
-            IMAGE ver = imgCtrl.combineImages(imgList, grilleType, true);
+            Image gas = BlurCtrl.getQuickGasBlur(ad, kernelSize, 16); // kernelSize
+            List<Image> imgList = imgCtrl2.asyncSplit(gas, (int) (1 / radio), true);
+            Image ver = imgCtrl.combineImages(imgList, grilleType, true);
             imgList = imgCtrl2.asyncSplit(ver, (int) (1 / (radio * 1.73)), false);
             return imgCtrl.combineImages(imgList, grilleType, false);
         } else {
-            IMAGE gas = BlurCtrl.getQuickGasBlur(ad, kernelSize, 16); // kernelSize
-            List<IMAGE> imgList = imgCtrl2.asyncSplit(gas, (int) (1 / radio), true);
+            Image gas = BlurCtrl.getQuickGasBlur(ad, kernelSize, 16); // kernelSize
+            List<Image> imgList = imgCtrl2.asyncSplit(gas, (int) (1 / radio), true);
             return imgCtrl.combineImages(imgList, grilleType, true);
         }
     }
 
-    public IMAGE buildGrille(IMAGE img, double rate, int grilleType){
+    public Image buildGrille(Image img, double rate, int grilleType){
         rate = Math.min(Math.max(rate, 0), 1);
-        IMAGE res = new IMAGE();
+        Image res = new Image();
         switch (grilleType){
             case Param.GRILLE_MULTIPLE -> {
-                List<IMAGE> imgList = imgCtrl2.asyncSplit(img, (int) (1 / rate), true);
-                IMAGE ver = imgCtrl.combineImages(imgList, grilleType, true);
+                List<Image> imgList = imgCtrl2.asyncSplit(img, (int) (1 / rate), true);
+                Image ver = imgCtrl.combineImages(imgList, grilleType, true);
                 imgList = imgCtrl2.asyncSplit(ver, (int) (1 / (rate * 1.73)), false);
                 res = imgCtrl.combineImages(imgList, grilleType, false);
             }
             case Param.GRILLE_VERTICAL -> {
-                List<IMAGE> imgList = imgCtrl2.asyncSplit(img, (int) (1 / (rate * 1.73)), true);
+                List<Image> imgList = imgCtrl2.asyncSplit(img, (int) (1 / (rate * 1.73)), true);
                 res = imgCtrl.combineImages(imgList, grilleType, true);
             }
             case Param.GRILLE_HORIZONTAL -> {
-                List<IMAGE> imgList = imgCtrl2.asyncSplit(img, (int) (1 / rate), false);
+                List<Image> imgList = imgCtrl2.asyncSplit(img, (int) (1 / rate), false);
                 res = imgCtrl.combineImages(imgList, 1, false);
             }
         }
         return res;
     }
 
-    public IMAGE transOilPaintingStyle(IMAGE img) throws Exception {
-        return new IMAGE(imgServ.traceImg(img));
+    public Image transOilPaintingStyle(Image img) throws Exception {
+        return new Image(imgServ.traceImg(img));
     }
 }

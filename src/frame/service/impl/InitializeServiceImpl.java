@@ -2,7 +2,7 @@ package frame.service.impl;
 
 import controller.ProcessingController;
 import frame.FrameBase;
-import frame.entity.Param;
+import frame.constant.Param;
 import frame.service.IFileService;
 import frame.service.InitializeService;
 
@@ -43,7 +43,7 @@ public class InitializeServiceImpl implements InitializeService {
 
     @Override
     public JLabel initializeCenterLabel() {
-        JLabel centerLabel = new JLabel(new ImageIcon(pcsCtrl.resizeImage(Param.image, Param.rate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
+        JLabel centerLabel = new JLabel(new ImageIcon(pcsCtrl.resizeImage(Param.image, Param.rate, pcsCtrl.RESIZE_ENTIRETY).getRawFile()));
         centerLabel.setLayout(new FlowLayout(FlowLayout.LEFT));
         centerLabel.addMouseListener(new MouseAdapter() {
             boolean press = false;

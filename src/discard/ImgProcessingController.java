@@ -1,7 +1,7 @@
 package discard;
 
 import controller.AdjustController;
-import entity.IMAGE;
+import entity.Image;
 import service.ICalculateService;
 import service.IPictureService;
 import service.impl.ICalculateServiceImpl;
@@ -41,7 +41,7 @@ public class ImgProcessingController {
      * @param img     图像源
      * @param imgName 保存名称
      */
-    public void save(IMAGE img,
+    public void save(Image img,
                      String imgName) throws IOException {
         // 确保输出目录存在
         File outputDir = new File("./output");
@@ -50,7 +50,7 @@ public class ImgProcessingController {
         }
         // 写入图像
         File outputFile = new File(outputDir, imgName + ".png");
-        boolean success = ImageIO.write(img.getImg(), "png", outputFile);
+        boolean success = ImageIO.write(img.getRawFile(), "png", outputFile);
         if (!success) {
             throw new IOException("无法保存图像到指定位置: " + outputFile.getAbsolutePath());
         }
@@ -64,7 +64,7 @@ public class ImgProcessingController {
      * @param tips    图像标注
      * @throws IOException
      */
-    public void saveByName(IMAGE img,
+    public void saveByName(Image img,
                            String imgName,
                            String tips) throws IOException {
         // 确保输出目录存在
@@ -86,7 +86,7 @@ public class ImgProcessingController {
         ImageIO.write(result, "jpg", outputFile);
     }
 
-    public void showImg(IMAGE img, String name) {
+    public void showImg(Image img, String name) {
         // 图像宽高
         int imgWidth = img.getWidth();
         int imgHeight = img.getHeight();
@@ -112,7 +112,7 @@ public class ImgProcessingController {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(frameWidth, frameHeight);
 
-        JLabel label = new JLabel(new ImageIcon(resizeImage(img, rate, RESIZE_ENTIRETY).getImg()));
+        JLabel label = new JLabel(new ImageIcon(resizeImage(img, rate, RESIZE_ENTIRETY).getRawFile()));
         JPanel panel = new JPanel();
         panel.add(label);
 
@@ -170,7 +170,7 @@ public class ImgProcessingController {
     /**
      * 高斯滤波
      */
-    public IMAGE getGasImage(IMAGE px, int size) {
+    public Image getGasImage(Image px, int size) {
         double[][] kernel = calcServer.getGasKernel(size);
         return calcServer.convolution(px, kernel, multiThreads, accurateCalculate, true);
     }
@@ -178,8 +178,8 @@ public class ImgProcessingController {
     /**
      * Ultra高斯
      */
-    public IMAGE getUltraGas(IMAGE px, int baseSize, int maxSize) {
-        IMAGE raw = picServer.getUltraGas(px, baseSize, maxSize);
+    public Image getUltraGas(Image px, int baseSize, int maxSize) {
+        Image raw = picServer.getUltraGas(px, baseSize, maxSize);
         // return getGasImage(raw, 9);
         return raw;
     }
@@ -187,17 +187,17 @@ public class ImgProcessingController {
     /**
      * 边缘提取
      */
-    public IMAGE getEdgeImage(IMAGE px, boolean erosion) {
+    public Image getEdgeImage(Image px, boolean erosion) {
         // 高斯滤波降噪
-        IMAGE gas = getGasImage(px, 2);
+        Image gas = getGasImage(px, 2);
         return picServer.getEdge(gas, multiThreads, accurateCalculate, erosion, pureEdge);
     }
 
     /**
      * 等值切割
      */
-    public List<IMAGE> equalSplit(IMAGE img, int count, boolean horizontal) {
-        List<IMAGE> result = new ArrayList<>();
+    public List<Image> equalSplit(Image img, int count, boolean horizontal) {
+        List<Image> result = new ArrayList<>();
         int width = horizontal ? img.getWidth() / count + 1 : img.getWidth();
         int height = horizontal ? img.getHeight() : img.getHeight() / count + 1;
         for (int i = 0; i < count; i++) {
@@ -211,8 +211,8 @@ public class ImgProcessingController {
     /**
      * 异步切割
      */
-    public List<IMAGE> asyncSplit(IMAGE img, int count, boolean horizontal) {
-        List<IMAGE> result = new ArrayList<>();
+    public List<Image> asyncSplit(Image img, int count, boolean horizontal) {
+        List<Image> result = new ArrayList<>();
         int width = horizontal ? img.getWidth() / (count + 1) : img.getWidth();
         int height = horizontal ? img.getHeight() : img.getHeight() / (count + 1) + 1;
         for (int i = 0; i < count; i++) {
@@ -230,8 +230,8 @@ public class ImgProcessingController {
     /**
      * 定值切割
      */
-    public List<IMAGE> valueSplit(IMAGE img, int value, boolean horizontal) {
-        List<IMAGE> result = new ArrayList<>();
+    public List<Image> valueSplit(Image img, int value, boolean horizontal) {
+        List<Image> result = new ArrayList<>();
         int width = horizontal ? value : img.getWidth();
         int height = horizontal ? img.getHeight() : value;
         int length = horizontal ? img.getWidth() : img.getHeight();
@@ -250,7 +250,7 @@ public class ImgProcessingController {
     /**
      * 改变图像大小
      */
-    public IMAGE resizeImage(IMAGE img, double radio, int type) {
+    public Image resizeImage(Image img, double radio, int type) {
         if (type == 0) {
             return picServer.getReizedImage(img, (int) (img.getWidth() * radio), (int) (img.getHeight() * radio));
         } else if (type == 1) {
@@ -264,28 +264,28 @@ public class ImgProcessingController {
     /**
      * 对输入图像进行格栅处理
      */
-    public IMAGE getGrilleImage(IMAGE px, double radio, int type) {
-        IMAGE enhance;
+    public Image getGrilleImage(Image px, double radio, int type) {
+        Image enhance;
         if (gaussianBlur) {
             // 利用缩放降低计算量
-            IMAGE min = resizeImage(px, 0.5, RESIZE_ENTIRETY);
-            IMAGE gas = getUltraGas(min, 36, 54);
-            IMAGE normal = resizeImage(gas, 2.0, RESIZE_ENTIRETY);
+            Image min = resizeImage(px, 0.5, RESIZE_ENTIRETY);
+            Image gas = getUltraGas(min, 36, 54);
+            Image normal = resizeImage(gas, 2.0, RESIZE_ENTIRETY);
             enhance = picServer.getEnhanceImage2(normal);
         } else {
             enhance = picServer.getEnhanceImage2(px);
         }
-        List<IMAGE> imgList = asyncSplit(enhance, (int) (1 / radio), false);
+        List<Image> imgList = asyncSplit(enhance, (int) (1 / radio), false);
         return combineImages(imgList, type, false);
     }
 
     /**
      * 对输入的图组按比例进行组合
      */
-    public IMAGE combineImages(List<IMAGE> imgList, int type, boolean horizontal) {
-        List<IMAGE> resized = new ArrayList<>();
+    public Image combineImages(List<Image> imgList, int type, boolean horizontal) {
+        List<Image> resized = new ArrayList<>();
         if (type == 0) {
-            for (IMAGE img : imgList) {
+            for (Image img : imgList) {
                 resized.add(resizeImage(img, 0.5, horizontal ? RESIZE_LANDSCAPE : RESIZE_VERTICAL));
             }
         } else if (type == 1) {
@@ -299,10 +299,10 @@ public class ImgProcessingController {
         } else if (type == 2) {
             for (int i = 0; i < imgList.size(); i++) {
                 if (i % 2 == 0) {
-                    IMAGE aim = AdCtrl.adjustSatAndVal(imgList.get(i), -8, 12);
+                    Image aim = AdCtrl.adjustSatAndVal(imgList.get(i), -8, 12);
                     resized.add(resizeImage(aim, 0.96, horizontal ? RESIZE_LANDSCAPE : RESIZE_VERTICAL));
                 } else {
-                    IMAGE aim = AdCtrl.adjustSatAndVal(imgList.get(i), 16, -4);
+                    Image aim = AdCtrl.adjustSatAndVal(imgList.get(i), 16, -4);
                     resized.add(resizeImage(imgList.get(i), 0.04, horizontal ? RESIZE_LANDSCAPE : RESIZE_VERTICAL));
                 }
             }
@@ -312,7 +312,7 @@ public class ImgProcessingController {
         return picServer.getCombineImage(resized, horizontal);
     }
 
-    public IMAGE getEnhanceImage(IMAGE px, double theta) {
+    public Image getEnhanceImage(Image px, double theta) {
         return picServer.getEnhanceImage(px, theta);
     }
 }

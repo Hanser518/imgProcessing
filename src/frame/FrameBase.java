@@ -1,9 +1,9 @@
 package frame;
 
 import controller.*;
-import entity.IMAGE;
+import entity.Image;
 import frame.entity.ImageNode;
-import frame.entity.Param;
+import frame.constant.Param;
 import frame.service.IFileService;
 import frame.service.InitializeService;
 import frame.service.impl.IFileServiceImpl;
@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
-import static frame.entity.Param.*;
+import static frame.constant.Param.*;
 
 public class FrameBase {
     private boolean fileBarOpen = true;
@@ -88,7 +88,7 @@ public class FrameBase {
         baseFrame.setVisible(true);
     }
 
-    public static IMAGE updateNode(IMAGE newImage, int operation) {
+    public static Image updateNode(Image newImage, int operation) {
         ImageNode nodeNow = imageLayer.getNode(imageLayer.getIndex());
         switch (operation) {
             case ADD_NODE -> {
@@ -111,7 +111,7 @@ public class FrameBase {
             case CLEAR_NODE -> {
                 nodeNow.next = null;
                 nodeNow.prev = null;
-                nodeNow.image = new IMAGE();
+                nodeNow.image = new Image();
             }
         }
         fileNameLabel.setText(nodeNow.nodeName);
@@ -120,7 +120,7 @@ public class FrameBase {
         return nodeNow.image;
     }
 
-    public static IMAGE updateNode() {
+    public static Image updateNode() {
         ImageNode nodeNow = imageLayer.getNode(imageLayer.getIndex());
         fileNameLabel.setText(nodeNow.nodeName);
         System.out.println("Operation Layer:" + imageLayer.getIndex());
@@ -136,7 +136,7 @@ public class FrameBase {
         baseFrame.repaint(); // 重新绘制组件
     }
 
-    public static void updateCenterLabel(IMAGE newImage) {
+    public static void updateCenterLabel(Image newImage) {
         updateLayerThumb(imageLayer.getIndex());
         centerLabel.setText(null);
         // 获取图像宽高，计算比例
@@ -144,7 +144,7 @@ public class FrameBase {
         int imgHeight = newImage.getHeight();
         double imgRate = Math.min((double) frameWidth / imgWidth, (double) frameHeight / imgHeight) * zoom;
         image = newImage;
-        centerLabel.setIcon(new ImageIcon(pcsCtrl.resizeImage(newImage, imgRate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
+        centerLabel.setIcon(new ImageIcon(pcsCtrl.resizeImage(newImage, imgRate, pcsCtrl.RESIZE_ENTIRETY).getRawFile()));
         centerLabel.setBackground(Color.darkGray);
         baseFrame.revalidate(); // 重新验证布局
         baseFrame.repaint(); // 重新绘制组件
@@ -230,7 +230,7 @@ public class FrameBase {
         switch (suffix) {
             case "JPG", "PNG" -> {
                 try {
-                    updateCenterLabel(updateNode(new IMAGE(file.getAbsolutePath(), 0), ADD_NODE));
+                    updateCenterLabel(updateNode(new Image(file.getAbsolutePath(), 0), ADD_NODE));
                 } catch (IOException ignored) {
                 }
             }
@@ -251,7 +251,7 @@ public class FrameBase {
         JButton layerDown = Param.functionButton2("-");
         layerUp.addActionListener(ac -> {
             if (imageLayer.getIndex() >= imageLayer.getRange()[1] - 1) {
-                imageLayer.addLayer(new IMAGE());
+                imageLayer.addLayer(new Image());
             }
             imageLayer.setIndex(imageLayer.getIndex() != null ? imageLayer.getIndex() + 1 : 0);
             layerLabel.setText(String.format("%d/%d", imageLayer.getIndex() + 1, imageLayer.getRange()[1]));
@@ -285,11 +285,11 @@ public class FrameBase {
             System.out.println("THUMB IN");
             for (int i = thumbList.size(); i < range[1]; i++) {
                 ImageNode node = imageLayer.getNode(i);
-                IMAGE nodeImg = node.image;
+                Image nodeImg = node.image;
                 double imgRate = Math.min((double) 100 / nodeImg.getWidth(), (double) 100 / nodeImg.getHeight());
                 nodeImg = pcsCtrl.resizeImage(nodeImg, imgRate, pcsCtrl.RESIZE_ENTIRETY);
                 JLabel thumbLabel = new JLabel();
-                thumbLabel.setIcon(new ImageIcon(nodeImg.getImg()));
+                thumbLabel.setIcon(new ImageIcon(nodeImg.getRawFile()));
                 thumbLabel.setBorder(new TitledBorder(new EtchedBorder(), node.nodeName));
                 int finalI = i;
                 thumbLabel.addMouseListener(new MouseAdapter() {
@@ -306,11 +306,11 @@ public class FrameBase {
             }
         } else {
             ImageNode node = imageLayer.getNode(index);
-            IMAGE nodeImg = node.image;
+            Image nodeImg = node.image;
             double imgRate = Math.min((double) 100 / nodeImg.getWidth(), (double) 100 / nodeImg.getHeight());
             nodeImg = pcsCtrl.resizeImage(nodeImg, imgRate, pcsCtrl.RESIZE_ENTIRETY);
             JLabel thumbLabel = thumbList.get(index);
-            thumbLabel.setIcon(new ImageIcon(nodeImg.getImg()));
+            thumbLabel.setIcon(new ImageIcon(nodeImg.getRawFile()));
             thumbLabel.setBorder(new TitledBorder(new EtchedBorder(), node.nodeName));
             thumbList.set(index, thumbLabel);
         }
@@ -378,7 +378,7 @@ public class FrameBase {
         base.add(reLoadBtn);
 
         JButton closeButton = functionButton("Close");
-        closeButton.addActionListener(e -> updateCenterLabel(updateNode(new IMAGE(), CLEAR_NODE)));
+        closeButton.addActionListener(e -> updateCenterLabel(updateNode(new Image(), CLEAR_NODE)));
         base.add(closeButton);
 
         JButton cancelBtn = functionButton("Cancel");
@@ -433,7 +433,7 @@ public class FrameBase {
         });
         JButton gasBtn = buildApplyButton();
         gasBtn.addActionListener(ac -> {
-            IMAGE gas;
+            Image gas;
             if (BLUR_QUICK) {
                 gas = blurCtrl.getQuickGasBlur(image, blurRadio, 32);
             } else {
@@ -483,7 +483,7 @@ public class FrameBase {
         });
         JButton stgBtn = buildApplyButton();
         stgBtn.addActionListener(ac -> {
-            IMAGE strange = blurCtrl.getStrangeBlur(image, strangeBlurRadio);
+            Image strange = blurCtrl.getStrangeBlur(image, strangeBlurRadio);
             updateCenterLabel(updateNode(strange, ADD_NODE));
         });
         strangeSlider.setMajorTickSpacing(12);
@@ -587,21 +587,21 @@ public class FrameBase {
         JButton btn1 = functionButton("Regular");
         btn1.addActionListener(ac -> {
             textLabel.setText("Regular");
-            IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_REGULAR, false);
+            Image grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_REGULAR, false);
             updateCenterLabel(updateNode(grille, ADD_NODE));
         });
 
         JButton btn2 = functionButton("Medium");
         btn2.addActionListener(ac -> {
             textLabel.setText("Medium");
-            IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_MEDIUM, false);
+            Image grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_MEDIUM, false);
             updateCenterLabel(updateNode(grille, ADD_NODE));
         });
 
         JButton btn3 = functionButton("Bold");
         btn3.addActionListener(ac -> {
             textLabel.setText("Bold");
-            IMAGE grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_BOLD, false);
+            Image grille = styleCtrl.transGrilleStyle(image, styleCtrl.GRILLE_BOLD, false);
             updateCenterLabel(updateNode(grille, ADD_NODE));
         });
         panel.add(btn1);
@@ -645,7 +645,7 @@ public class FrameBase {
 
         JButton apply = buildApplyButton();
         apply.addActionListener(ac -> {
-            IMAGE grille = styleCtrl.buildGrille(image, grilleParam / 1000.0, grilleType);
+            Image grille = styleCtrl.buildGrille(image, grilleParam / 1000.0, grilleType);
             updateCenterLabel(updateNode(grille, ADD_NODE));
         });
 
@@ -667,7 +667,7 @@ public class FrameBase {
         textLabel.setHorizontalAlignment(JLabel.CENTER);
         JButton sobel = functionButton("SOBEL");
         sobel.addActionListener(ac -> {
-            IMAGE edge = new IMAGE();
+            Image edge = new Image();
             try {
                 textLabel.setText("SOBEL");
                 edge = edgeCtrl.getImgEdge(image, EdgeController.SOBEL);
@@ -679,7 +679,7 @@ public class FrameBase {
 
         JButton prewitt = functionButton("PREWITT");
         prewitt.addActionListener(ac -> {
-            IMAGE edge = new IMAGE();
+            Image edge = new Image();
             try {
                 textLabel.setText("PREWITT");
                 edge = edgeCtrl.getImgEdge(image, EdgeController.PREWITT);
@@ -691,7 +691,7 @@ public class FrameBase {
 
         JButton mar = functionButton("MAR");
         mar.addActionListener(ac -> {
-            IMAGE edge = new IMAGE();
+            Image edge = new Image();
             try {
                 textLabel.setText("MAR");
                 edge = edgeCtrl.getImgEdge(image, EdgeController.MARR);
@@ -723,19 +723,19 @@ public class FrameBase {
             String select = (String) comboBox.getSelectedItem();
             switch (select) {
                 case "Paper" -> {
-                    IMAGE reStyle = styleCtrl.transPaperStyle(image, 24, 118);
+                    Image reStyle = styleCtrl.transPaperStyle(image, 24, 118);
                     updateCenterLabel(updateNode(reStyle, ADD_NODE));
                 }
                 case "Oil" -> {
                     try {
-                        IMAGE reStyle = styleCtrl.transOilPaintingStyle(image);
+                        Image reStyle = styleCtrl.transOilPaintingStyle(image);
                         updateCenterLabel(updateNode(reStyle, ADD_NODE));
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
                 }
                 case "Erosion" -> {
-                    IMAGE reStyle = pcsCtrl.erosionImage(image);
+                    Image reStyle = pcsCtrl.erosionImage(image);
                     updateCenterLabel(updateNode(reStyle, ADD_NODE));
                 }
             }
@@ -757,13 +757,13 @@ public class FrameBase {
         btnPanel.setBackground(subBackColor);
         JButton cdrBtn = new JButton("CDR");
         cdrBtn.addActionListener(e -> {
-            IMAGE cdr = adCtrl.CDR(image);
+            Image cdr = adCtrl.CDR(image);
             updateCenterLabel(updateNode(cdr, ADD_NODE));
         });
 
         JButton apply = buildApplyButton();
         apply.addActionListener(ac -> {
-            IMAGE asv = adCtrl.adjustSatAndVal(image, saturation, value);
+            Image asv = adCtrl.adjustSatAndVal(image, saturation, value);
             updateCenterLabel(updateNode(asv, ADD_NODE));
         });
 

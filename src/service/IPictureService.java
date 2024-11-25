@@ -1,6 +1,6 @@
 package service;
 
-import entity.IMAGE;
+import entity.Image;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ public interface IPictureService {
      * @param startY
      * @return
      */
-    public IMAGE getSubImage(IMAGE img,
+    public Image getSubImage(Image img,
                              int width, int height,
                              int startX, int startY);
 
@@ -24,7 +24,7 @@ public interface IPictureService {
      * @param horizontal 是否水平方向处理
      * @return
      */
-    public IMAGE getCombineImage(List<IMAGE> images, boolean horizontal);
+    public Image getCombineImage(List<Image> images, boolean horizontal);
 
     /**
      * 图像尺寸缩放
@@ -33,20 +33,20 @@ public interface IPictureService {
      * @param h
      * @return
      */
-    public IMAGE getReizedImage(IMAGE img, int w, int h);
+    public Image getReizedImage(Image img, int w, int h);
 
-    public IMAGE getUltraGas(IMAGE img, int baseSize, int maxSize);
+    public Image getUltraGas(Image img, int baseSize, int maxSize);
 
     /**
      * 获取灰图
      * @param img
      * @return
      */
-    public IMAGE getGrayImage(IMAGE img);
+    public Image getGrayImage(Image img);
 
-    public IMAGE getCalcGray(IMAGE img);
+    public Image getCalcGray(Image img);
 
-    public IMAGE getEdge(IMAGE img, boolean multiThreads, boolean accurateCalculate, boolean erosion, boolean pureEdge);
+    public Image getEdge(Image img, boolean multiThreads, boolean accurateCalculate, boolean erosion, boolean pureEdge);
 
     /**
      * 图像亮度增强
@@ -54,12 +54,12 @@ public interface IPictureService {
      * @param theta
      * @return
      */
-    public IMAGE getEnhanceImage(IMAGE img, double theta);
+    public Image getEnhanceImage(Image img, double theta);
 
-    public IMAGE getEnhanceImage2(IMAGE img);
+    public Image getEnhanceImage2(Image img);
 
-    public IMAGE getGammaFix(IMAGE img, double param);
+    public Image getGammaFix(Image img, double param);
 
-    void imgData(IMAGE img);
-    IMAGE getSubImage(int width, int height, int startX, int startY);
+    void imgData(Image img);
+    Image getSubImage(int width, int height, int startX, int startY);
 }

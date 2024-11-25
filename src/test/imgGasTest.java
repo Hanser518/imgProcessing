@@ -3,8 +3,7 @@ package test;
 import controller.BlurController;
 import controller.ImgController;
 import discard.ImgProcessingController;
-import entity.IMAGE;
-import frame.entity.Param;
+import entity.Image;
 import service.ICalculateService;
 import service.impl.ICalculateServiceImpl;
 
@@ -18,8 +17,8 @@ public class imgGasTest {
 
     public static void main(String[] args) throws IOException {
         String fileName = "bus";
-        IMAGE px = new IMAGE(fileName + ".jpg");
-        IMAGE gas = new IMAGE();
+        Image px = new Image(fileName + ".jpg");
+        Image gas = new Image();
 
         // 开启超线程
         imgCtrl.closeMultiThreads();
@@ -31,12 +30,12 @@ public class imgGasTest {
         imgCtrl2.showImg(gas, "fix");
         long set2 = System.currentTimeMillis();
 
-        IMAGE gas2 = blurCtrl.getQuickGasBlur(px, gasSize, 32);
+        Image gas2 = blurCtrl.getQuickGasBlur(px, gasSize, 32);
         imgCtrl2.showImg(gas2, "quick");
         long set3 = System.currentTimeMillis();
 
         long set4 = System.currentTimeMillis();
-        // IMAGE gasImage3 = imgCtrl.getGasImage(px, gasSize);
+        // Image gasImage3 = imgCtrl.getGasImage(px, gasSize);
 
         // imgCtrl2.showImg(gasImage3, "gasImage3");
 

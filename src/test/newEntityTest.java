@@ -1,7 +1,7 @@
 package test;
 
 import controller.ImgController;
-import entity.IMAGE;
+import entity.Image;
 import algorithm.cnnDiscard.entity.ImageC;
 
 import java.io.IOException;
@@ -10,11 +10,11 @@ public class newEntityTest {
     static ImgController imgCtrl2 = new ImgController();
     public static void main(String[] args) throws IOException {
         String fileName = "bus";
-        IMAGE px = new IMAGE(fileName + ".jpg");
+        Image px = new Image(fileName + ".jpg");
         long set;
 
         set = System.currentTimeMillis();
-        IMAGE raw = new IMAGE(px.getArgbMatrix());
+        Image raw = new Image(px.getArgbMatrix());
         System.out.println("RAW: " + (System.currentTimeMillis() - set));
 
         set = System.currentTimeMillis();

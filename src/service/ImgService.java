@@ -1,6 +1,6 @@
 package service;
 
-import entity.IMAGE;
+import entity.Image;
 
 public interface ImgService {
     /**
@@ -9,14 +9,14 @@ public interface ImgService {
      * @param px
      * @return
      */
-    int[][] getSobelEdge(IMAGE px) throws Exception;
+    int[][] getSobelEdge(Image px) throws Exception;
 
     /**
      * 获取Prewitt算子计算的图像边缘
      */
-    int[][] getPrewittEdge(IMAGE px) throws Exception;
+    int[][] getPrewittEdge(Image px) throws Exception;
 
-    int[][] getMarrEdge(IMAGE px) throws Exception;
+    int[][] getMarrEdge(Image px) throws Exception;
 
     /**
      * 填充算法
@@ -25,7 +25,7 @@ public interface ImgService {
      * @param radius 处理半径
      * @return 处理图像
      */
-    int[][] paddingImg(IMAGE px, int radius);
+    int[][] paddingImg(Image px, int radius);
 
     /**
      * 膨胀算法
@@ -34,7 +34,7 @@ public interface ImgService {
      * @param radius 处理半径
      * @return 处理图像
      */
-    int[][] dilateImg(IMAGE px, int radius);
+    int[][] dilateImg(Image px, int radius);
 
     /**
      * 侵蚀算法
@@ -43,9 +43,9 @@ public interface ImgService {
      * @param radius 处理半径
      * @return 处理图像
      */
-    int[][] erosionImg(IMAGE px, int radius);
+    int[][] erosionImg(Image px, int radius);
 
-    int[][] traceImg(IMAGE px) throws Exception;
+    int[][] traceImg(Image px) throws Exception;
 
-    int[][] getThumbnail(IMAGE px, int step);
+    int[][] getThumbnail(Image px, int step);
 }

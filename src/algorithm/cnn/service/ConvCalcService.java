@@ -3,7 +3,7 @@ package algorithm.cnn.service;
 import algorithm.cnn.core.ThreadPoolCenter;
 import algorithm.cnn.entity.*;
 import algorithm.cnn.param.DatabaseKernel;
-import entity.IMAGE;
+import entity.Image;
 import service.ImgService;
 import service.impl.ImgServiceImpl;
 import threadPool.core.ThreadCore;
@@ -120,7 +120,7 @@ public class ConvCalcService {
         List<ImageCNN> result = new ArrayList<>();
         for (ImageCNN img : imgList) {
             try {
-                int[][] res = imgServ.getSobelEdge(new IMAGE(img.getArgbMatrix()));
+                int[][] res = imgServ.getSobelEdge(new Image(img.getArgbMatrix()));
                 result.add(new ImageCNN(res));
             } catch (Exception ignored) {
             }

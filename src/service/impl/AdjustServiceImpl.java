@@ -1,10 +1,9 @@
 package service.impl;
 
-import entity.IMAGE;
+import entity.Image;
 import service.IAdjustService;
 import service.ICalculateService;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Map;
 
@@ -12,7 +11,7 @@ public class AdjustServiceImpl implements IAdjustService {
     private static final ICalculateService calcService = new ICalculateServiceImpl();
 
     @Override
-    public int[][] compressDynamicRange(IMAGE px) {
+    public int[][] compressDynamicRange(Image px) {
         Map<Integer, Double> rate = calcService.getActiveAccumulateRate(px);
 
         // 1.判断方向
@@ -76,7 +75,7 @@ public class AdjustServiceImpl implements IAdjustService {
     }
 
     @Override
-    public int[][] AdjustSaturation(IMAGE px, int sat) {
+    public int[][] AdjustSaturation(Image px, int sat) {
         int s = Math.max(-100, Math.min(100, sat));
         double adRate = 1.0 + s * 0.005;    // 调整最大范围为0.5 ~ 1.5
         double[][][] hsv = px.getHsvMatrix();
@@ -89,7 +88,7 @@ public class AdjustServiceImpl implements IAdjustService {
     }
 
     @Override
-    public int[][] AdjustValue(IMAGE px, int val) {
+    public int[][] AdjustValue(Image px, int val) {
         int v = Math.max(-100, Math.min(100, val));
         double adRate = 1.0 + v * 0.005;    // 调整最大范围为0.5 ~ 1.5
         double[][][] hsv = px.getHsvMatrix();
@@ -102,7 +101,7 @@ public class AdjustServiceImpl implements IAdjustService {
     }
 
     @Override
-    public int[][] AdjustSaturationAndValue(IMAGE px, int sat, int val) {
+    public int[][] AdjustSaturationAndValue(Image px, int sat, int val) {
         int s = Math.max(-100, Math.min(100, sat));
         double sRate = 1.0 + s * 0.005;    // 调整最大范围为0.5 ~ 1.5
         int v = Math.max(-100, Math.min(100, val));
@@ -118,17 +117,17 @@ public class AdjustServiceImpl implements IAdjustService {
     }
 
     @Override
-    public IMAGE getReizedImage(IMAGE px, int wSize, int hSize) {
-        BufferedImage raw = px.getImg();
-        Image scaledImage = raw.getScaledInstance(wSize, hSize, Image.SCALE_AREA_AVERAGING);
+    public Image getReizedImage(entity.Image px, int wSize, int hSize) {
+        BufferedImage raw = px.getRawFile();
+        java.awt.Image scaledImage = raw.getScaledInstance(wSize, hSize, java.awt.Image.SCALE_AREA_AVERAGING);
         // 将调整尺寸后的图像转换为BufferedImage
         BufferedImage result = new BufferedImage(wSize, hSize, BufferedImage.TYPE_INT_ARGB);
         result.getGraphics().drawImage(scaledImage, 0, 0, null);
-        return new IMAGE(result);
+        return new entity.Image(result);
     }
 
     @Override
-    public int[][] test(IMAGE px, int value) {
+    public int[][] test(Image px, int value) {
         double[][][] hsv = px.getHsvMatrix();
 
         double p1x = 0.33 * Math.sin(Math.toRadians(0));

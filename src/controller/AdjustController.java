@@ -1,7 +1,6 @@
 package controller;
 
-import entity.IMAGE;
-import frame.entity.Param;
+import entity.Image;
 import service.IAdjustService;
 import service.ICalculateService;
 import service.impl.AdjustServiceImpl;
@@ -16,9 +15,9 @@ public class AdjustController {
      * @param px    输入图像
      * @return  输出图像
      */
-    public IMAGE compressDynamicRange(IMAGE px) {
+    public Image compressDynamicRange(Image px) {
         int[][] result = adService.compressDynamicRange(px);
-        return new IMAGE(result);
+        return new Image(result);
     }
 
     /**
@@ -26,7 +25,7 @@ public class AdjustController {
      * @param px    输入图像
      * @return  输出图像
      */
-    public IMAGE CDR(IMAGE px) {
+    public Image CDR(Image px) {
         return compressDynamicRange(px);
     }
 
@@ -36,8 +35,8 @@ public class AdjustController {
      * @param value 饱和度调整值，范围为-100~100，超出范围的值将被压缩至-100~100以内
      * @return  输出图像
      */
-    public IMAGE adjustSaturation(IMAGE px, int value){
-        return new IMAGE(adService.AdjustSaturation(px, value));
+    public Image adjustSaturation(Image px, int value){
+        return new Image(adService.AdjustSaturation(px, value));
     }
 
     /**
@@ -47,15 +46,15 @@ public class AdjustController {
      * @param value 亮度调整值，范围为-100~100，超出范围的值将被压缩至-100~100以内
      * @return  返回值
      */
-    public IMAGE adjustSatAndVal(IMAGE px, int saturation, int value){
+    public Image adjustSatAndVal(Image px, int saturation, int value){
         int sat = Math.max(-100, Math.min(100, saturation));
         int val = Math.max(-100, Math.min(100, value));
         int[][] pxSV = adService.AdjustSaturationAndValue(px, sat, val);
-        return new IMAGE(pxSV);
+        return new Image(pxSV);
     }
 
-    public IMAGE test(IMAGE px, int value) {
-        return new IMAGE(adService.test(px, value));
+    public Image test(Image px, int value) {
+        return new Image(adService.test(px, value));
     }
 
 }

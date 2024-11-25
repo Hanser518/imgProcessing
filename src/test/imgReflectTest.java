@@ -1,7 +1,7 @@
 package test;
 
 import controller.ImgController;
-import entity.IMAGE;
+import entity.Image;
 import threadPool.thread.ConVCalc;
 import threadPool.thread.ConVStrange;
 import threadPool.thread.ConfActive;
@@ -16,8 +16,8 @@ public class imgReflectTest {
 
     public static void main(String[] args) throws Exception {
         String fileName = "bus";
-        IMAGE px = new IMAGE(fileName + ".jpg");
-        IMAGE res = new IMAGE();
+        Image px = new Image(fileName + ".jpg");
+        Image res = new Image();
 
         long set1;
 
@@ -26,7 +26,7 @@ public class imgReflectTest {
         conv = new ThreadPoolReflectCore(px.getArgbMatrix(), calcService.getGasKernel(67), 24, new PaperBlur());
         conv.start();
         System.out.println((System.currentTimeMillis() - set1) / 1000.0);
-        res = new IMAGE(conv.getData());
+        res = new Image(conv.getData());
         imgCtrl2.showImg(res, "paper");
 
         set1 = System.currentTimeMillis();
@@ -34,21 +34,21 @@ public class imgReflectTest {
         conv.customMethod("setThreshold", 32);
         conv.start();
         System.out.println((System.currentTimeMillis() - set1) / 1000.0);
-        res = new IMAGE(conv.getData());
+        res = new Image(conv.getData());
         imgCtrl2.showImg(res, "ac");
 
         set1 = System.currentTimeMillis();
         conv = new ThreadPoolReflectCore(px.getArgbMatrix(), calcService.getGasKernel(30), 24, new ConVCalc());
         conv.start();
         System.out.println((System.currentTimeMillis() - set1) / 1000.0);
-        res = new IMAGE(conv.getData());
+        res = new Image(conv.getData());
         imgCtrl2.showImg(res, "conv");
 
         set1 = System.currentTimeMillis();
         conv = new ThreadPoolReflectCore(px.getArgbMatrix(), calcService.getGasKernel(67), 32, new ConVStrange());
         conv.start();
         System.out.println((System.currentTimeMillis() - set1) / 1000.0);
-        res = new IMAGE(conv.getData());
+        res = new Image(conv.getData());
         imgCtrl2.showImg(res, "strange");
 
     }

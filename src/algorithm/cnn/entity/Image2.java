@@ -1,94 +1,72 @@
-package entity;
+package algorithm.cnn.entity;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 
-public class IMAGE {
+public class Image2 {
+
     /**
      * 图像源文件
      */
-    private BufferedImage rawFile;
+    protected BufferedImage rawFile;
 
     /**
      * 图像宽高
      */
-    private int width;
-    private int height;
+    protected int width;
+    protected int height;
 
     /**
-     * 像素存储
+     * 像素值矩阵
      */
-    private int[][] argbMatrix;
+    protected int[][] argbMatrix;
     protected double[][][] hsvMatrix;
-
 
     /**
      * 载入图像
      *
-     * @param path
-     * @throws IOException
+     * @param path 文件路径
      */
-    public IMAGE(String path) throws IOException {
-        rawFile = ImageIO.read(new File("./photo/" + path));
+    public Image2(String path) {
+        try {
+            rawFile = ImageIO.read(new File(path));
+            width = rawFile.getWidth();
+            height = rawFile.getHeight();
+        } catch (IOException e) {
+            rawFile = null; //new BufferedImage(10, 10, BufferedImage.TYPE_INT_ARGB);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Image2() {
+    }
+
+    public Image2(BufferedImage image) {
+        this.rawFile = image;
         width = rawFile.getWidth();
         height = rawFile.getHeight();
     }
 
-    public IMAGE(String path, int num) throws IOException {
-        rawFile = ImageIO.read(new File(path));
-        width = rawFile.getWidth();
-        height = rawFile.getHeight();
-    }
-
-    public IMAGE(int[][] argbMatrix) {
-        width = argbMatrix.length;
-        height = argbMatrix[0].length;
+    public Image2(int[][] argbMatrix){
+        this.width = argbMatrix.length;
+        this.height = argbMatrix[0].length;
         this.argbMatrix = argbMatrix;
-    }
-
-    public IMAGE(BufferedImage img) {
-        rawFile = img;
-        width = rawFile.getWidth();
-        height = rawFile.getHeight();
-    }
-
-    public IMAGE() {
-        width = 100;
-        height = 100;
-        rawFile = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                rawFile.setRGB(i, j, (255 << 24) | (255 << 16) | (255 << 8) | (255));
-            }
-        }
-
-    }
-
-    public IMAGE(int width, int height, int value) {
-        this.width = width;
-        this.height = height;
-        rawFile = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                rawFile.setRGB(i, j, value);
-            }
-        }
-
     }
 
     /**
      * 获取图像数据
-     *
-     * @return
      */
-    public BufferedImage getImg() {
+    public BufferedImage getRawFile() {
         if (rawFile == null) {
             rawFile = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            for (int i = 0; i < width; i++) {
-                for (int j = 0; j < height; j++) {
-                    rawFile.setRGB(i, j, argbMatrix[i][j]);
+            if (argbMatrix != null) {
+                for (int i = 0; i < width; i++) {
+                    for (int j = 0; j < height; j++) {
+                        rawFile.setRGB(i, j, argbMatrix[i][j]);
+                    }
                 }
             }
         }
@@ -97,8 +75,6 @@ public class IMAGE {
 
     /**
      * 获取高度
-     *
-     * @return
      */
     public int getHeight() {
         return height;
@@ -106,33 +82,13 @@ public class IMAGE {
 
     /**
      * 获取宽度
-     *
-     * @return
      */
     public int getWidth() {
         return width;
     }
 
     /**
-     * 获取图像数据列表形式
-     *
-     * @return
-     */
-    public int[] getPixelList() {
-        int[] pixelList = new int[width * height];
-        getArgbMatrix();
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                pixelList[i * height + j] = argbMatrix[i][j];
-            }
-        }
-        return pixelList;
-    }
-
-    /**
-     * 获取图像矩阵
-     *
-     * @return
+     * 获取Argb图像矩阵
      */
     public int[][] getArgbMatrix() {
         if (this.argbMatrix == null) {
@@ -164,8 +120,10 @@ public class IMAGE {
     /**
      * <p>获取GRAY矩阵</p>
      * <P>默认转换为单值矩阵</P>
+     *
+     * @param model 可选参数
      */
-    public int[][] getGrayMatrix() {
+    public int[][] getGrayMatrix(int... model) {
         if (this.argbMatrix == null) {
             getArgbMatrix();
         }
@@ -276,7 +234,6 @@ public class IMAGE {
     /**
      * 将输入的argb/rgb矩阵转换为gray矩阵
      * 默认为 255 | value | value | value 格式
-     *
      * @param argbMatrix argb/rgb矩阵
      * @return gray矩阵
      */
@@ -312,44 +269,58 @@ public class IMAGE {
         return result;
     }
 
-    public boolean activeTest(int px) {
-        int r, g, b;
-        r = (px >> 16) & 0xFF;
-        g = (px >> 8) & 0xFF;
-        b = px & 0xFF;
-        if (r > 15 || g > 15 || b > 15) {
-            return true;
-        }
-        return false;
-    }
-
-    public int getAcValue(int px) {
-        int r = (px >> 16) & 0xFF;
-        int g = (px >> 8) & 0xFF;
-        int b = px & 0xFF;
-        int value = 0;
-        int activeThreshold = 32;
-        if (r > activeThreshold && g > activeThreshold && b > activeThreshold)
-            value = (int) (0.3 * r + 0.5 * g + 0.2 * b);
-        else {
-            if (r <= activeThreshold) {
-                if (g <= activeThreshold || b <= activeThreshold)
-                    value = Math.max(g, b);
-                else
-                    value = (int) (0.77 * g + 0.23 * b);
-            } else if (g <= activeThreshold) {
-                if (b <= activeThreshold)
-                    value = r;
-                else
-                    value = (int) (0.6 * r + 0.4 * b);
-            } else {
-                value = (int) (0.375 * r + 0.625 * g);
+    /**
+     * 对传入图像的边缘进行填充
+     *
+     * @param img        图像
+     * @param horizontal 水平方向填充量
+     * @param vertical   竖直方向填充量
+     */
+    public static <T extends Image2> T fillImageEdge(T img, int horizontal, int vertical) {
+        int width = img.getWidth();     // 宽
+        int height = img.getHeight();   // 高
+        BufferedImage image = img.getRawFile();
+        BufferedImage newImg = new BufferedImage(width + 2 * horizontal, height + 2 * vertical, BufferedImage.TYPE_INT_ARGB);
+        for (int i = 0; i < width + 2 * horizontal; i++) {
+            for (int j = 0; j < height + 2 * vertical; j++) {
+                if (i < horizontal) {
+                    if (j < vertical) {
+                        newImg.setRGB(i, j, image.getRGB(0, 0));
+                    } else if (j < vertical + height) {
+                        newImg.setRGB(i, j, image.getRGB(0, j - vertical));
+                    } else {
+                        newImg.setRGB(i, j, image.getRGB(0, height - 1));
+                    }
+                } else if (i >= width + horizontal) {
+                    if (j < vertical) {
+                        newImg.setRGB(i, j, image.getRGB(width - 1, 0));
+                    } else if (j < vertical + height) {
+                        newImg.setRGB(i, j, image.getRGB(width - 1, j - vertical));
+                    } else {
+                        newImg.setRGB(i, j, image.getRGB(width - 1, height - 1));
+                    }
+                } else if (j < vertical) {
+                    newImg.setRGB(i, j, image.getRGB(i - horizontal, 0));
+                } else if (j >= height + vertical) {
+                    newImg.setRGB(i, j, image.getRGB(i - horizontal, height - 1));
+                } else {
+                    newImg.setRGB(i, j, image.getRGB(i - horizontal, j - vertical));
+                }
             }
         }
-        return value;
+        try{
+            Constructor<? extends Image2> constructorOfImage =  img.getClass().getConstructor(BufferedImage.class);
+            return (T) constructorOfImage.newInstance(newImg);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public int getPixParams(int[] arr) {
-        return arr[0] << 24 | arr[1] << 16 | arr[2] << 8 | arr[3];
+    public static void resetImage(Image2 img, BufferedImage image){
+        img.rawFile = image;
+        img.width = image.getWidth();
+        img.height = image.getHeight();
+        img.argbMatrix = null;
+        img.hsvMatrix = null;
     }
 }

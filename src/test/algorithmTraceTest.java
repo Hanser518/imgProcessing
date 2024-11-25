@@ -5,7 +5,7 @@ import controller.EdgeController;
 import controller.ImgController;
 import controller.ProcessingController;
 import controller.StylizeController;
-import entity.IMAGE;
+import entity.Image;
 import service.ICalculateService;
 import service.ImgService;
 import service.impl.ICalculateServiceImpl;
@@ -25,27 +25,27 @@ public class algorithmTraceTest {
     public static void main(String[] args) throws Exception {
 
         String fileName = "paste";
-        IMAGE px = new IMAGE(fileName + ".jpg");
+        Image px = new Image(fileName + ".jpg");
 
-        IMAGE his = new IMAGE(calcServ.getHistogram(px));
+        Image his = new Image(calcServ.getHistogram(px));
         imgCtrl2.showImg(his, "his");
 
-        IMAGE eg = new IMAGE(service.getSobelEdge(px));
+        Image eg = new Image(service.getSobelEdge(px));
         imgCtrl2.showImg(eg, "eg");
 
-        IMAGE oil = styleCtrl.transOilPaintingStyle(px);
+        Image oil = styleCtrl.transOilPaintingStyle(px);
         imgCtrl2.showImg(oil, "oil");
 
         EdgeTrace edgeTrace = new EdgeTrace(edgeCtrl.getImgEdge(px));
         edgeTrace.start(0);
-        IMAGE et = new IMAGE(edgeTrace.getData());
+        Image et = new Image(edgeTrace.getData());
         imgCtrl2.showImg(et, "et");
 
-        List<IMAGE> imgList = new ArrayList<>();
+        List<Image> imgList = new ArrayList<>();
         imgList.add(eg);
         imgList.add(oil);
         imgList.add(et);
-        IMAGE combine = proCtrl.combineImageList(imgList);
+        Image combine = proCtrl.combineImageList(imgList);
         imgCtrl2.showImg(combine, "combine");
     }
 }

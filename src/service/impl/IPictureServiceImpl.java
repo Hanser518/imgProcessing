@@ -1,12 +1,11 @@
 package service.impl;
 
-import entity.IMAGE;
+import entity.Image;
 import entity.PIXEL;
 import service.TUGServiceImpl;
 import service.ICalculateService;
 import service.IPictureService;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +15,7 @@ public class IPictureServiceImpl implements IPictureService {
     static int[][] imgData = null;
 
     @Override
-    public IMAGE getSubImage(IMAGE img, int width, int height, int startX, int startY) {
+    public Image getSubImage(Image img, int width, int height, int startX, int startY) {
         int W = width + startX > img.getWidth() ? img.getWidth() - startX : width;
         int H = height + startY > img.getHeight() ? img.getHeight() - startY : height;
         int[][] px = new int[W][H];
@@ -30,14 +29,14 @@ public class IPictureServiceImpl implements IPictureService {
                 px[i][j] = raw[i + startX][j + startY];
             }
         }
-        return new IMAGE(px);
+        return new Image(px);
     }
 
     @Override
-    public IMAGE getCombineImage(List<IMAGE> images, boolean horizontal) {
+    public Image getCombineImage(List<Image> images, boolean horizontal) {
         int width = 0;
         int height = 0;
-        for (IMAGE img : images) {
+        for (entity.Image img : images) {
             if (horizontal) {
                 width += img.getWidth();
                 height = img.getHeight();
@@ -73,21 +72,21 @@ public class IPictureServiceImpl implements IPictureService {
                 }
             }
         }
-        return new IMAGE(px);
+        return new Image(px);
     }
 
     @Override
-    public IMAGE getReizedImage(IMAGE img, int w, int h) {
-        BufferedImage raw = img.getImg();
-        Image scaledImage = raw.getScaledInstance(w, h, Image.SCALE_SMOOTH);
+    public Image getReizedImage(entity.Image img, int w, int h) {
+        BufferedImage raw = img.getRawFile();
+        java.awt.Image scaledImage = raw.getScaledInstance(w, h, java.awt.Image.SCALE_SMOOTH);
         // 将调整尺寸后的图像转换为BufferedImage
         BufferedImage result = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         result.getGraphics().drawImage(scaledImage, 0, 0, null);
-        return new IMAGE(result);
+        return new Image(result);
     }
 
     @Override
-    public IMAGE getUltraGas(IMAGE img, int baseSize, int maxSize) {
+    public entity.Image getUltraGas(Image img, int baseSize, int maxSize) {
         int[][] map = img.getArgbMatrix();
         int[][] result = new int[img.getWidth()][img.getHeight()];
         int[][] maxFill = calculateServer.pixFill(map, calculateServer.getGasKernel(maxSize));
@@ -116,25 +115,25 @@ public class IPictureServiceImpl implements IPictureService {
                 }
             }
         }
-        return new IMAGE(result);
+        return new Image(result);
     }
 
     @Override
-    public IMAGE getGrayImage(IMAGE img) {
-        BufferedImage raw = img.getImg();
+    public Image getGrayImage(entity.Image img) {
+        BufferedImage raw = img.getRawFile();
         BufferedImage result = new BufferedImage(raw.getWidth(), raw.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
         result.getGraphics().drawImage(raw, 0, 0, null);
-        return new IMAGE(result);
+        return new Image(result);
     }
 
     @Override
-    public IMAGE getCalcGray(IMAGE img) {
+    public Image getCalcGray(entity.Image img) {
         int[][] gray = img.getGrayMatrix();
-        return new IMAGE(gray);
+        return new entity.Image(gray);
     }
 
     @Override
-    public IMAGE getEdge(IMAGE img, boolean multiThreads, boolean accurateCalculate, boolean erosion, boolean pureEdge) {
+    public Image getEdge(entity.Image img, boolean multiThreads, boolean accurateCalculate, boolean erosion, boolean pureEdge) {
         double[][] kernel_x = {
                 {1, 0, -1},
                 {2, 0, -2},
@@ -145,7 +144,7 @@ public class IPictureServiceImpl implements IPictureService {
                 {0, 0, 0},
                 {-1, -2, -1}
         };
-        IMAGE gray = getGrayImage(img);
+        Image gray = getGrayImage(img);
         // Sobel计算边缘
         int[][] sobelX = calculateServer.convolution(gray, kernel_x, multiThreads, accurateCalculate, true).getArgbMatrix();
         int[][] sobelY = calculateServer.convolution(gray, kernel_y, multiThreads, accurateCalculate, true).getArgbMatrix();
@@ -173,14 +172,14 @@ public class IPictureServiceImpl implements IPictureService {
         }
         if (!pureEdge) {
             if (erosion) {
-                return calculateServer.erosion(new IMAGE(matrix));
+                return calculateServer.erosion(new entity.Image(matrix));
             }
-            return new IMAGE(matrix);
+            return new Image(matrix);
         }
         // 尝试在matrix中获取一个阈值点
-        int[][] map = new IMAGE(matrix).getGrayMatrix();
+        int[][] map = new entity.Image(matrix).getGrayMatrix();
         if (erosion) {
-            IMAGE eros = calculateServer.erosion(new IMAGE(matrix));
+            entity.Image eros = calculateServer.erosion(new Image(matrix));
             map = eros.getGrayMatrix();
         }
         while (!pointList.isEmpty()) {
@@ -200,7 +199,7 @@ public class IPictureServiceImpl implements IPictureService {
 //                matrix[i][j] = img.getPixParams(new int[]{255, edge[i][j], edge[i][j], edge[i][j]});
 //            }
 //        }
-        return new IMAGE(matrix);
+        return new entity.Image(matrix);
     }
 
     private PIXEL broadcastSearch(int[][] map, PIXEL loc) {
@@ -225,7 +224,7 @@ public class IPictureServiceImpl implements IPictureService {
     }
 
     @Override
-    public IMAGE getEnhanceImage(IMAGE img, double theta) {
+    public Image getEnhanceImage(Image img, double theta) {
         int[][] enhanceMatrix = calculateServer.getEnhanceMatrix(img, theta);
         int[][] rawMatrix = img.getArgbMatrix();
         for (int i = 0; i < img.getWidth(); i++) {
@@ -233,11 +232,11 @@ public class IPictureServiceImpl implements IPictureService {
                 rawMatrix[i][j] = enhanceMatrix[i][j];
             }
         }
-        return new IMAGE(rawMatrix);
+        return new Image(rawMatrix);
     }
 
     @Override
-    public IMAGE getEnhanceImage2(IMAGE img) {
+    public Image getEnhanceImage2(entity.Image img) {
         int[][] rawMatrix = img.getArgbMatrix();
         // int lumen = img.getPixParams(new int[]{255, 10, 10, 10});
         for (int i = 0; i < img.getWidth(); i++) {
@@ -251,11 +250,11 @@ public class IPictureServiceImpl implements IPictureService {
                 rawMatrix[i][j] = 255 << 24 | r << 16 | g << 8 | b;
             }
         }
-        return new IMAGE(rawMatrix);
+        return new entity.Image(rawMatrix);
     }
 
     @Override
-    public IMAGE getGammaFix(IMAGE img, double param) {
+    public Image getGammaFix(Image img, double param) {
         // 得到灰度图
         int[][] gray = img.getGrayMatrix();
         int[][] px = img.getArgbMatrix();
@@ -275,14 +274,14 @@ public class IPictureServiceImpl implements IPictureService {
                 px[i][j] = 255 << 24 | r << 16 | g << 8 | b;
             }
         }
-        return new IMAGE(px);
+        return new entity.Image(px);
     }
 
-    public void imgData(IMAGE p) {
+    public void imgData(entity.Image p) {
         imgData = p.getArgbMatrix();
     }
 
-    public IMAGE getSubImage(int width, int height, int startX, int startY) {
+    public entity.Image getSubImage(int width, int height, int startX, int startY) {
         if (imgData == null) return null;
         int W = width + startX > imgData.length ? imgData.length - startX : width;
         int H = height + startY > imgData[0].length ? imgData[0].length - startY : height;
@@ -296,6 +295,6 @@ public class IPictureServiceImpl implements IPictureService {
                 px[i][j] = imgData[i + startX][j + startY];
             }
         }
-        return new IMAGE(px);
+        return new Image(px);
     }
 }

@@ -1,6 +1,6 @@
 package controller;
 
-import entity.IMAGE;
+import entity.Image;
 import service.IPictureService;
 import service.impl.IPictureServiceImpl;
 
@@ -27,7 +27,7 @@ public class ImgController {
      * @param tips    图像标注
      * @throws IOException
      */
-    public void saveByName(IMAGE img,
+    public void saveByName(Image img,
                            String imgName,
                            String tips) throws IOException {
         // 确保输出目录存在
@@ -57,9 +57,9 @@ public class ImgController {
      * @param tips    图像标注
      * @throws IOException
      */
-    public void saveByName2(IMAGE img,
-                           String imgName,
-                           String tips) throws IOException {
+    public void saveByName2(Image img,
+                            String imgName,
+                            String tips) throws IOException {
         // 确保输出目录存在
         File outputDir = new File("./output/" + imgName);
         if (!outputDir.exists()) {
@@ -67,10 +67,10 @@ public class ImgController {
         }
         // 写入图像
         File outputFile = new File(outputDir, imgName + "_" + tips + ".png");
-        ImageIO.write(img.getImg(), "png", outputFile);
+        ImageIO.write(img.getRawFile(), "png", outputFile);
     }
 
-    public void showImg(IMAGE img, String name) {
+    public void showImg(Image img, String name) {
         // 图像宽高
         int imgWidth = img.getWidth();
         int imgHeight = img.getHeight();
@@ -96,7 +96,7 @@ public class ImgController {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(frameWidth, frameHeight);
 
-        JLabel label = new JLabel(new ImageIcon(pcsCtrl.resizeImage(img, rate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
+        JLabel label = new JLabel(new ImageIcon(pcsCtrl.resizeImage(img, rate, pcsCtrl.RESIZE_ENTIRETY).getRawFile()));
 
 
         final boolean[] png = {false};
@@ -167,7 +167,7 @@ public class ImgController {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(frameWidth, frameHeight);
 
-        JLabel label = new JLabel(new ImageIcon(pcsCtrl.resizeImage(new IMAGE(img), rate, pcsCtrl.RESIZE_ENTIRETY).getImg()));
+        JLabel label = new JLabel(new ImageIcon(pcsCtrl.resizeImage(new Image(img), rate, pcsCtrl.RESIZE_ENTIRETY).getRawFile()));
 
         JPanel panel = new JPanel();
         panel.add(label);
@@ -176,9 +176,9 @@ public class ImgController {
         frame.setVisible(true);
     }
 
-    public List<IMAGE> asyncSplit(IMAGE img, int count, boolean horizontal) {
+    public List<Image> asyncSplit(Image img, int count, boolean horizontal) {
         long set = System.currentTimeMillis();
-        List<IMAGE> result = new ArrayList<>();
+        List<Image> result = new ArrayList<>();
         int width = horizontal ? img.getWidth() / (count + 1) : img.getWidth();
         int height = horizontal ? img.getHeight() : img.getHeight() / (count + 1) + 1;
         picServer.imgData(img);

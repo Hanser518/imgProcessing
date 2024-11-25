@@ -1,7 +1,7 @@
 package test;
 
 import discard.ImgProcessingController;
-import entity.IMAGE;
+import entity.Image;
 import service.ICalculateService;
 import service.IPictureService;
 import service.impl.ICalculateServiceImpl;
@@ -15,17 +15,17 @@ public class splitTest {
     private final IPictureService picServer = new IPictureServiceImpl();
     static ImgProcessingController imgCtrl = new ImgProcessingController();
     public static void main(String[] args) throws IOException {
-        IMAGE testPx = new IMAGE("rx78.jpg");
+        Image testPx = new Image("rx78.jpg");
         imgCtrl.openMultiThreads();
 
         // 异步切分
-        List<IMAGE> splitList = imgCtrl.asyncSplit(testPx, 17, true);
+        List<Image> splitList = imgCtrl.asyncSplit(testPx, 17, true);
         for(int i = 0;i < splitList.size();i ++){
             imgCtrl.save(splitList.get(i), "asyncImage" + i);
         }
 
         // 组合图像
-        IMAGE comImg = imgCtrl.combineImages(splitList, 2, true);
+        Image comImg = imgCtrl.combineImages(splitList, 2, true);
         imgCtrl.save(comImg, "combineImage");
 
         // 等值切分

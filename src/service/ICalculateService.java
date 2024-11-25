@@ -1,6 +1,6 @@
 package service;
 
-import entity.IMAGE;
+import entity.Image;
 
 import java.util.Map;
 
@@ -27,7 +27,7 @@ public interface ICalculateService {
      * @param accurateCalculate
      * @return
      */
-    public IMAGE convolution(IMAGE img,
+    public Image convolution(Image img,
                              double[][] kernel,
                              boolean multiThreads, boolean accurateCalculate, boolean negativeFix);
 
@@ -36,49 +36,49 @@ public interface ICalculateService {
      * @param img
      * @return
      */
-    public IMAGE erosion(IMAGE img);
+    public Image erosion(Image img);
 
     /**
      * 获取灰度值分布
      * @param img
      * @return
      */
-    public Map<Integer, Integer> getGList(IMAGE img);
+    public Map<Integer, Integer> getGList(Image img);
 
     /**
      * 获取G值分布比例
      * @param img
      * @return
      */
-    public Map<Integer, Double> getGRate(IMAGE img);
+    public Map<Integer, Double> getGRate(Image img);
 
     /**
      * 获取G值累计分布比例
      * @param img
      * @return
      */
-    public Map<Integer, Double> getGAccumulateRate(IMAGE img);
+    public Map<Integer, Double> getGAccumulateRate(Image img);
 
     /**
      * 获取Active分布
      * @param img
      * @return
      */
-    public Map<Integer, Integer> getActiveList(IMAGE img);
+    public Map<Integer, Integer> getActiveList(Image img);
 
     /**
      * 获取Active值分布比例
      * @param img
      * @return
      */
-    public Map<Integer, Double> getActiveRate(IMAGE img);
+    public Map<Integer, Double> getActiveRate(Image img);
 
     /**
      * 获取Active值累计分布比例
      * @param img
      * @return
      */
-    public Map<Integer, Double> getActiveAccumulateRate(IMAGE img);
+    public Map<Integer, Double> getActiveAccumulateRate(Image img);
 
     /**
      * 获取增强矩阵
@@ -86,11 +86,11 @@ public interface ICalculateService {
      * @param theta
      * @return
      */
-    public int[][] getEnhanceMatrix(IMAGE img, double theta);
+    public int[][] getEnhanceMatrix(Image img, double theta);
 
-    public int[][] getGasMap(IMAGE img, int base, int top);
+    public int[][] getGasMap(Image img, int base, int top);
 
     public int getDirection(int[][] map, int x, int y);
 
-    public int[][] getHistogram(IMAGE img);
+    public int[][] getHistogram(Image img);
 }

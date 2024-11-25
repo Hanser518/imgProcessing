@@ -1,7 +1,7 @@
 package test;
 
 import discard.ImgProcessingController;
-import entity.IMAGE;
+import entity.Image;
 
 import java.io.IOException;
 
@@ -11,9 +11,9 @@ public class enhanceTest {
         imgCtrl.openMultiThreads();
         imgCtrl.closeAccCalc();
         String fileName = "sun";
-        IMAGE px = new IMAGE(fileName + ".jpg");
+        Image px = new Image(fileName + ".jpg");
 
-        IMAGE enhance = imgCtrl.getEnhanceImage(px, 3.14);
+        Image enhance = imgCtrl.getEnhanceImage(px, 3.14);
         imgCtrl.save(enhance, "enhance_" + fileName);
     }
 }

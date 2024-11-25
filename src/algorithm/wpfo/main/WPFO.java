@@ -1,7 +1,7 @@
 package algorithm.wpfo.main;
 
 import controller.EdgeController;
-import entity.IMAGE;
+import entity.Image;
 
 /**
  * wpfo : what are people focus on <p>
@@ -10,20 +10,20 @@ import entity.IMAGE;
 public class WPFO implements Runnable{
     private static EdgeController edgeCtrl = new EdgeController();
     private static int[][] data;
-    private IMAGE px = new IMAGE();
+    private Image px = new Image();
 
-    public WPFO(IMAGE img) {
-        IMAGE edge = null;
+    public WPFO(Image img) {
+        Image edge = null;
         try{
             edge = edgeCtrl.getImgEdge(img, 0);
         } catch (Exception e) {
-            edge = new IMAGE(img.getWidth(), img.getHeight(), 0);
+            edge = new Image(img.getWidth(), img.getHeight(), 0);
         }
         this.px = img;
         init(edge);
     }
 
-    static void init(IMAGE img){
+    static void init(Image img){
         data = new int[img.getWidth()][img.getHeight()];
         int[][] matrix = img.getGrayMatrix();
         for(int i = 0;i < img.getWidth();i ++){
@@ -41,12 +41,12 @@ public class WPFO implements Runnable{
         }
     }
 
-    public static int[][] getData(IMAGE img){
-        IMAGE edge = null;
+    public static int[][] getData(Image img){
+        Image edge = null;
         try{
             edge = edgeCtrl.getImgEdge(img, 1);
         } catch (Exception e) {
-            edge = new IMAGE(img.getWidth(), img.getHeight(), 0);
+            edge = new Image(img.getWidth(), img.getHeight(), 0);
         }
         init(edge);
         return data;

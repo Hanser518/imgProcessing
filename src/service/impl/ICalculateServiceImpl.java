@@ -1,13 +1,13 @@
 package service.impl;
 
-import entity.IMAGE;
+import entity.Image;
 import service.ICalculateService;
 import service.IPictureService;
 
 import java.util.*;
 
 public class ICalculateServiceImpl implements ICalculateService {
-    private IMAGE img = new IMAGE();
+    private Image img = new Image();
     private IPictureService picService = new IPictureServiceImpl();
 
     @Override
@@ -36,7 +36,7 @@ public class ICalculateServiceImpl implements ICalculateService {
     }
 
     @Override
-    public IMAGE convolution(IMAGE img,
+    public Image convolution(Image img,
                              double[][] kernel,
                              boolean multiThreads, boolean accurateCalculate, boolean negativeFix) {
         int[][] rawP = img.getArgbMatrix();
@@ -132,11 +132,11 @@ public class ICalculateServiceImpl implements ICalculateService {
                 }
             }
         }
-        return new IMAGE(rawP);
+        return new Image(rawP);
     }
 
     @Override
-    public IMAGE erosion(IMAGE img) {
+    public Image erosion(Image img) {
         int[][] rawP = img.getArgbMatrix();
         int[][] result = new int[img.getWidth()][img.getHeight()];
         for (int i = 0; i < img.getWidth(); i++) {
@@ -166,11 +166,11 @@ public class ICalculateServiceImpl implements ICalculateService {
                 }
             }
         }
-        return new IMAGE(result);
+        return new Image(result);
     }
 
     @Override
-    public Map<Integer, Integer> getGList(IMAGE img) {
+    public Map<Integer, Integer> getGList(Image img) {
         Map<Integer, Integer> GMap = new HashMap<>();
         for (int i = 0; i < 8; i++)
             GMap.put(i, 0);
@@ -186,7 +186,7 @@ public class ICalculateServiceImpl implements ICalculateService {
     }
 
     @Override
-    public Map<Integer, Double> getGRate(IMAGE img) {
+    public Map<Integer, Double> getGRate(Image img) {
         Map<Integer, Double> GAccumulateMap = new HashMap<>();
         Map<Integer, Integer> GMap = getGList(img);
         double total = img.getWidth() * img.getHeight();
@@ -197,7 +197,7 @@ public class ICalculateServiceImpl implements ICalculateService {
     }
 
     @Override
-    public Map<Integer, Double> getGAccumulateRate(IMAGE img) {
+    public Map<Integer, Double> getGAccumulateRate(Image img) {
         Map<Integer, Double> GAccumulateMap = new HashMap<>();
         Map<Integer, Double> GRate = getGRate(img);
         for (int i = 0; i < 8; i++) {
@@ -210,7 +210,7 @@ public class ICalculateServiceImpl implements ICalculateService {
     }
 
     @Override
-    public Map<Integer, Integer> getActiveList(IMAGE img) {
+    public Map<Integer, Integer> getActiveList(Image img) {
         Map<Integer, Integer> ActiveMap = new HashMap<>();
         for (int i = 0; i < 8; i++)
             ActiveMap.put(i, 0);
@@ -226,7 +226,7 @@ public class ICalculateServiceImpl implements ICalculateService {
     }
 
     @Override
-    public Map<Integer, Double> getActiveRate(IMAGE img) {
+    public Map<Integer, Double> getActiveRate(Image img) {
         Map<Integer, Double> Ac2Map = new HashMap<>();
         Map<Integer, Integer> GMap = getActiveList(img);
         double total = img.getWidth() * img.getHeight();
@@ -237,7 +237,7 @@ public class ICalculateServiceImpl implements ICalculateService {
     }
 
     @Override
-    public Map<Integer, Double> getActiveAccumulateRate(IMAGE img) {
+    public Map<Integer, Double> getActiveAccumulateRate(Image img) {
         Map<Integer, Double> Ac2Map = new HashMap<>();
         Map<Integer, Double> GRate = getActiveRate(img);
         for (int i = 0; i < 8; i++) {
@@ -250,7 +250,7 @@ public class ICalculateServiceImpl implements ICalculateService {
     }
 
     @Override
-    public int[][] getEnhanceMatrix(IMAGE img, double theta) {
+    public int[][] getEnhanceMatrix(Image img, double theta) {
         int width = img.getWidth();
         int height = img.getHeight();
 
@@ -395,7 +395,7 @@ public class ICalculateServiceImpl implements ICalculateService {
     }
 
     @Override
-    public int[][] getGasMap(IMAGE img, int base, int top) {
+    public int[][] getGasMap(Image img, int base, int top) {
         int width = img.getWidth();     // 宽
         int height = img.getHeight();   // 高
         int[][] gasMap = new int[width][height];// 高斯图，用于记录对应点位高斯核半径
@@ -480,12 +480,12 @@ public class ICalculateServiceImpl implements ICalculateService {
     }
 
     @Override
-    public int[][] getHistogram(IMAGE img) {
+    public int[][] getHistogram(Image img) {
         double[][] kernelX = new double[][]{{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
         double[][] kernelY = new double[][]{{1, 2, 1}, {0, 0, 0}, {-1, -2, -1}};
         int w = img.getWidth();
         int h = img.getHeight();
-        IMAGE gray = picService.getGrayImage(img);
+        Image gray = picService.getGrayImage(img);
         int[][] sobelX = convolution(gray, kernelX, true, true, true).getArgbMatrix();
         int[][] sobelY = convolution(gray, kernelY, true, true, true).getArgbMatrix();
         double[][] angle = new double[w][h];    // 角度

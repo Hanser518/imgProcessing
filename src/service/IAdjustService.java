@@ -1,6 +1,6 @@
 package service;
 
-import entity.IMAGE;
+import entity.Image;
 
 public interface IAdjustService {
 
@@ -9,7 +9,7 @@ public interface IAdjustService {
      * @param px
      * @return
      */
-    public int[][] compressDynamicRange(IMAGE px);
+    public int[][] compressDynamicRange(Image px);
 
     /**
      * 调整图像饱和度
@@ -17,7 +17,7 @@ public interface IAdjustService {
      * @param sat
      * @return
      */
-    public int[][] AdjustSaturation(IMAGE px, int sat);
+    public int[][] AdjustSaturation(Image px, int sat);
 
     /**
      * 调整图像明暗程度
@@ -25,9 +25,9 @@ public interface IAdjustService {
      * @param val
      * @return
      */
-    public int[][] AdjustValue(IMAGE px, int val);
+    public int[][] AdjustValue(Image px, int val);
 
-    public int[][] AdjustSaturationAndValue(IMAGE px, int sat, int val);
+    public int[][] AdjustSaturationAndValue(Image px, int sat, int val);
 
     /**
      * 图像尺寸缩放
@@ -36,10 +36,10 @@ public interface IAdjustService {
      * @param hSize
      * @return
      */
-    public IMAGE getReizedImage(IMAGE px, int wSize, int hSize);
+    public Image getReizedImage(Image px, int wSize, int hSize);
 
 
-    public int[][] test(IMAGE px, int value);
+    public int[][] test(Image px, int value);
 
 
 }

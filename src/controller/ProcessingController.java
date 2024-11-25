@@ -1,6 +1,6 @@
 package controller;
 
-import entity.IMAGE;
+import entity.Image;
 import service.IAdjustService;
 import service.ImgService;
 import service.impl.AdjustServiceImpl;
@@ -20,7 +20,7 @@ public class ProcessingController {
     /**
      * 改变图像大小
      */
-    public IMAGE resizeImage(IMAGE img, double radio, int type) {
+    public Image resizeImage(Image img, double radio, int type) {
         if (type == 0) {
             return adService.getReizedImage(img, (int) (img.getWidth() * radio), (int) (img.getHeight() * radio));
         } else if (type == 1) {
@@ -31,18 +31,18 @@ public class ProcessingController {
         return img;
     }
 
-    public IMAGE combineImageList(List<IMAGE> imgList) {
+    public Image combineImageList(List<Image> imgList) {
         if (imgList.isEmpty()) {
             return null;
         }
-        IMAGE backGround = imgList.get(0);
+        Image backGround = imgList.get(0);
         int width = backGround.getWidth();
         int height = backGround.getHeight();
         int[][] result = new int[width][height];
         int step = width / imgList.size();
         System.out.println(step);
         for (int i = 0; i < imgList.size(); i++) {
-            IMAGE proc = imgList.get(i);
+            Image proc = imgList.get(i);
             int procWidth = proc.getWidth();
             int procHeight = proc.getHeight();
             if (procHeight != height || procWidth != width) {
@@ -57,10 +57,10 @@ public class ProcessingController {
                 }
             }
         }
-        return new IMAGE(result);
+        return new Image(result);
     }
 
-    public IMAGE erosionImage(IMAGE img){
-        return new IMAGE(imgService.erosionImg(img, 1));
+    public Image erosionImage(Image img){
+        return new Image(imgService.erosionImg(img, 1));
     }
 }

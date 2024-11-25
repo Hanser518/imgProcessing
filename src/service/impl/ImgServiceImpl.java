@@ -4,7 +4,7 @@ import algorithm.edgeTrace.entity.Node;
 import algorithm.edgeTrace.entity.Point;
 import algorithm.edgeTrace.main.EdgeTrace;
 import controller.EdgeController;
-import entity.IMAGE;
+import entity.Image;
 import threadPool.thread.ConVCalc;
 import threadPool.core.ThreadPoolCore;
 import service.ImgService;
@@ -15,7 +15,7 @@ public class ImgServiceImpl implements ImgService {
     static private ThreadPoolReflectCore conv2;
     static EdgeController edgeCtrl = new EdgeController();
 
-    private int[][] doubleKernelCalc(IMAGE px, double[][] kernel1, double[][] kernel2) throws Exception {
+    private int[][] doubleKernelCalc(Image px, double[][] kernel1, double[][] kernel2) throws Exception {
         // 获取x方向的sobel
         conv2 = new ThreadPoolReflectCore(px.getGrayMatrix(), kernel1, 24, new ConVCalc());
         conv2.start();
@@ -41,21 +41,21 @@ public class ImgServiceImpl implements ImgService {
     }
 
     @Override
-    public int[][] getSobelEdge(IMAGE px) throws Exception {
+    public int[][] getSobelEdge(Image px) throws Exception {
         double[][] kernelX = new double[][]{{1, 2, 1}, {0, 0, 0}, {-1, -2, -1},};
         double[][] kernelY = new double[][]{{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1},};
         return doubleKernelCalc(px, kernelX, kernelY);
     }
 
     @Override
-    public int[][] getPrewittEdge(IMAGE px) throws Exception {
+    public int[][] getPrewittEdge(Image px) throws Exception {
         double[][] kernelX = new double[][]{{1, 1, 1}, {0, 0, 0}, {-1, -1, -1},};
         double[][] kernelY = new double[][]{{-1, 0, 1}, {-1, 0, 1}, {-1, 0, 1},};
         return doubleKernelCalc(px, kernelX, kernelY);
     }
 
     @Override
-    public int[][] getMarrEdge(IMAGE px) throws Exception {
+    public int[][] getMarrEdge(Image px) throws Exception {
         double[][] kernel = new double[][]{{0, -1, 0}, {-1, 4, -1}, {0, -1, 0},};
         kernel = new double[][]{
                 {3, -1, 0},
@@ -91,7 +91,7 @@ public class ImgServiceImpl implements ImgService {
 
 
     @Override
-    public int[][] paddingImg(IMAGE px, int radius) {
+    public int[][] paddingImg(Image px, int radius) {
         int width = px.getWidth();
         int height = px.getHeight();
         int[][] result = px.getArgbMatrix();
@@ -120,7 +120,7 @@ public class ImgServiceImpl implements ImgService {
     }
 
     @Override
-    public int[][] dilateImg(IMAGE px, int radius) {
+    public int[][] dilateImg(Image px, int radius) {
         int width = px.getWidth();
         int height = px.getHeight();
         int[][] result = new int[width][height];
@@ -152,7 +152,7 @@ public class ImgServiceImpl implements ImgService {
     }
 
     @Override
-    public int[][] erosionImg(IMAGE px, int radius) {
+    public int[][] erosionImg(Image px, int radius) {
         int width = px.getWidth();
         int height = px.getHeight();
         int[][] result = px.getArgbMatrix();
@@ -182,11 +182,11 @@ public class ImgServiceImpl implements ImgService {
     }
 
     @Override
-    public int[][] traceImg(IMAGE px) throws Exception {
+    public int[][] traceImg(Image px) throws Exception {
         int width = px.getWidth();
         int height = px.getHeight();
         double[][][] hsv = px.getHsvMatrix();
-        IMAGE edge = edgeCtrl.getImgEdge(px, EdgeController.SOBEL);
+        Image edge = edgeCtrl.getImgEdge(px, EdgeController.SOBEL);
         EdgeTrace edgeTrace = new EdgeTrace(edge);
         edgeTrace.start(EdgeTrace.PATTERN_ONE);
         for (Node node : edgeTrace.getPathList()) {
@@ -198,7 +198,7 @@ public class ImgServiceImpl implements ImgService {
     }
 
     @Override
-    public int[][] getThumbnail(IMAGE px, int step) {
+    public int[][] getThumbnail(Image px, int step) {
         System.out.println("Thumbnail");
         int[][] matrix = px.getArgbMatrix();
         int width = px.getWidth();

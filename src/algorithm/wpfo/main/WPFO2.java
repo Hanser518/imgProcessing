@@ -2,14 +2,14 @@ package algorithm.wpfo.main;
 
 import algorithm.edgeTrace.entity.Node;
 import algorithm.edgeTrace.main.EdgeTrace;
-import entity.IMAGE;
+import entity.Image;
 
 public class WPFO2 implements Runnable{
 
     private static EdgeTrace edgeTraceService;
     private static Integer focusCount = 0;
 
-    public WPFO2(IMAGE px){
+    public WPFO2(Image px){
         edgeTraceService = new EdgeTrace(px);
 
 

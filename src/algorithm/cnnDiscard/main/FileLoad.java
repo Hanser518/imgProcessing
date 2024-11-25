@@ -27,7 +27,7 @@ public class FileLoad {
 //        ImageC entity;
 //        for (String path : file) {
 //            entity = new ImageC(path);
-//            // imgCtrl2.showImg(new IMAGE(entity.getImg()), count + " ");
+//            // imgCtrl2.showImg(new Image(entity.getRawFile()), count + " ");
 //            count++;
 //            System.out.print("\r" + count);
 //        }

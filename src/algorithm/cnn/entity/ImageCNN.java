@@ -1,7 +1,5 @@
 package algorithm.cnn.entity;
 
-import entity.Image2;
-
 import java.awt.image.BufferedImage;
 
 public class ImageCNN extends Image2 {

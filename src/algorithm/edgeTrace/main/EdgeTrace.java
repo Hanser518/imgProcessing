@@ -2,7 +2,7 @@ package algorithm.edgeTrace.main;
 
 import algorithm.edgeTrace.entity.Node;
 import algorithm.edgeTrace.entity.Point;
-import entity.IMAGE;
+import entity.Image;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +45,7 @@ public class EdgeTrace {
     int minX = 0, minY = 0;
     int maxX = 9999, maxY = 9999;
 
-    public EdgeTrace(IMAGE img) {
+    public EdgeTrace(Image img) {
         imgData = img.getArgbMatrix();
         width = img.getWidth();
         height = img.getHeight();

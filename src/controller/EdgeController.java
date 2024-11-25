@@ -1,6 +1,6 @@
 package controller;
 
-import entity.IMAGE;
+import entity.Image;
 import service.impl.ImgServiceImpl;
 import service.ImgService;
 
@@ -11,23 +11,23 @@ public class EdgeController {
 
     static private final BlurController blurCtrl = new BlurController();
     static private final ImgService imgServ = new ImgServiceImpl();
-    public IMAGE getImgEdge(IMAGE img) throws Exception {
-        IMAGE gas = blurCtrl.quickGasBlur(img);
-        IMAGE raw = new IMAGE(imgServ.getSobelEdge(gas));
+    public Image getImgEdge(Image img) throws Exception {
+        Image gas = blurCtrl.quickGasBlur(img);
+        Image raw = new Image(imgServ.getSobelEdge(gas));
         return raw;
-        // return new IMAGE(imgServ.dilateImg(raw));
+        // return new Image(imgServ.dilateImg(raw));
     }
 
-    public IMAGE getImgEdge(IMAGE img, int edgeType) throws Exception {
+    public Image getImgEdge(Image img, int edgeType) throws Exception {
         long set = System.currentTimeMillis();
-        IMAGE gas = blurCtrl.quickGasBlur(img);
-        IMAGE result = new IMAGE();
+        Image gas = blurCtrl.quickGasBlur(img);
+        Image result = new Image();
         if(edgeType == SOBEL) {
-            result = new IMAGE(imgServ.getSobelEdge(gas));
+            result = new Image(imgServ.getSobelEdge(gas));
         } else if(edgeType == PREWITT) {
-            result = new IMAGE(imgServ.getPrewittEdge(gas));
+            result = new Image(imgServ.getPrewittEdge(gas));
         } else if(edgeType == MARR) {
-            result = new IMAGE(imgServ.getMarrEdge(img));
+            result = new Image(imgServ.getMarrEdge(img));
         } else {
             result = gas;
         }

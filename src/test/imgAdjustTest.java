@@ -4,7 +4,7 @@ import controller.AdjustController;
 import controller.EdgeController;
 import controller.ImgController;
 import discard.ImgProcessingController;
-import entity.IMAGE;
+import entity.Image;
 import service.IAdjustService;
 import service.ICalculateService;
 import service.impl.AdjustServiceImpl;
@@ -21,15 +21,15 @@ public class imgAdjustTest {
     static EdgeController edgeCtrl = new EdgeController();
     public static void main(String[] args) throws IOException {
         String fileName = "bus";
-        IMAGE px = new IMAGE(fileName + ".jpg");
+        Image px = new Image(fileName + ".jpg");
 
-//         IMAGE cdr = adCtrl.CDR(px);
+//         Image cdr = adCtrl.CDR(px);
 //         imgCtrl.saveByName(cdr, fileName, "cdr");
 //
-//         IMAGE saturation = adCtrl.adjustSaturation(px, -72);
+//         Image saturation = adCtrl.adjustSaturation(px, -72);
 //         imgCtrl.saveByName(saturation, fileName, "saturation");
 //
-//         IMAGE both = adCtrl.adjustSatAndVal(px, 0, 0);
+//         Image both = adCtrl.adjustSatAndVal(px, 0, 0);
 //         imgCtrl.saveByName(both, fileName, "both");
 //
 //
@@ -37,7 +37,7 @@ public class imgAdjustTest {
 //         imgCtrl2.showImg(saturation, "saturation");
 //         imgCtrl2.showImg(both, "both");
         for(int i = 0;i <= 360;i += 10){
-            IMAGE test = adCtrl.test(px, i);
+            Image test = adCtrl.test(px, i);
             imgCtrl2.showImg(test, "test" + i);
         }
 

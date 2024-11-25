@@ -3,7 +3,7 @@ package test;
 import controller.ImgController;
 import discard.ImgProcessingController;
 import controller.StylizeController;
-import entity.IMAGE;
+import entity.Image;
 import service.ICalculateService;
 import service.impl.ICalculateServiceImpl;
 
@@ -16,9 +16,9 @@ public class imgGrilleTest {
     static StylizeController styleCtrl = new StylizeController();
     public static void main(String[] args) throws IOException {
         String fileName = "building";
-        IMAGE px = new IMAGE(fileName + ".jpg");
+        Image px = new Image(fileName + ".jpg");
 
-        IMAGE grille;
+        Image grille;
         grille = styleCtrl.transGrilleStyle(px, styleCtrl.GRILLE_REGULAR, false);
         imgCtrl2.showImg(grille, "regular");
 

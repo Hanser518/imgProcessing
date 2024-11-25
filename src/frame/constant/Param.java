@@ -1,9 +1,10 @@
-package frame.entity;
+package frame.constant;
 
-import entity.IMAGE;
+import entity.Image;
+import frame.entity.ImageNode;
+import frame.entity.Layer;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class Param {
     /**
      * 当前操作图像参数
      */
-    public static IMAGE image = new IMAGE();
+    public static Image image = new Image();
     public static ImageNode node = new ImageNode(image);
     public static Layer imageLayer = new Layer();
     public static ArrayList<JLabel> thumbList = new ArrayList<>();

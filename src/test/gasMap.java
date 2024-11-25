@@ -3,8 +3,8 @@ package test;
 import controller.BlurController;
 import controller.ImgController;
 import discard.ImgProcessingController;
-import entity.IMAGE;
-import entity.Image2;
+import entity.Image;
+import algorithm.cnn.entity.Image2;
 
 import java.io.IOException;
 
@@ -15,13 +15,13 @@ public class gasMap {
 
     public static void main(String[] args) throws IOException {
         String fileName = "building";
-        IMAGE px = new IMAGE(fileName + ".jpg");
+        Image px = new Image(fileName + ".jpg");
 
-        IMAGE gas = blurCtrl.getStrangeBlur(px, 67);
+        Image gas = blurCtrl.getStrangeBlur(px, 67);
         imgCtrl2.showImg(gas, "gas");
         // imgCtrl.saveByName(gas, fileName, "strange");
 
-        Image2 ic = new Image2(gas.getImg());
+        Image2 ic = new Image2(gas.getRawFile());
 
     }
 }
