@@ -18,11 +18,16 @@ public class AbstractEventBlur extends Event {
         super(img, kernel, threadThreshold);
     }
 
+    private int getStep(){
+        return (int) (Math.sqrt(kernel.length) / 2) + 1;
+    }
+
     private int matrixCalc(int[][] matrix, double[][] kernel, int x, int y){
         double r = 0, g = 0, b = 0;
         double rate = 0;
-        for (int i = 0; i < kernel.length; i ++) {
-            for(int j = 0;j < kernel.length; j ++){
+        int step = getStep();
+        for (int i = 0; i < kernel.length; i += step) {
+            for(int j = 0;j < kernel.length; j += step){
                 r += kernel[i][j] * ((matrix[x + i][y + j] >> 16) & 0xFF);
                 g += kernel[i][j] * ((matrix[x + i][y + j] >> 8) & 0xFF);
                 b += kernel[i][j] * ((matrix[x + i][y + j]) & 0xFF);

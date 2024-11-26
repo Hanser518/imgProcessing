@@ -28,7 +28,7 @@ public class StreamProcessTest {
         while (TSP.isAlive()) {
             Long time = System.currentTimeMillis();
             if ((time - time0) % 20 == 1) {
-                double[][] kernel = calcService.getGasKernel((int) (Math.random() * 3) + 1);
+                double[][] kernel = calcService.getGasKernel((int) (Math.random() * 33) + 3);
                 TSP.insertTask(AbstractEventBlur.class, img, kernel, (int) (Math.random() * 9) + 1);
             }
             if (!IMAGE_QUEUE.isEmpty()) {

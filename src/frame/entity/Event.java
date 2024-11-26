@@ -92,7 +92,6 @@ public abstract class Event extends Thread {
     public void run() {
         long constTime = System.currentTimeMillis();
         initThread();
-        System.out.println(localQueue.size());
         while (true) {
             for (int i = 0; i < availableThreadCount; i++) {
                 Local local = localQueue.poll();
@@ -120,12 +119,7 @@ public abstract class Event extends Thread {
                 }
             }
         }
-//        try {
-//            Thread.sleep(2000);
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
-        System.out.println("Event take: " + (System.currentTimeMillis() - constTime));
+        System.out.println("\nEvent take: " + (System.currentTimeMillis() - constTime));
     }
 
     public Image getResult() {
