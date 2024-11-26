@@ -5,23 +5,17 @@ import frame.entity.Event;
 import frame.entity.record.Local;
 
 public class AbstractEventBlur extends Event {
+
+
     /**
      * 初始化
      *
      * @param img
      * @param kernel
+     * @param threadThreshold
      */
-    public AbstractEventBlur(Image img, double[][] kernel, Local local) {
-        super(img, kernel, local);
-    }
-
-    @Override
-    public void function() {
-        for (int i = 0; i < local.width(); i++) {
-            for (int j = 0; j < local.height(); j++) {
-                result[i][j] = matrixCalc(data, kernel, i + local.x(), j + local.y());
-            }
-        }
+    public AbstractEventBlur(Image img, double[][] kernel, Integer threadThreshold) {
+        super(img, kernel, threadThreshold);
     }
 
     private int matrixCalc(int[][] matrix, double[][] kernel, int x, int y){
@@ -40,5 +34,14 @@ public class AbstractEventBlur extends Event {
         g = Math.abs(g / rate);
         b = Math.abs(b / rate);
         return (255 << 24) | ((int) r << 16) | ((int) g << 8) | (int) b;
+    }
+
+    @Override
+    protected void function(Local local) {
+        for (int i = 0; i < local.width(); i++) {
+            for (int j = 0; j < local.height(); j++) {
+                result[i + local.x()][j + local.y()] = matrixCalc(data, kernel, i + local.x(), j + local.y());
+            }
+        }
     }
 }

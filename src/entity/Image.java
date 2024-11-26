@@ -13,6 +13,11 @@ public class Image {
     private BufferedImage rawFile;
 
     /**
+     * 缩略图
+     */
+    private BufferedImage thumbFile;
+
+    /**
      * 图像宽高
      */
     private int width;
@@ -31,10 +36,14 @@ public class Image {
      * @param path
      * @throws IOException
      */
-    public Image(String path) throws IOException {
-        rawFile = ImageIO.read(new File("./photo/" + path));
-        width = rawFile.getWidth();
-        height = rawFile.getHeight();
+    public Image(String path) {
+        try {
+            rawFile = ImageIO.read(new File("./photo/" + path));
+            width = rawFile.getWidth();
+            height = rawFile.getHeight();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Image(String path, int num) throws IOException {
@@ -393,8 +402,8 @@ public class Image {
                 }
             }
         }
-        try{
-            Constructor<? extends Image> constructorOfImage =  img.getClass().getConstructor(BufferedImage.class);
+        try {
+            Constructor<? extends Image> constructorOfImage = img.getClass().getConstructor(BufferedImage.class);
             return (T) constructorOfImage.newInstance(newImg);
         } catch (Exception e) {
             throw new RuntimeException(e);

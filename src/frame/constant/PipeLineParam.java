@@ -7,11 +7,13 @@ import java.util.Queue;
 
 public class PipeLineParam {
 
-    public static final int MAX_LINE_SIZE = 4;
+    public static volatile int MAX_LINE_SIZE = 4;
 
-    public static final int MAX_PROCESSING_SIZE = 10;
+    public static volatile int MAX_PROCESSING_SIZE = 12;
 
-    public static final Queue<Image> imageQueue = new ArrayDeque<>();
+    public static int AVAILABLE_THREAD = 10;
 
-    public static boolean ALIVE = true;
+    public static volatile Queue<Image> IMAGE_QUEUE = new ArrayDeque<>();
+
+    public static volatile boolean PIPELINE_ALIVE = true;
 }
