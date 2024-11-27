@@ -1,11 +1,11 @@
-package frame.entity;
+package frame2.entity;
 
 import entity.Image;
-import frame.entity.record.Local;
+import frame2.entity.record.Local;
 
 import java.util.*;
 
-import static frame.constant.EventParam.*;
+import static frame2.constant.EventParam.*;
 
 public abstract class Event extends Thread {
     /**
@@ -48,6 +48,8 @@ public abstract class Event extends Thread {
      */
     protected List<Thread> threadPool = new ArrayList<>();
 
+    protected int interval = 0;
+
     /**
      * 初始化
      */
@@ -57,14 +59,6 @@ public abstract class Event extends Thread {
         width = img.getWidth();
         height = img.getHeight();
         this.kernel = kernel;
-        for (int i = 0; i < width / MAX_EVENT_SIZE + 1; i++) {
-            for (int j = 0; j < height / MAX_EVENT_SIZE + 1; j++) {
-                int wStep = i * MAX_EVENT_SIZE + MAX_EVENT_SIZE < width ? MAX_EVENT_SIZE : width - i * MAX_EVENT_SIZE;
-                int hStep = j * MAX_EVENT_SIZE + MAX_EVENT_SIZE < height ? MAX_EVENT_SIZE : height - j * MAX_EVENT_SIZE;
-                Local local = new Local(i * MAX_EVENT_SIZE, j * MAX_EVENT_SIZE, wStep, hStep);
-                localQueue.add(local);
-            }
-        }
         this.threadThreshold = threadThreshold;
         this.availableThreadCount = threadThreshold;
     }
@@ -80,6 +74,15 @@ public abstract class Event extends Thread {
     protected void initThread() {
         for (int i = 0; i < availableThreadCount; i++) {
             threadPool.add(null);
+        }
+
+        for (int i = 0; i < width / MAX_EVENT_SIZE + 1; i++) {
+            for (int j = 0; j < height / MAX_EVENT_SIZE + 1; j++) {
+                int wStep = i * MAX_EVENT_SIZE + MAX_EVENT_SIZE < width ? MAX_EVENT_SIZE : width - i * MAX_EVENT_SIZE;
+                int hStep = j * MAX_EVENT_SIZE + MAX_EVENT_SIZE < height ? MAX_EVENT_SIZE : height - j * MAX_EVENT_SIZE;
+                Local local = new Local(i * MAX_EVENT_SIZE, j * MAX_EVENT_SIZE, wStep, hStep);
+                localQueue.add(local);
+            }
         }
     }
 
@@ -103,26 +106,31 @@ public abstract class Event extends Thread {
                     t = new Thread(() -> function(local));
                     t.start();
                     threadPool.set(i, t);
-                }else{
+                } else {
                     localQueue.add(local);
                 }
             }
             if (localQueue.isEmpty()) {
                 int count = threadPool.size();
-                for(Thread t : threadPool){
-                    if(!t.isAlive()){
-                        count --;
+                for (Thread t : threadPool) {
+                    if (!t.isAlive()) {
+                        count--;
                     }
                 }
-                if(count == 0){
+                if (count == 0) {
                     break;
                 }
             }
         }
-        System.out.println("\nEvent take: " + (System.currentTimeMillis() - constTime));
+        interval = (int) (System.currentTimeMillis() - constTime);
+        // System.out.println("\nEvent take: " + interval);
     }
 
     public Image getResult() {
         return new Image(result);
+    }
+
+    public int getInterval() {
+        return interval;
     }
 }

@@ -2,7 +2,7 @@ package controller;
 
 import discard.ImgProcessingController;
 import entity.Image;
-import frame.constant.Param;
+import frame.entity.Param;
 import service.ImgService;
 import service.impl.ImgServiceImpl;
 import threadPool.pool.ThreadPoolPaper;

@@ -1,8 +1,6 @@
-package frame.constant;
+package frame.entity;
 
 import entity.Image;
-import frame.entity.ImageNode;
-import frame.entity.Layer;
 
 import javax.swing.*;
 import java.awt.*;

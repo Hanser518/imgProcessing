@@ -2,7 +2,7 @@ package frame.service.impl;
 
 import controller.ProcessingController;
 import frame.FrameBase;
-import frame.constant.Param;
+import frame.entity.Param;
 import frame.service.IFileService;
 import frame.service.InitializeService;
 

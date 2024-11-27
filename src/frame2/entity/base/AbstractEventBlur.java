@@ -1,8 +1,8 @@
-package frame.entity.base;
+package frame2.entity.base;
 
 import entity.Image;
-import frame.entity.Event;
-import frame.entity.record.Local;
+import frame2.entity.Event;
+import frame2.entity.record.Local;
 
 public class AbstractEventBlur extends Event {
 

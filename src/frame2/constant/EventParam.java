@@ -1,4 +1,4 @@
-package frame.constant;
+package frame2.constant;
 
 public class EventParam {
 

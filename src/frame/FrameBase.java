@@ -3,7 +3,7 @@ package frame;
 import controller.*;
 import entity.Image;
 import frame.entity.ImageNode;
-import frame.constant.Param;
+import frame.entity.Param;
 import frame.service.IFileService;
 import frame.service.InitializeService;
 import frame.service.impl.IFileServiceImpl;
@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
-import static frame.constant.Param.*;
+import static frame.entity.Param.*;
 
 public class FrameBase {
     private boolean fileBarOpen = true;
