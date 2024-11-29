@@ -85,7 +85,6 @@ public class Image {
                 rawFile.setRGB(i, j, value);
             }
         }
-
     }
 
     /**

@@ -41,6 +41,7 @@ public class FrameBase {
     private static JScrollPane sideBar = new JScrollPane();
     private static JScrollPane sidePanel = new JScrollPane();
     private static final JPanel thumbPanel = new JPanel();
+    private static boolean layerClick = false;
 
 
     private static final IFileService fileService = new IFileServiceImpl();
@@ -310,6 +311,7 @@ public class FrameBase {
                     public void mouseClicked(MouseEvent e) {
                         imageLayer.setIndex(finalI);
                         layerLabel.setText(String.format("%d/%d", imageLayer.getIndex() + 1, imageLayer.getRange()[1]));
+                        layerClick = true;
                         updateCenterLabel(updateNode());
                         System.out.println("CLICK:" + finalI);
                     }
@@ -332,6 +334,7 @@ public class FrameBase {
                     public void mouseClicked(MouseEvent e) {
                         imageLayer.setIndex(finalI);
                         layerLabel.setText(String.format("%d/%d", imageLayer.getIndex() + 1, imageLayer.getRange()[1]));
+                        layerClick = true;
                         updateCenterLabel(updateNode());
                         System.out.println("CLICK:" + finalI);
                     }
@@ -339,14 +342,17 @@ public class FrameBase {
                 thumbPanel.add(thumbLabel);
             }
         } else {
-            ImageNode node = imageLayer.getNode(index);
-            Image nodeImg = node.image;
-            double imgRate = Math.min((double) 100 / nodeImg.getWidth(), (double) 100 / nodeImg.getHeight());
-            nodeImg = pcsCtrl.resizeImage(nodeImg, imgRate, pcsCtrl.RESIZE_ENTIRETY);
-            JLabel thumbLabel = thumbList.get(index);
-            thumbLabel.setIcon(new ImageIcon(nodeImg.getRawFile()));
-            thumbLabel.setBorder(new TitledBorder(new EtchedBorder(), node.nodeName));
-            thumbList.set(index, thumbLabel);
+            if (!layerClick) {
+                ImageNode node = imageLayer.getNode(index);
+                Image nodeImg = node.image;
+                double imgRate = Math.min((double) 100 / nodeImg.getWidth(), (double) 100 / nodeImg.getHeight());
+                nodeImg = pcsCtrl.resizeImage(nodeImg, imgRate, pcsCtrl.RESIZE_ENTIRETY);
+                JLabel thumbLabel = thumbList.get(index);
+                thumbLabel.setIcon(new ImageIcon(nodeImg.getRawFile()));
+                thumbLabel.setBorder(new TitledBorder(new EtchedBorder(), node.nodeName));
+                thumbList.set(index, thumbLabel);
+            }
+            layerClick = false;
         }
 
     }
