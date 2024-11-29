@@ -247,6 +247,7 @@ public class FrameBase {
         layerLabel.setText(String.format("%d/%d", imageLayer.getIndex() + 1, layerCount[1]));
         layerLabel.setHorizontalAlignment(JLabel.CENTER);
 
+        JButton delete = Param.functionButton2("D");
         JButton layerUp = Param.functionButton2("+");
         JButton layerDown = Param.functionButton2("-");
         layerUp.addActionListener(ac -> {
@@ -262,20 +263,32 @@ public class FrameBase {
             layerLabel.setText(String.format("%d/%d", imageLayer.getIndex() + 1, imageLayer.getRange()[1]));
             updateCenterLabel(updateNode());
         });
+        delete.addActionListener(ac -> {
+            if (imageLayer.getRange()[1] > 1) {
+                imageLayer.deleteLayer(imageLayer.getIndex());
+                imageLayer.setIndex(imageLayer.getIndex() < imageLayer.getRange()[1] ? imageLayer.getIndex() : imageLayer.getRange()[1] - 1);
+                layerLabel.setText(String.format("%d/%d", imageLayer.getIndex() + 1, imageLayer.getRange()[1]));
+                updateCenterLabel(updateNode());
+            }
+        });
 
         JPanel paramPanel = new JPanel();
-        paramPanel.setLayout(new GridLayout(2, 1));
+        paramPanel.setLayout(new GridLayout(1, 2));
         paramPanel.add(layerLabel);
+        paramPanel.add(delete);
 
         JPanel optionPanel = new JPanel();
         optionPanel.setLayout(new GridLayout(1, 2));
         optionPanel.add(layerUp);
         optionPanel.add(layerDown);
 
-        paramPanel.add(optionPanel);
+        JPanel multiPanel = new JPanel();
+        multiPanel.setLayout(new GridLayout(2, 1));
+        multiPanel.add(paramPanel);
+        multiPanel.add(optionPanel);
 
         thumbPanel.setLayout(new BoxLayout(thumbPanel, BoxLayout.PAGE_AXIS));
-        layerPanel.add(paramPanel, BorderLayout.NORTH);
+        layerPanel.add(multiPanel, BorderLayout.NORTH);
         layerPanel.add(thumbPanel, BorderLayout.CENTER);
     }
 
@@ -302,6 +315,27 @@ public class FrameBase {
                     }
                 });
                 thumbList.add(thumbLabel);
+                thumbPanel.add(thumbLabel);
+            }
+        } else if (range[1] < thumbList.size()) {
+            int refreshIndex = imageLayer.getIndex() <= range[1] ? imageLayer.getIndex() : thumbList.size() - 1;
+            System.out.println(refreshIndex);
+            thumbList.remove(refreshIndex);
+            thumbPanel.remove(refreshIndex);
+            for (int i = refreshIndex; i < thumbList.size(); i++) {
+                JLabel thumbLabel = thumbList.get(i);
+                thumbPanel.remove(thumbLabel);
+                int finalI = i;
+                thumbLabel.removeMouseListener(thumbLabel.getMouseListeners()[0]);
+                thumbLabel.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        imageLayer.setIndex(finalI);
+                        layerLabel.setText(String.format("%d/%d", imageLayer.getIndex() + 1, imageLayer.getRange()[1]));
+                        updateCenterLabel(updateNode());
+                        System.out.println("CLICK:" + finalI);
+                    }
+                });
                 thumbPanel.add(thumbLabel);
             }
         } else {

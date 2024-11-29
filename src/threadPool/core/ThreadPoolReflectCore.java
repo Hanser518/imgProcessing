@@ -31,14 +31,14 @@ public class ThreadPoolReflectCore {
 
     public ThreadPoolReflectCore(int[][] requestData, double[][] ConVKernel, int MaxThreadCount, Object threadItem, boolean... fill) throws Exception {
         // 对图像进行填充处理，此时数据矩阵长宽发生改变，原矩阵长宽存储于width和height中
-        if(fill.length > 0){
-            if(fill[0]){
-                this.data = Image.fillImageEdge(new Image(requestData), ConVKernel.length, ConVKernel[0].length).getArgbMatrix();
-            }else{
+        if (fill.length > 0) {
+            if (fill[0]) {
+                this.data = Image.fillImageEdge(new Image(requestData), ConVKernel.length / 2, ConVKernel[0].length / 2).getArgbMatrix();
+            } else {
                 this.data = requestData;
             }
-        }else{
-            this.data = Image.fillImageEdge(new Image(requestData), ConVKernel.length, ConVKernel[0].length).getArgbMatrix();
+        } else {
+            this.data = Image.fillImageEdge(new Image(requestData), ConVKernel.length / 2, ConVKernel[0].length / 2).getArgbMatrix();
         }
         this.width = requestData.length;
         this.height = requestData[0].length;
