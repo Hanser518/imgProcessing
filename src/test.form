@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="test">
+  <grid id="27dc6" binding="mainPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="20" y="20" width="839" height="733"/>
+    </constraints>
+    <properties>
+      <background color="-3814434"/>
+    </properties>
+    <border type="none">
+      <title-color color="-7398125"/>
+    </border>
+    <children>
+      <grid id="de3d8" binding="westPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints border-constraint="West"/>
+        <properties>
+          <background color="-10848591"/>
+        </properties>
+        <border type="none"/>
+        <children>
+          <component id="cd199" class="javax.swing.JList" binding="list1" default-binding="true">
+            <constraints border-constraint="Center"/>
+            <properties>
+              <toolTipText value="value&#10;"/>
+            </properties>
+            <clientProperties>
+              <List.isFileList class="java.lang.Boolean" value="true"/>
+            </clientProperties>
+          </component>
+        </children>
+      </grid>
+      <toolbar id="891d">
+        <constraints border-constraint="North"/>
+        <properties>
+          <borderPainted value="false"/>
+          <margin top="0" left="0" bottom="0" right="0"/>
+        </properties>
+        <border type="none"/>
+        <children>
+          <component id="9313f" class="javax.swing.JMenu" binding="FileMenu">
+            <constraints/>
+            <properties>
+              <selected value="false"/>
+              <text value="File"/>
+            </properties>
+          </component>
+          <component id="35f44" class="javax.swing.JMenuItem" binding="item1">
+            <constraints/>
+            <properties>
+              <text value="item1"/>
+            </properties>
+          </component>
+          <component id="8f52" class="javax.swing.JButton" binding="FileButton">
+            <constraints/>
+            <properties>
+              <hideActionText value="true"/>
+              <text value="File"/>
+            </properties>
+          </component>
+          <component id="d009e" class="javax.swing.JComboBox" binding="File">
+            <constraints/>
+            <properties>
+              <background color="-1249026"/>
+              <editable value="false"/>
+              <enabled value="true"/>
+              <font name="Microsoft YaHei UI"/>
+              <model>
+                <item value="File"/>
+                <item value="New File"/>
+                <item value="Close File"/>
+              </model>
+            </properties>
+            <clientProperties>
+              <html.disable class="java.lang.Boolean" value="false"/>
+            </clientProperties>
+          </component>
+          <hspacer id="c0b60">
+            <constraints/>
+          </hspacer>
+          <component id="d2dc9" class="javax.swing.JComboBox" binding="Edit">
+            <constraints/>
+            <properties>
+              <background color="-1249026"/>
+              <model>
+                <item value="Edit"/>
+              </model>
+            </properties>
+          </component>
+          <hspacer id="2742b">
+            <constraints/>
+          </hspacer>
+          <component id="d1745" class="javax.swing.JComboBox" binding="comboBox1" default-binding="true">
+            <constraints/>
+            <properties>
+              <model>
+                <item value="NULL"/>
+              </model>
+            </properties>
+          </component>
+          <hspacer id="1ab1c">
+            <constraints/>
+          </hspacer>
+          <hspacer id="a15ff">
+            <constraints/>
+          </hspacer>
+        </children>
+      </toolbar>
+      <component id="24f79" class="javax.swing.JEditorPane" binding="editorPane1" default-binding="true">
+        <constraints border-constraint="Center"/>
+        <properties>
+          <editable value="false"/>
+          <enabled value="false"/>
+          <toolTipText value="Center&#10;"/>
+        </properties>
+        <clientProperties>
+          <JEditorPane.honorDisplayProperties class="java.lang.Boolean" value="false"/>
+        </clientProperties>
+      </component>
+    </children>
+  </grid>
+</form>

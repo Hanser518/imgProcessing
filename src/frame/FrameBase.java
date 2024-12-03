@@ -336,6 +336,7 @@ public class FrameBase {
                         layerLabel.setText(String.format("%d/%d", imageLayer.getIndex() + 1, imageLayer.getRange()[1]));
                         layerClick = true;
                         updateCenterLabel(updateNode());
+
                         System.out.println("CLICK:" + finalI);
                     }
                 });
