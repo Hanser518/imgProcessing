@@ -5,7 +5,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 
-public class DraggableLabelWithMenuExample {
+public class CoordinateWithDraggableLabel {
+    private static JFrame frame;
     private static int labelCount = 0; // 记录 JLabel 数量
     private static JPanel panel; // 用于容纳 JLabel 的面板
     private static JPanel headerPanel; // 用于容纳 JLabel 的面板
@@ -26,7 +27,7 @@ public class DraggableLabelWithMenuExample {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             if (labelList.size() > 2) {
-                int x1 = 0, x2 = 1000;
+                int x1 = 0, x2 = frame.getWidth();
                 int y11 = (int) (-(a1 * x1 + c1) / b1);
                 int y12 = (int) (-(a1 * x2 + c1) / b1);
                 g.setColor(new Color(28, 54, 124, 255));
@@ -42,10 +43,10 @@ public class DraggableLabelWithMenuExample {
 
     public static void main(String[] args) {
         // 创建 JFrame 窗口
-        JFrame frame = new JFrame("Draggable JLabel 示例（右键删除）");
+        frame = new JFrame("Draggable JLabel 示例（右键删除）");
         frame.setSize(1000, 1120);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(null);
+        frame.setLayout(new BorderLayout());
 
         // 创建按钮
         JButton button = new JButton("创建 JLabel");
@@ -59,9 +60,9 @@ public class DraggableLabelWithMenuExample {
 
         // 创建一个容器面板
         panel = new CustomPanel(null);
-        panel.setBounds(0, 60, 1000, 1000);
+        // panel.setBounds(0, 60, 1000, 1000);
         panel.setBackground(Color.LIGHT_GRAY);
-        frame.add(panel);
+        frame.add(panel, BorderLayout.CENTER);
 
         // 按钮点击事件：创建 JLabel
         button.addActionListener(e -> createDraggableLabel());
@@ -72,7 +73,7 @@ public class DraggableLabelWithMenuExample {
         headerPanel.add(button);
         headerPanel.add(infoLabel);
         headerPanel.add(paramLabel);
-        frame.add(headerPanel);
+        frame.add(headerPanel, BorderLayout.NORTH);
 
         // 显示窗口
         frame.setVisible(true);
@@ -84,7 +85,7 @@ public class DraggableLabelWithMenuExample {
 
         // 创建新的 JLabel
         JLabel label = new JLabel("JLabel " + labelList.size());
-        label.setBounds((int) (Math.random() * 900), (int) (Math.random() * 900), 100, 100);
+        label.setBounds((int) (Math.random() * (frame.getWidth() - 200)), (int) (Math.random() * (frame.getHeight() - 200)), 100, 100);
         label.setOpaque(true);
         label.setBackground(new Color((int) (Math.random() * 200 + 25), (int) (Math.random() * 200 + 25), (int) (Math.random() * 200 + 25), 127));
         label.setBorder(new TitledBorder(new EtchedBorder(), "JLabel " + labelList.size()));
@@ -163,7 +164,31 @@ public class DraggableLabelWithMenuExample {
             panel.repaint(); // 重新绘制面板
         });
 
+        JMenuItem topItem = new JMenuItem("设为原点");
+        topItem.addActionListener(e -> {
+            labelList.remove(label);
+            labelList.add(0, label);
+            for (int index = 0; index < labelList.size(); index++) {
+                labelList.get(index).setBorder(new TitledBorder(new EtchedBorder(), "JLabel " + index));
+            }
+            updateLabelsDistance();
+            panel.repaint(); // 重新绘制面板
+        });
+
+        JMenuItem secondItem = new JMenuItem("设为锚点");
+        secondItem.addActionListener(e -> {
+            labelList.remove(label);
+            labelList.add(1, label);
+            for (int index = 0; index < labelList.size(); index++) {
+                labelList.get(index).setBorder(new TitledBorder(new EtchedBorder(), "JLabel " + index));
+            }
+            updateLabelsDistance();
+            panel.repaint(); // 重新绘制面板
+        });
+
         // 将菜单项添加到右键菜单
+        popupMenu.add(topItem);
+        popupMenu.add(secondItem);
         popupMenu.add(deleteItem);
 
         // 为 JLabel 添加右键点击事件
@@ -183,16 +208,21 @@ public class DraggableLabelWithMenuExample {
             JLabel label2 = labelList.get(1);
             Point p1 = label1.getLocationOnScreen();
             Point p2 = label2.getLocationOnScreen();
+            Point pf = frame.getLocationOnScreen();
             label1.setText("<html>Label 0: <br>" + p1.getX() + "," + p1.getY());
             label2.setText("<html>Label 1: <br>" + p2.getX() + "," + p2.getY());
+            int x1 = p1.x - pf.x;
+            int x2 = p2.x - pf.x;
+            int y1 = p1.y - pf.y;
+            int y2 = p2.y - pf.y;
             // 计算基准线
-            a1 = p1.getY() - p2.getY();
-            b1 = p2.getX() - p1.getX();
-            c1 = p1.getX() * p2.getY() - p2.getX() * p1.getY();
+            a1 = y1 - y2;
+            b1 = x2 - x1;
+            c1 = x1 * y2 - x2 * y1;
             // 计算垂直线
             a2 = b1;
             b2 = -a1;
-            c2 = -b1 * p1.getX() + a1 * p1.getY();
+            c2 = -b1 * x1 + a1 * y1;
             // 更新函数参数
             String param = String.format("<html>a1_%f，b1_%f，c1_%f<br>a2_%f，b2_%f，c1_%f", a1, b1, c1, a2, b2, c2);
             paramLabel.setText(param);
@@ -205,11 +235,26 @@ public class DraggableLabelWithMenuExample {
             for (int i = 2; i < labelList.size(); i++) {
                 JLabel label = labelList.get(i);
                 Point labelPoint = label.getLocationOnScreen(); // 获取label坐标
+                int x = labelPoint.x - pf.x;
+                int y = labelPoint.y - pf.y;
                 StringBuilder labelSB = new StringBuilder("<html>Label: " + i + "<br>");
-                double dis1 = Math.abs(a1 * labelPoint.getX() + b1 * labelPoint.getY() + c1) / param1;
-                double dis2 = Math.abs(a2 * labelPoint.getX() + b2 * labelPoint.getY() + c2) / param2;
+                double value1 = a1 * x + b1 * y + c1;
+                double value2 = a2 * x + b2 * y + c2;
+                double dis1 = -value1 / param1;
+                double dis2 = -value2 / param2;
                 labelSB.append("DIS_1: ").append(String.format("%.2f", dis1)).append("<br>");
                 labelSB.append("DIS_2: ").append(String.format("%.2f", dis2)).append("<br>");
+                if (dis1 > 0 && dis2 > 0){
+                    labelSB.append("象限: 1").append("<br>");
+                } else if (dis1 < 0 && dis2 > 0){
+                    labelSB.append("象限: 2").append("<br>");
+                } else if (dis1 < 0 && dis2 < 0){
+                    labelSB.append("象限: 3").append("<br>");
+                } else if (dis1 > 0 && dis2 < 0){
+                    labelSB.append("象限: 4").append("<br>");
+                } else {
+                    labelSB.append("illegal").append("<br>");
+                }
                 labelSB.append("</html>");
                 label.setText(labelSB.toString());
             }

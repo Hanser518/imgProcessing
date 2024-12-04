@@ -45,24 +45,6 @@ public class InitializeServiceImpl implements InitializeService {
     public JLabel initializeCenterLabel() {
         JLabel centerLabel = new JLabel(new ImageIcon(pcsCtrl.resizeImage(Param.image, Param.rate, pcsCtrl.RESIZE_ENTIRETY).getRawFile()));
         centerLabel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        centerLabel.addMouseListener(new MouseAdapter() {
-            boolean press = false;
-            @Override
-            public void mousePressed(MouseEvent e) {
-                press = true;
-                System.out.println(press);
-                int x = e.getX();
-                int y = e.getY();
-                System.out.println(x + " " + y);
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                int x = e.getX();
-                int y = e.getY();
-                System.out.println(x + " " + y);
-            }
-        });
         return centerLabel;
     }
 

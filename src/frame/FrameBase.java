@@ -13,8 +13,7 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -36,12 +35,17 @@ public class FrameBase {
     private static final JLabel fileNameLabel = new JLabel();
     private static final JLabel layerLabel = new JLabel();
     private static JLabel centerLabel;
+    private static JPanel centerPanel;
     private static final JPanel layerPanel = new JPanel();
     private static final JPanel fileChoosePanel = new JPanel();
     private static JScrollPane sideBar = new JScrollPane();
     private static JScrollPane sidePanel = new JScrollPane();
     private static final JPanel thumbPanel = new JPanel();
     private static boolean layerClick = false;
+    private static Point initialClick;
+    private static JLabel zoomX = new JLabel();
+    private static JSlider zoomSlider = new JSlider(50, 500, (int) (zoom * 100));
+
 
 
     private static final IFileService fileService = new IFileServiceImpl();
@@ -58,6 +62,17 @@ public class FrameBase {
     private boolean init = false;
     private int sx, sy;
 
+    private static class CustomPanel extends JPanel {
+        public CustomPanel() {
+            super(null);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+        }
+    }
+
     public static void main(String[] args) {
         System.out.println("Hello image");
         SwingUtilities.invokeLater(FrameBase::new);
@@ -73,8 +88,14 @@ public class FrameBase {
 
         baseFrame = initServ.initializeMainFrame();
         centerLabel = initServ.initializeCenterLabel();
+        addMutipleFunction(centerLabel);
 
-        JScrollPane scrollPane = new JScrollPane(centerLabel);
+        centerPanel = new CustomPanel();
+
+        centerPanel.add(centerLabel);
+//        centerPanel.setBounds(0, 60, 1000, 1000);
+//        centerPanel.setBackground(Color.LIGHT_GRAY);
+
         processLabel.setFont(funcFont);
         processLabel.setForeground(Color.WHITE);
         updateSideBar(fileChoosePanel);
@@ -83,7 +104,7 @@ public class FrameBase {
         initServ.initializeFileList();
 
         baseFrame.add(sideBar, BorderLayout.WEST);
-        baseFrame.add(scrollPane, BorderLayout.CENTER);
+        baseFrame.add(centerPanel, BorderLayout.CENTER);
         baseFrame.add(headPanel(), BorderLayout.NORTH);
         baseFrame.add(bottomPanel(), BorderLayout.SOUTH);
         baseFrame.setVisible(true);
@@ -146,6 +167,10 @@ public class FrameBase {
         double imgRate = Math.min((double) frameWidth / imgWidth, (double) frameHeight / imgHeight) * zoom;
         image = newImage;
         centerLabel.setIcon(new ImageIcon(pcsCtrl.resizeImage(newImage, imgRate, pcsCtrl.RESIZE_ENTIRETY).getRawFile()));
+        Point centerPoint = centerPanel.getLocationOnScreen();
+        Point framePoint = baseFrame.getLocationOnScreen();
+        Point labelPoint = centerLabel.getLocationOnScreen();
+        centerLabel.setBounds(labelPoint.x - centerPoint.x, labelPoint.y - centerPoint.y, (int) (imgWidth * imgRate), (int) (imgHeight * imgRate));
         centerLabel.setBackground(Color.darkGray);
         baseFrame.revalidate(); // 重新验证布局
         baseFrame.repaint(); // 重新绘制组件
@@ -577,40 +602,37 @@ public class FrameBase {
 
         JButton plus = new JButton("+");
         JButton down = new JButton("-");
-        JLabel zoomX = new JLabel();
-
         zoomX.setText(String.format("%2.2f", zoom));
         zoomX.setForeground(Color.white);
-        JSlider slider = new JSlider(50, 500, (int) (zoom * 100));
-        slider.addChangeListener(change -> {
-            int value = slider.getValue();
+        zoomSlider.addChangeListener(change -> {
+            int value = zoomSlider.getValue();
             zoom = value / 100.0;
             zoomX.setText(String.format("%2.2f", zoom));
         });
-        slider.setOpaque(false);
-        slider.addMouseListener(new MouseAdapter() {
+        zoomSlider.setOpaque(false);
+        zoomSlider.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
                 updateCenterLabel(image);
             }
         });
-        slider.setMajorTickSpacing(25);
-        slider.setMinorTickSpacing(5);
-        slider.setPaintTicks(true);
+        zoomSlider.setMajorTickSpacing(25);
+        zoomSlider.setMinorTickSpacing(5);
+        zoomSlider.setPaintTicks(true);
         plus.addActionListener(ac -> {
             zoom += 0.1;
             zoomX.setText(String.format("%2.2f", zoom));
-            slider.setValue((int) (zoom * 100));
+            zoomSlider.setValue((int) (zoom * 100));
             updateCenterLabel(image);
         });
         down.addActionListener(ac -> {
             zoom -= 0.1;
             zoomX.setText(String.format("%2.2f", zoom));
-            slider.setValue((int) (zoom * 100));
+            zoomSlider.setValue((int) (zoom * 100));
             updateCenterLabel(image);
         });
 
-        panel.add(slider);
+        panel.add(zoomSlider);
         panel.add(plus);
         panel.add(zoomX);
         panel.add(down);
@@ -880,5 +902,49 @@ public class FrameBase {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static void addMutipleFunction(JLabel label) {
+        label.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                System.out.println("PRESS");
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    initialClick = e.getPoint(); // 记录初始点击位置
+                }
+            }
+        });
+
+        label.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    // 获取当前鼠标在面板中的位置
+                    int mouseX = e.getXOnScreen();
+                    int mouseY = e.getYOnScreen();
+
+                    // 计算 JLabel 的新位置
+                    Point panelLocation = centerPanel.getLocationOnScreen();
+                    int newX = mouseX - panelLocation.x - initialClick.x;
+                    int newY = mouseY - panelLocation.y - initialClick.y;
+
+                    // 更新 JLabel 的位置
+                    label.setLocation(newX, newY);
+                }
+            }
+        });
+
+        label.addMouseWheelListener(e -> {
+            int notches = e.getWheelRotation();
+            if (notches > 0) {
+                zoom += 0.1;
+            } else {
+                zoom -= 0.1;
+            }
+            zoomX.setText(String.format("%2.2f", zoom));
+            zoomSlider.setValue((int) (zoom * 100));
+            updateCenterLabel(image);
+        });
     }
 }
