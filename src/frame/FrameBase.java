@@ -47,7 +47,6 @@ public class FrameBase {
     private static JSlider zoomSlider = new JSlider(50, 500, (int) (zoom * 100));
 
 
-
     private static final IFileService fileService = new IFileServiceImpl();
     private static final InitializeService initServ = new InitializeServiceImpl();
 
@@ -168,7 +167,11 @@ public class FrameBase {
         image = newImage;
         centerLabel.setIcon(new ImageIcon(pcsCtrl.resizeImage(newImage, imgRate, pcsCtrl.RESIZE_ENTIRETY).getRawFile()));
         Point labelPoint = centerLabel.getLocation();
-        centerLabel.setBounds(labelPoint.x, labelPoint.y, (int) (imgWidth * imgRate), (int) (imgHeight * imgRate));
+        if (labelPoint.x < 0 || labelPoint.y < 0) {
+            centerLabel.setBounds(0, 0, (int) (imgWidth * imgRate), (int) (imgHeight * imgRate));
+        } else {
+            centerLabel.setBounds(labelPoint.x, labelPoint.y, (int) (imgWidth * imgRate), (int) (imgHeight * imgRate));
+        }
         centerLabel.setBackground(Color.darkGray);
         baseFrame.revalidate(); // 重新验证布局
         baseFrame.repaint(); // 重新绘制组件

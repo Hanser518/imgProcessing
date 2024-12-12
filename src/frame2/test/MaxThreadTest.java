@@ -6,6 +6,7 @@ import frame2.entity.Event;
 import frame2.entity.base.AbstractEventBlur;
 import service.ICalculateService;
 import service.impl.ICalculateServiceImpl;
+import threadPool.core.ThreadPoolReflectCore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,6 +80,7 @@ public class MaxThreadTest {
             if (threadInterval > baseInterval * 8) {
                 access = true;
                 PipeLineParam.MAX_THREAD_SIZE = Math.min(count - 1, 4);
+                ThreadPoolReflectCore.setThreadCountLimit(Math.min(count - 1, 4));
             }
         }
     }

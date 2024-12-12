@@ -17,7 +17,7 @@ public class ThreadPoolReflectCore {
     protected double[][] kernel;// 卷积核
     protected int width, height;// 数据宽高
     protected int threadCount;  // 当前线程数量
-    protected int threadCountLimit = 24;    // 最大线程数量
+    protected static int threadCountLimit = 24;    // 最大线程数量
     protected int blockSize = 240;  // 单个事务块的最大单边长度
 
     protected Class<?> classOfThread; // 线程种类
@@ -43,7 +43,7 @@ public class ThreadPoolReflectCore {
         this.width = requestData.length;
         this.height = requestData[0].length;
         this.kernel = ConVKernel;
-        this.threadCountLimit = MaxThreadCount < 0 ? 999 : Math.min(MaxThreadCount, 12);
+        threadCountLimit = MaxThreadCount < 0 ? threadCountLimit : Math.min(MaxThreadCount, 12);
         this.threadCount = Math.min((int) Math.sqrt(kernel.length) + 3, threadCountLimit);
         classOfThread = threadItem.getClass();
         initEvent();
@@ -188,6 +188,10 @@ public class ThreadPoolReflectCore {
             }
         }
         return result;
+    }
+
+    public static void setThreadCountLimit(int count){
+        threadCountLimit = count;
     }
 
     protected void initThread() throws Exception {
