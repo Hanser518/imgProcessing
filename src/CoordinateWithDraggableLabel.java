@@ -43,7 +43,7 @@ public class CoordinateWithDraggableLabel {
 
     public static void main(String[] args) {
         // 创建 JFrame 窗口
-        frame = new JFrame("Draggable JLabel 示例（右键删除）");
+        frame = new JFrame("Draggable JLabel（右键删除）");
         frame.setSize(1000, 1120);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());

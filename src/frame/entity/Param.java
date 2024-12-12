@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.function.Function;
 
 import static frame.FrameBase.fileChooser;
 import static frame.FrameBase.updateFileList;
@@ -114,8 +115,8 @@ public class Param {
     }
 
     public static JButton fileButton(File file) {
-        String fileName = (file.isDirectory() ? ">>>" : "-----") + file.getName();
-        JButton fileBtn = new JButton(fileName);
+        String fileName = file.getName().length() > 10 ? file.getName().substring(0, 10) : file.getName();
+        JButton fileBtn = new JButton((file.isDirectory() ? ">>>" : "-----") + fileName);
         fileBtn.addActionListener(action -> {
             if (file.isDirectory()) {
                 Param.path.add(file.getAbsolutePath());

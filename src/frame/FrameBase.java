@@ -167,10 +167,8 @@ public class FrameBase {
         double imgRate = Math.min((double) frameWidth / imgWidth, (double) frameHeight / imgHeight) * zoom;
         image = newImage;
         centerLabel.setIcon(new ImageIcon(pcsCtrl.resizeImage(newImage, imgRate, pcsCtrl.RESIZE_ENTIRETY).getRawFile()));
-        Point centerPoint = centerPanel.getLocationOnScreen();
-        Point framePoint = baseFrame.getLocationOnScreen();
-        Point labelPoint = centerLabel.getLocationOnScreen();
-        centerLabel.setBounds(labelPoint.x - centerPoint.x, labelPoint.y - centerPoint.y, (int) (imgWidth * imgRate), (int) (imgHeight * imgRate));
+        Point labelPoint = centerLabel.getLocation();
+        centerLabel.setBounds(labelPoint.x, labelPoint.y, (int) (imgWidth * imgRate), (int) (imgHeight * imgRate));
         centerLabel.setBackground(Color.darkGray);
         baseFrame.revalidate(); // 重新验证布局
         baseFrame.repaint(); // 重新绘制组件
